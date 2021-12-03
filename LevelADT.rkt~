@@ -1,0 +1,4 @@
+(load "PositionADT.rkt")
+(load "MovingObjectADT.rkt")
+(#%require (only racket error))
+

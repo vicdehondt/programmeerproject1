@@ -1,0 +1,39 @@
+#lang r5rs
+(#%provide (all-defined))
+(#%require (only racket error)
+           "Graphics.rkt"
+           "PositionADT.rkt")
+
+(define (make-movingobject position-object tile-object orientation)
+  (let ((position (cons (position-object 'x) (position-object 'y)))
+        (tile tile-object)
+        (sequence 0)
+        (orientation orientation))
+
+    (define (position! pair)
+      ((position-object 'set-x-y) (car pair) (cdr pair)))
+
+    (define (tile! new-tile-object)
+      (set! tile new-tile-object))
+
+    (define (sequence! tile-sequence)
+      (set! sequence tile-sequence))
+
+    ;(define (rotate! message)
+    ;  (cond))
+
+    ;(define (show)
+    ;  ())
+    
+    (define (dispatch m)
+      (cond
+        ((eq? m 'position) position)
+        ((eq? m 'position!) position!)
+        ((eq? m 'tile!) tile!)
+        ((eq? m 'sequence!) sequence!)
+        ((eq? m 'orientation) orientation)
+        ;((eq? m 'rotate!) rotate!)
+        ;((eq? m 'show) show)
+        ;((eq? m 'hide) hide)
+        (else (error "ERROR in DISPATCH: Wrong message!"))))
+    dispatch))

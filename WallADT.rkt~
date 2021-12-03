@@ -1,0 +1,8 @@
+#lang r5rs
+(#%provide (all-defined))
+(#%require (only racket error)
+           "Graphics.rkt"
+           "PositionADT.rkt")
+
+(define (make-wall position-object length symbol)
+  )

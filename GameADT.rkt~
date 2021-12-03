@@ -1,0 +1,7 @@
+(load "PositionADT.rkt")
+(load "MovingObjectADT.rkt")
+(load "EggADT.rkt")
+(load "WallADT.rkt")
+(load "LevelADT.rkt")
+(#%require (only racket error))
+
