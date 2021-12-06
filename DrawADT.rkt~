@@ -1,0 +1,24 @@
+
+(define (maak-draw game)
+  (let ((window (make-window 640 400 "Fire Ant")))
+    
+    
+    ((window 'set-background!) "black")
+   #|
+    (define (teken-object! obj tile)
+      (let* ((position (obj 'positie))
+            (new-x (* (position 'x) cel-breedte-px))
+            (new-y (* (position 'y) cel-hoogte-px)))
+        ((tile 'set-x!) new-x)
+        ((tile 'set-y!) new-y)))
+
+    (define (set-spel-lus-functie! fun)
+      ((venster 'set-update-callback!) fun))
+    
+    (define (set-toets-functie! fun)
+      ((venster 'set-key-callback!) fun))
+    |#
+    (define (dispatch msg)
+      (cond ((eq? msg 'start!) (display "test"))
+            ((eq? msg 'update!) (display "test2"))))
+    dispatch))

@@ -1,0 +1,7 @@
+(define (make-visual object layer)
+
+  
+  (define (dispatch m)
+    (cond
+      ((eq? m 'update!) (display "test"))))
+  dispatch)
