@@ -1,30 +1,54 @@
 (#%require "Graphics.rkt")
 
+
+(define grid-cell 24)
+
 (define (make-draw)
-  (let ((window (make-window 1280 800 "Fire Ant")))
+  (let ((window (make-window 1920 1080 "Fire Ant")))
 
-    (define base-layer (window ('make-layer)))
+    ;;
+    ;; Layer initialisatie
+    ;;
+    
+    (define base-layer (window 'make-layer))
 
-    (define movingobjects-layer (window ('make-layer)))
+    (define moving-objects-layer (window 'make-layer))
+
+    ;;
+    ;; Ant tile
+    ;;
     
-    (define (start!)
-      ((window 'set-background!) "black"))
+    (define ant-right-tile (make-tile 24 24 "images/FireAnt-Right.png"))
+    (define ant-left-tile (make-tile 24 24 "images/FireAnt-Left.png"))
+    ;(define (initialize-ant level-object)
+    ;  ((ant-right-tile 'set-x!) (((level-object 'ant) 'position) 'x))
+    ;  ((ant-right-tile 'set-y!) (((level-object 'ant) 'position) 'y)))
+    ((moving-objects-layer 'add-drawable) ant-right-tile)
+
+    ;;
+    ;; Start procedure
+    ;;
     
-    #|
-    (define (teken-object! obj tile)
-      (let* ((position (obj 'positie))
-            (new-x (* (position 'x) cel-breedte-px))
-            (new-y (* (position 'y) cel-hoogte-px)))
+    (define (start! key-function)
+      ((window 'set-background!) "black")
+      ;((window 'set-update-callback!) update-function)
+      ((window 'set-key-callback!) key-function))
+
+    (define (update! game-object)
+      (update-level! (game-object 'level)))
+
+    (define (draw-object! obj tile)
+      (let* ((position (obj 'position))
+            (new-x (* (position 'x) grid-cell))
+            (new-y (* (position 'y) grid-cell)))
         ((tile 'set-x!) new-x)
         ((tile 'set-y!) new-y)))
 
-    (define (set-spel-lus-functie! fun)
-      ((venster 'set-update-callback!) fun))
+    (define (update-level! level-object)
+      (draw-object! (level-object 'ant) ant-right-tile))
+
     
-    (define (set-toets-functie! fun)
-      ((venster 'set-key-callback!) fun))
-    |#
     (define (dispatch msg)
-      (cond ((eq? msg 'start!) (start!))
-            ((eq? msg 'update!) (display "test2"))))
+      (cond ((eq? msg 'start!) start!)
+            ((eq? msg 'update!) update!)))
     dispatch))

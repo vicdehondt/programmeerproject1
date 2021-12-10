@@ -1,5 +1,3 @@
-(load "PositionADT.rkt")
-(#%require (only racket error))
 
 (define (make-movingobject position-object orientation)
   (let ((position position-object)

@@ -1,4 +1,5 @@
 (#%require (only racket error))
+(#%require "Graphics.rkt")
 (load "PositionADT.rkt")
 (load "MovingObjectADT.rkt")
 (load "EggADT.rkt")
@@ -7,6 +8,10 @@
 (load "GameADT.rkt")
 (load "DrawADT.rkt")
 
+(define level (make-level 1))
+((level 'initial-ant-pos!) (make-position 50 50))
+;((level 'add-wall) (make-wall (make-position 100 100) 50 'vertical))
+;(level (add-wall (make-wall (make-position 20 20) 50 'vertical)))
 
-(define game (make-draw))
+(define game (make-game level))
 (game 'start!)

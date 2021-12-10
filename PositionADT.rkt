@@ -1,6 +1,3 @@
-;(#%provide (all-defined))
-(#%require (only racket error))
-
 (define (make-position x y)
   (let ((x-value x)
         (y-value y))

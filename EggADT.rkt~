@@ -1,28 +1,11 @@
-#lang r5rs
-(#%provide (all-defined))
-(#%require (only racket error)
-           "Graphics.rkt"
-           "PositionADT.rkt")
-
-(define egg (make-tile 50 50))
+(load "PositionADT.rkt")
+(#%require (only racket error))
 
 (define (make-egg position-object)
-  (let ((position (cons (position-object 'x) (position-object 'y))))
-
-    (define (position! pair)
-      ((position-object 'set-x-y) (car pair) (cdr pair)))
-
-    (define (show)
-      (egg 'add-drawable))
-
-    (define (hide)
-      (egg 'remove-drawable))
+  (let ((position position-object))
     
     (define (dispatch m)
       (cond
         ((eq? m 'position) position)
-        ((eq? m 'position!) position!)
-        ((eq? m 'show) (show))
-        ((eq? m 'hide) (hide))
         (else (error "ERROR in DISPATCH: Wrong message!"))))
     dispatch))

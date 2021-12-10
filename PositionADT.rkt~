@@ -1,5 +1,4 @@
-#lang r5rs
-(#%provide (all-defined))
+;(#%provide (all-defined))
 (#%require (only racket error))
 
 (define (make-position x y)

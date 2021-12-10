@@ -1,6 +1,3 @@
-(load "PositionADT.rkt")
-(load "MovingObjectADT.rkt")
-(#%require (only racket error))
 
 (define (make-wall position-object length orientation)
   (let* ((width 6)

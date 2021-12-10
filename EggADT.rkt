@@ -1,5 +1,3 @@
-(load "PositionADT.rkt")
-(#%require (only racket error))
 
 (define (make-egg position-object)
   (let ((position position-object))
