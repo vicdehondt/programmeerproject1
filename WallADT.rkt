@@ -1,4 +1,3 @@
-
 (define (make-wall position-object)
     
     (define (free? position-2nd-object)
@@ -8,5 +7,6 @@
       (cond
         ((eq? m 'position) position-object)
         ((eq? m 'free?) free?)
+        ((eq? m 'kind) 'wall)
         (else (error "ERROR in DISPATCH: Wrong message!"))))
     dispatch)

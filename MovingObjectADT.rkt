@@ -1,7 +1,4 @@
-
-(define (make-movingobject position-object orientation)
-  (let ((position position-object)
-        (orientation orientation))
+(define (make-movingobject position orientation kind)
 
     (define (position! new-position-object)
       (set! position new-position-object))
@@ -31,9 +28,10 @@
         ((eq? m 'position!) position!)
         ((eq? m 'orientation) orientation)
         ((eq? m 'orientation!) orientation!)
+        ((eq? m 'kind) kind)
         ((eq? m 'move-left) move-left)
         ((eq? m 'move-right) move-right)
         ((eq? m 'move-up) move-up)
         ((eq? m 'move-down) move-down)
         (else (error "ERROR in DISPATCH: Wrong message!"))))
-    dispatch))
+    dispatch)

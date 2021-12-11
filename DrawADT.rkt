@@ -17,6 +17,8 @@
     (define moving-objects-layer (window 'make-layer))
 
     ;; Ant tiles
+
+    ;(define ant (make-visual ((game-object 'level) 'ant) moving-objects-layer))
     (define ant-right-tile (make-bitmap-tile "images/FireAnt-Right.png" "images/FireAnt-Right-mask.png"))
     (define ant-left-tile (make-tile 24 24 "images/FireAnt-Left.png"))
     (define ant-left-right (make-tile-sequence '(ant-right-tile ant-left-tile)))
@@ -87,15 +89,17 @@
       (update-level! (game-object 'level)))
 
     (define (update-level! level-object)
+      ;(ant 'update!)
       (draw-object! (level-object 'ant) ant-right-tile)
       ((level-object 'for-each-object) draw-egg! (level-object 'eggs)))
 
-    (define (draw-object! obj tile-to-right)
+    (define (draw-object! obj tile)
       (let* ((position (obj 'position))
              (new-x (* (position 'x) grid-cell))
              (new-y (* (position 'y) grid-cell)))
-        ((tile-to-right 'set-x!) new-x)
-        ((tile-to-right 'set-y!) new-y)))
+        ((tile 'set-x!) new-x)
+        ((tile 'set-y!) new-y)))
+    
     #|
     (define (draw-orientation! object tile-to-left tile-to-right)
       (let ((current (object 'orientation)))
