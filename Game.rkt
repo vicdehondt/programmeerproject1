@@ -8,8 +8,7 @@
 (load "GameADT.rkt")
 (load "DrawADT.rkt")
 
-(define level (make-level 1))
-((level 'initial-ant-pos!) (make-position 50 50))
+(define level (make-level 1 (make-position 40 22)))
 ;((level 'add-wall) (make-wall (make-position 100 100) 50 'vertical))
 ;(level (add-wall (make-wall (make-position 20 20) 50 'vertical)))
 

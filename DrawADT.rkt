@@ -17,35 +17,49 @@
     ;;
     ;; Ant tile
     ;;
-    
+
     (define ant-right-tile (make-tile 24 24 "images/FireAnt-Right.png"))
     (define ant-left-tile (make-tile 24 24 "images/FireAnt-Left.png"))
-    ;(define (initialize-ant level-object)
-    ;  ((ant-right-tile 'set-x!) (((level-object 'ant) 'position) 'x))
-    ;  ((ant-right-tile 'set-y!) (((level-object 'ant) 'position) 'y)))
+    (define ant-left-right (make-tile-sequence '(ant-right-tile ant-left-tile)))
     ((moving-objects-layer 'add-drawable) ant-right-tile)
 
+
+    ;;
+    ;; Walls
+    ;;
+    
+    
     ;;
     ;; Start procedure
     ;;
     
-    (define (start! key-function)
+    (define (start! update-function key-function game-object)
       ((window 'set-background!) "black")
-      ;((window 'set-update-callback!) update-function)
-      ((window 'set-key-callback!) key-function))
+      ((window 'set-update-callback!) update-function)
+      ((window 'set-key-callback!) key-function)
+      (((game-object 'level) 'for-each-object) draw-wall! ((game-object 'level) 'walls)))
 
+    
     (define (update! game-object)
       (update-level! (game-object 'level)))
 
-    (define (draw-object! obj tile)
-      (let* ((position (obj 'position))
-            (new-x (* (position 'x) grid-cell))
-            (new-y (* (position 'y) grid-cell)))
-        ((tile 'set-x!) new-x)
-        ((tile 'set-y!) new-y)))
-
     (define (update-level! level-object)
       (draw-object! (level-object 'ant) ant-right-tile))
+
+    (define (draw-object! obj tile-to-right)
+      (let* ((position (obj 'position))
+             (new-x (* (position 'x) grid-cell))
+             (new-y (* (position 'y) grid-cell)))
+        ((tile-to-right 'set-x!) new-x)
+        ((tile-to-right 'set-y!) new-y)))
+    #|
+    (define (draw-orientation! object tile-to-left tile-to-right)
+      (let ((current (object 'orientation)))
+        (cond
+          ((eq? current 'left) (ant-left-right))
+          ((eq? current 'right) ((moving-objects-layer 'add-drawable) tile-to-right)
+                                ((moving-objects-layer 'remove-drawable) tile-to-left)))))
+    |#
 
     
     (define (dispatch msg)

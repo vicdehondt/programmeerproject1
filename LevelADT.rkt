@@ -1,10 +1,9 @@
 
-(define (make-level level-number)
-  (let* ((walls '())
+(define (make-level level-number initial-ant-pos)
+  (let ((walls '())
         (scorpions '())
         (eggs '())
-        (initial-ant-pos (make-position 0 0))
-        (ant (make-movingobject (make-position 0 0) 'right))
+        (ant (make-movingobject initial-ant-pos 'right))
         (done? #f))
     
     (define (add-wall wall-object)
@@ -29,12 +28,19 @@
          ((ant 'move-up) 1))
         ((eq? key 'down)
          ((ant 'move-down) 1))))
+
+    (define (for-each-object f object-list)
+      (map f object-list))
   
     (define (dispatch m)
       (cond
         ((eq? m 'add-wall) add-wall)
+        ((eq? m 'walls) walls)
         ((eq? m 'add-scorpion) add-scorpion)
+        ((eq? m 'scorpions) scorpions)
         ((eq? m 'add-egg) add-egg)
+        ((eq? m 'eggs) eggs)
+        ((eq? m 'for-each-object) for-each-object)
         ((eq? m 'initial-ant-pos!) initial-ant-pos!)
         ((eq? m 'ant) ant)
         ((eq? m 'move!) move!)

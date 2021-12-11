@@ -18,6 +18,7 @@
   
     (define (dispatch m)
       (cond
+        ((eq? m 'position) position-object)
         ((eq? m 'free?) free?)
         (else (error "ERROR in DISPATCH: Wrong message!"))))
     dispatch))
