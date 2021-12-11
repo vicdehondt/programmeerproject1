@@ -6,14 +6,14 @@
         (ant (make-movingobject initial-ant-pos 'right))
         (done? #f))
     
-    (define (add-wall wall-object)
-      (set! walls (cons wall-object walls)))
+    (define (add-wall position-object)
+      (set! walls (cons (make-wall position-object) walls)))
 
     (define (add-scorpion scorpion-object)
       (set! scorpions (cons scorpion-object scorpions)))
 
-    (define (add-egg egg-object)
-      (set! eggs (cons egg-object eggs)))
+    (define (add-egg position-object)
+      (set! eggs (cons (make-egg position-object) eggs)))
 
     (define (initial-ant-pos! position-object)
       (set! initial-ant-pos position-object))

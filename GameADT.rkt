@@ -12,21 +12,6 @@
       (if (eq? status 'pressed)
           (begin
             ((level 'move!) key))))
-#|
-    (define (move! key)
-      (cond
-        ((eq? key 'right)
-         (((level 'ant) 'move-left) 1))
-        ((eq? key 'left)
-         (((level 'ant) 'move-left) 1))
-        ((eq? key 'up)
-         (((level 'ant) 'move-up) 1))
-        ((eq? key 'down)
-         (((level 'ant) 'move-down) 1))))
-
-    (define (set-orientation))
-
-|#
   
     (define (dispatch m)
       (cond

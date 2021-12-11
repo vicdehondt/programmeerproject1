@@ -8,9 +8,151 @@
 (load "GameADT.rkt")
 (load "DrawADT.rkt")
 
-(define level (make-level 1 (make-position 40 22)))
-;((level 'add-wall) (make-wall (make-position 100 100) 50 'vertical))
-;(level (add-wall (make-wall (make-position 20 20) 50 'vertical)))
+(define level (make-level 1 (make-position 10 0)))
+
+;;
+;; Walls
+;;
+
+;; Left wall
+((level 'add-wall) (make-position 0 0)) ;; Top left
+((level 'add-wall) (make-position 0 1))
+((level 'add-wall) (make-position 0 2))
+((level 'add-wall) (make-position 0 3))
+((level 'add-wall) (make-position 0 4))
+((level 'add-wall) (make-position 0 5))
+((level 'add-wall) (make-position 0 6))
+((level 'add-wall) (make-position 0 7))
+((level 'add-wall) (make-position 0 8))
+
+;; Top wall
+((level 'add-wall) (make-position 1 0))
+((level 'add-wall) (make-position 2 0))
+((level 'add-wall) (make-position 3 0))
+((level 'add-wall) (make-position 4 0))
+((level 'add-wall) (make-position 5 0))
+((level 'add-wall) (make-position 6 0))
+((level 'add-wall) (make-position 7 0))
+((level 'add-wall) (make-position 8 0))
+((level 'add-wall) (make-position 9 0))
+;; Starting point
+((level 'add-wall) (make-position 11 0))
+((level 'add-wall) (make-position 12 0))
+((level 'add-wall) (make-position 13 0))
+((level 'add-wall) (make-position 14 0))
+((level 'add-wall) (make-position 15 0))
+((level 'add-wall) (make-position 16 0))
+((level 'add-wall) (make-position 17 0))
+((level 'add-wall) (make-position 18 0)) ;; Top right
+
+;; Right wall
+((level 'add-wall) (make-position 18 1))
+((level 'add-wall) (make-position 18 2))
+((level 'add-wall) (make-position 18 3))
+((level 'add-wall) (make-position 18 4))
+((level 'add-wall) (make-position 18 5))
+((level 'add-wall) (make-position 18 6))
+((level 'add-wall) (make-position 18 7))
+((level 'add-wall) (make-position 18 8))
+((level 'add-wall) (make-position 18 9)) ;; Bottom right
+
+;; Bottom wall
+((level 'add-wall) (make-position 0 9)) ;; Bottom left
+;; Exit point
+((level 'add-wall) (make-position 2 9))
+((level 'add-wall) (make-position 3 9))
+((level 'add-wall) (make-position 4 9))
+((level 'add-wall) (make-position 5 9))
+((level 'add-wall) (make-position 6 9))
+((level 'add-wall) (make-position 7 9))
+((level 'add-wall) (make-position 8 9))
+((level 'add-wall) (make-position 9 9))
+((level 'add-wall) (make-position 10 9))
+((level 'add-wall) (make-position 11 9))
+((level 'add-wall) (make-position 12 9))
+((level 'add-wall) (make-position 13 9))
+((level 'add-wall) (make-position 14 9))
+((level 'add-wall) (make-position 15 9))
+((level 'add-wall) (make-position 16 9))
+((level 'add-wall) (make-position 17 9))
+
+;; Inside walls:
+
+;; First row
+((level 'add-wall) (make-position 11 1))
+((level 'add-wall) (make-position 16 1))
+((level 'add-wall) (make-position 17 1))
+
+;; Second row
+((level 'add-wall) (make-position 2 2))
+((level 'add-wall) (make-position 3 2))
+((level 'add-wall) (make-position 4 2))
+((level 'add-wall) (make-position 5 2))
+((level 'add-wall) (make-position 6 2))
+((level 'add-wall) (make-position 7 2))
+((level 'add-wall) (make-position 8 2))
+((level 'add-wall) (make-position 9 2))
+((level 'add-wall) (make-position 13 2))
+((level 'add-wall) (make-position 14 2))
+
+;; Third row
+((level 'add-wall) (make-position 5 3))
+((level 'add-wall) (make-position 9 3))
+((level 'add-wall) (make-position 10 3)) ;; Needs to become door
+((level 'add-wall) (make-position 11 3))
+((level 'add-wall) (make-position 14 3))
+((level 'add-wall) (make-position 16 3))
+
+;; Fourth row
+((level 'add-wall) (make-position 5 4))
+((level 'add-wall) (make-position 11 4))
+((level 'add-wall) (make-position 12 4))
+((level 'add-wall) (make-position 14 4))
+((level 'add-wall) (make-position 16 4))
+
+;; Fifth row
+((level 'add-wall) (make-position 5 5))
+((level 'add-wall) (make-position 7 5))
+((level 'add-wall) (make-position 8 5))
+((level 'add-wall) (make-position 9 5))
+((level 'add-wall) (make-position 10 5))
+((level 'add-wall) (make-position 11 5))
+((level 'add-wall) (make-position 12 5))
+
+;; Sixth row
+((level 'add-wall) (make-position 1 6))
+((level 'add-wall) (make-position 2 6))
+((level 'add-wall) (make-position 3 6))
+((level 'add-wall) (make-position 4 6))
+((level 'add-wall) (make-position 5 6))
+((level 'add-wall) (make-position 7 6))
+((level 'add-wall) (make-position 12 6))
+((level 'add-wall) (make-position 13 6))
+((level 'add-wall) (make-position 14 6))
+((level 'add-wall) (make-position 15 6))
+((level 'add-wall) (make-position 16 6))
+((level 'add-wall) (make-position 17 6))
+
+;; Seventh row
+((level 'add-wall) (make-position 7 7)) ;; Needs to become door
+((level 'add-wall) (make-position 16 7))
+
+;; Eighth row
+((level 'add-wall) (make-position 2 8))
+((level 'add-wall) (make-position 3 8))
+((level 'add-wall) (make-position 4 8))
+((level 'add-wall) (make-position 5 8))
+((level 'add-wall) (make-position 6 8))
+((level 'add-wall) (make-position 7 8))
+((level 'add-wall) (make-position 12 8))
+((level 'add-wall) (make-position 13 8))
+
+;;
+;; Eggs
+;;
+
+((level 'add-egg) (make-position 2 5))
+
 
 (define game (make-game level))
 (game 'start!)
