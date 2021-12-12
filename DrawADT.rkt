@@ -1,4 +1,4 @@
-(#%require "Graphics.rkt")
+
 
 
 (define grid-cell 24)
@@ -30,47 +30,40 @@
     ;;
 
     (define wall-tiles '())
+    (define egg-tiles '())
 
     (define (draw-wall! wall-object)
-      (let ((tile (wall-piece wall-object)))
+      (let ((tile (object-piece wall-object 'wall)))
         (draw-object! wall-object tile)))
 
-    (define (wall-piece wall-object)
-      (let ((result (assoc wall-object wall-tiles)))
+    (define (draw-egg! egg-object)
+      (let ((tile (object-piece egg-object 'egg)))
+        (draw-object! egg-object tile)))
+
+    (define (which-tiles-list kind)
+      (cond
+        ((eq? kind 'wall) wall-tiles)
+        ((eq? kind 'egg) egg-tiles)))
+
+    (define (which-tile kind)
+      (cond
+        ((eq? kind 'wall) (make-tile 24 24 "images/Wall.png"))
+        ((eq? kind 'egg) (make-bitmap-tile "images/Egg.png" "images/Egg-mask.png"))))
+
+    (define (object-piece object kind)
+      (let* ((tiles (which-tiles-list kind))
+             (result (assoc object tiles)))
         (if result
             (cdr result)
-            (add-wall-piece! wall-object))))
+            (add-object-piece! object kind))))
 
-    (define (add-wall-piece! wall-object)
-      (let ((new-tile
-              (make-tile 24 24 "images/Wall.png")))
-        (set! wall-tiles (cons (cons wall-object new-tile) wall-tiles))
+    (define (add-object-piece! object kind)
+      (let ((tiles (which-tiles-list kind))
+            (new-tile (which-tile kind)))
+        (set! tiles (cons (cons object new-tile) tiles))
         ((base-layer 'add-drawable) new-tile)
         new-tile))
 
-    ;;
-    ;; Eggs
-    ;;
-
-    (define egg-tiles '())
-
-    (define (draw-egg! egg-object)
-      (let ((tile (egg-piece egg-object)))
-        (draw-object! egg-object tile)))
-
-    (define (egg-piece egg-object)
-      (let ((result (assoc egg-object egg-tiles)))
-        (if result
-            (cdr result)
-            (add-egg-piece! egg-object))))
-
-    (define (add-egg-piece! egg-object)
-      (let ((new-tile
-              (make-bitmap-tile "images/Egg.png" "images/Egg-mask")))
-        (set! egg-tiles (cons (cons egg-object new-tile) egg-tiles))
-        ((egg-layer 'add-drawable) new-tile)
-        new-tile))
-    
     ;;
     ;; Start procedure
     ;;
@@ -79,7 +72,8 @@
       ((window 'set-background!) "black")
       ((window 'set-update-callback!) update-function)
       ((window 'set-key-callback!) key-function)
-      (((game-object 'level) 'for-each-object) draw-wall! ((game-object 'level) 'walls)))
+      (((game-object 'level) 'for-each-object) draw-wall! ((game-object 'level) 'walls))
+      (((game-object 'level) 'for-each-object) draw-egg! ((game-object 'level) 'eggs)))
 
     ;;
     ;; Update procedure
@@ -90,8 +84,7 @@
 
     (define (update-level! level-object)
       ;(ant 'update!)
-      (draw-object! (level-object 'ant) ant-right-tile)
-      ((level-object 'for-each-object) draw-egg! (level-object 'eggs)))
+      (draw-object! (level-object 'ant) ant-right-tile))
 
     (define (draw-object! obj tile)
       (let* ((position (obj 'position))

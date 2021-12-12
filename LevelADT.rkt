@@ -32,8 +32,8 @@
     (define (add-wall position-object)
       (set! walls (cons (make-wall position-object) walls)))
 
-    (define (add-scorpion scorpion-object)
-      (set! scorpions (cons scorpion-object scorpions)))
+    (define (add-scorpion position-object)
+      (set! scorpions (cons (make-movingobject position-object 'right 'scorpion) scorpions)))
 
     (define (add-egg position-object)
       (set! eggs (cons (make-egg position-object) eggs)))
