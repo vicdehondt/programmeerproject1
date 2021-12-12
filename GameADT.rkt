@@ -1,17 +1,18 @@
 (define (make-game level)
-  (let ((draw (make-draw))
-        (ant-time 0))
+  (let ((draw (make-draw)))
 
     (define (start!)
       ((draw 'start!) game-loop key-callback dispatch))
 
     (define (game-loop delta-time)
-      ((draw 'update!) dispatch))
+      ((draw 'update!) dispatch)
+      ;((level 'move-scorpion!) delta-time)
+      )
 
     (define (key-callback status key)
       (if (eq? status 'pressed)
           (begin
-            ((level 'move!) key))))
+            ((level 'move-ant!) key))))
   
     (define (dispatch m)
       (cond

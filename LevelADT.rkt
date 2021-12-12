@@ -1,6 +1,7 @@
 
 (define (make-level level-number initial-ant-pos)
-  (let ((walls '())
+  (let ((scorpion-time 0)
+        (walls '())
         (scorpions '())
         (eggs '())
         (ant (make-movingobject initial-ant-pos 'right 'ant))
@@ -53,11 +54,11 @@
       (define (collision? wall-object direction)
         (let ((current-x ((ant 'position) 'x))
               (current-y ((ant 'position) 'y)))
-        (cond
-          ((eq? direction 'right) (((wall-object 'position) 'equal?) (make-position (+ current-x 1) current-y)))
-          ((eq? direction 'left) (((wall-object 'position) 'equal?) (make-position (- current-x 1) current-y)))
-          ((eq? direction 'up) (((wall-object 'position) 'equal?) (make-position current-x (- current-y 1))))
-          ((eq? direction 'down) (((wall-object 'position) 'equal?) (make-position current-x (+ current-y 1)))))))
+          (cond
+            ((eq? direction 'right) (((wall-object 'position) 'equal?) (make-position (+ current-x 1) current-y)))
+            ((eq? direction 'left) (((wall-object 'position) 'equal?) (make-position (- current-x 1) current-y)))
+            ((eq? direction 'up) (((wall-object 'position) 'equal?) (make-position current-x (- current-y 1))))
+            ((eq? direction 'down) (((wall-object 'position) 'equal?) (make-position current-x (+ current-y 1)))))))
       
       (not (list? (member #t (collision-list direction)))))
 
@@ -66,25 +67,37 @@
     ;; Move
     ;;
 
+    #|
+    (define (move-scorpion! delta-time)
+      (if (> scorpion-time slang-snelheid)
+          (begin
+            ;; Laat de slang 1 eenheid "vooruit" bewegen
+            (slang-adt 'beweeg!)
+            (for-each-object (lambda (x) (x 'move!)) scorpions)
+            
+            ;; Kijk of de slang botst met de appel.
+            (if appel-adt
+                (let* ((appel-positie (appel-adt 'positie))
+                       (overlappingen ((slang-adt 'voor-alle-stukken)
+                                       (lambda (stuk-adt)
+                                         ((appel-positie 'vergelijk?)
+                                          (stuk-adt 'positie))))))
+                  (if (member #t overlappingen)
+                      (begin (slang-adt 'verleng!)
+                             (nieuwe-appel!)))))
+            ;; Reset de timer.
+            (set! slang-tijd 0))))
+|#
+
     (define (move-ant! key)
-      (cond
-        ((and (eq? key 'right) (free? 'right))
-         ((ant 'move-right) 1))
-        ((and (eq? key 'left) (free? 'left))
-         ((ant 'move-left) 1))
-        ((and (eq? key 'up) (free? 'up))
-         ((ant 'move-up) 1))
-        ((and (eq? key 'down) (free? 'down))
-         ((ant 'move-down) 1))))
-
-    ;(define (move-scorpion!)
-    ;  )
+      (if (or (and (eq? key 'right) (free? key))
+              (and (eq? key 'left) (free? key))
+              (and (eq? key 'up) (free? key))
+              (and (eq? key 'down) (free? key)))
+          (begin
+            ((ant 'orientation!) key)
+            ((ant 'move!) 1))))
     
-    (define (move! key)
-      (move-ant! key)
-      ;(move-scorpion!)
-      )
-
     (define (for-each-object f object-list)
       (map f object-list))
   
@@ -99,7 +112,8 @@
         ((eq? m 'for-each-object) for-each-object)
         ((eq? m 'initial-ant-pos!) initial-ant-pos!)
         ((eq? m 'ant) ant)
-        ((eq? m 'move!) move!)
+        ((eq? m 'move-ant!) move-ant!)
+        ((eq? m 'move-scorpion!) move-scorpion!)
         ((eq? m 'done?) done?)
         (else (error "ERROR in DISPATCH: Wrong message!"))))
     dispatch))
