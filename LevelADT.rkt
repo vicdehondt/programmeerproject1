@@ -46,14 +46,14 @@
     ;; Collision Detection
     ;;
     
-    (define (free? direction)
+    (define (free? moving-object direction)
 
       (define (collision-list direction)
         (for-each-object (lambda (wall-object) (collision? wall-object direction)) walls))
 
       (define (collision? wall-object direction)
-        (let ((current-x ((ant 'position) 'x))
-              (current-y ((ant 'position) 'y)))
+        (let ((current-x ((moving-object 'position) 'x))
+              (current-y ((moving-object 'position) 'y)))
           (cond
             ((eq? direction 'right) (((wall-object 'position) 'equal?) (make-position (+ current-x 1) current-y)))
             ((eq? direction 'left) (((wall-object 'position) 'equal?) (make-position (- current-x 1) current-y)))
@@ -66,34 +66,38 @@
     ;;
     ;; Move
     ;;
-
-    #|
+    
     (define (move-scorpion! delta-time)
-      (if (> scorpion-time slang-snelheid)
-          (begin
-            ;; Laat de slang 1 eenheid "vooruit" bewegen
-            (slang-adt 'beweeg!)
-            (for-each-object (lambda (x) (x 'move!)) scorpions)
-            
-            ;; Kijk of de slang botst met de appel.
-            (if appel-adt
-                (let* ((appel-positie (appel-adt 'positie))
-                       (overlappingen ((slang-adt 'voor-alle-stukken)
-                                       (lambda (stuk-adt)
-                                         ((appel-positie 'vergelijk?)
-                                          (stuk-adt 'positie))))))
-                  (if (member #t overlappingen)
-                      (begin (slang-adt 'verleng!)
-                             (nieuwe-appel!)))))
-            ;; Reset de timer.
-            (set! slang-tijd 0))))
-|#
+
+      (define (opposite orientation)
+        (cond
+          ((eq? orientation 'right) 'left)
+          ((eq? orientation 'left) 'right)
+          ((eq? orientation 'up) 'down)
+          ((eq? orientation 'down) 'up)))
+
+      (define (move! scorpion)
+        (if (and (> scorpion-time 1000) (free? scorpion (scorpion 'orientation)))
+            (begin
+              ;; Move scorpion 1 in current direction
+              ((scorpion 'move!) 1)
+              (display ((scorpion 'position) 'x))
+              ;; Reset the timer.
+              (set! scorpion-time 0))
+            (begin
+              ((scorpion 'orientation!) (opposite (scorpion 'orientation)))
+              ((scorpion 'move!) 1)
+              (display ((scorpion 'position) 'x))
+              ;; Reset the timer.
+              (set! scorpion-time 0))))
+      (set! scorpion-time (+ scorpion-time delta-time))
+      (for-each-object move! scorpions))
 
     (define (move-ant! key)
-      (if (or (and (eq? key 'right) (free? key))
-              (and (eq? key 'left) (free? key))
-              (and (eq? key 'up) (free? key))
-              (and (eq? key 'down) (free? key)))
+      (if (or (and (eq? key 'right) (free? ant key))
+              (and (eq? key 'left) (free? ant key))
+              (and (eq? key 'up) (free? ant key))
+              (and (eq? key 'down) (free? ant key)))
           (begin
             ((ant 'orientation!) key)
             ((ant 'move!) 1))))

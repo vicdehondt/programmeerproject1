@@ -98,10 +98,8 @@
       (update-level! (game-object 'level)))
 
     (define (update-level! level-object)
-      ;(ant 'update!)
       (draw-object! (level-object 'ant) ant-right-tile)
-      ;((level-object 'for-each-object) draw-egg! (level-object 'eggs))
-      )
+      ((level 'for-each-object) (lambda (scorpion) (draw-object! (car scorpion) (cdr scorpion))) scorpion-tiles))
 
     (define (draw-object! obj tile)
       (let* ((position (obj 'position))
@@ -109,15 +107,6 @@
              (new-y (* (position 'y) grid-cell)))
         ((tile 'set-x!) new-x)
         ((tile 'set-y!) new-y)))
-    
-    #|
-    (define (draw-orientation! object tile-to-left tile-to-right)
-      (let ((current (object 'orientation)))
-        (cond
-          ((eq? current 'left) (ant-left-right))
-          ((eq? current 'right) ((moving-objects-layer 'add-drawable) tile-to-right)
-                                ((moving-objects-layer 'remove-drawable) tile-to-left)))))
-    |#
 
     
     (define (dispatch msg)
