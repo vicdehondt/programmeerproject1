@@ -15,7 +15,7 @@
     (define egg-layer (window 'make-layer))
 
     (define moving-objects-layer (window 'make-layer))
-
+    
     ;; Ant tiles
 
     ;(define ant (make-visual ((game-object 'level) 'ant) moving-objects-layer))
@@ -31,6 +31,7 @@
 
     (define wall-tiles '())
     (define egg-tiles '())
+    (define scorpion-tiles '())
 
     (define (draw-wall! wall-object)
       (let ((tile (object-piece wall-object 'wall)))
@@ -39,16 +40,28 @@
     (define (draw-egg! egg-object)
       (let ((tile (object-piece egg-object 'egg)))
         (draw-object! egg-object tile)))
+    
+    (define (draw-scorpion! moving-object)
+      (let ((tile (object-piece moving-object 'scorpion)))
+        (draw-object! moving-object tile)))
 
     (define (which-tiles-list kind)
       (cond
         ((eq? kind 'wall) wall-tiles)
-        ((eq? kind 'egg) egg-tiles)))
+        ((eq? kind 'egg) egg-tiles)
+        ((eq? kind 'scorpion) scorpion-tiles)))
 
     (define (which-tile kind)
       (cond
         ((eq? kind 'wall) (make-tile 24 24 "images/Wall.png"))
-        ((eq? kind 'egg) (make-bitmap-tile "images/Egg.png" "images/Egg-mask.png"))))
+        ((eq? kind 'egg) (make-bitmap-tile "images/Egg.png" "images/Egg-mask.png"))
+        ((eq? kind 'scorpion) (make-bitmap-tile "images/Scorpion.png" "images/Scorpion-mask.png"))))
+
+    (define (which-layer kind)
+      (cond
+        ((eq? kind 'wall) base-layer)
+        ((eq? kind 'egg) egg-layer)
+        ((eq? kind 'scorpion) moving-objects-layer)))
 
     (define (object-piece object kind)
       (let* ((tiles (which-tiles-list kind))
@@ -59,9 +72,10 @@
 
     (define (add-object-piece! object kind)
       (let ((tiles (which-tiles-list kind))
+            (layer (which-layer kind))
             (new-tile (which-tile kind)))
         (set! tiles (cons (cons object new-tile) tiles))
-        ((base-layer 'add-drawable) new-tile)
+        ((layer 'add-drawable) new-tile)
         new-tile))
 
     ;;
@@ -73,7 +87,8 @@
       ((window 'set-update-callback!) update-function)
       ((window 'set-key-callback!) key-function)
       (((game-object 'level) 'for-each-object) draw-wall! ((game-object 'level) 'walls))
-      (((game-object 'level) 'for-each-object) draw-egg! ((game-object 'level) 'eggs)))
+      (((game-object 'level) 'for-each-object) draw-egg! ((game-object 'level) 'eggs))
+      (((game-object 'level) 'for-each-object) draw-scorpion! ((game-object 'level) 'scorpions)))
 
     ;;
     ;; Update procedure
@@ -84,7 +99,9 @@
 
     (define (update-level! level-object)
       ;(ant 'update!)
-      (draw-object! (level-object 'ant) ant-right-tile))
+      (draw-object! (level-object 'ant) ant-right-tile)
+      ;((level-object 'for-each-object) draw-egg! (level-object 'eggs))
+      )
 
     (define (draw-object! obj tile)
       (let* ((position (obj 'position))

@@ -65,8 +65,8 @@
     ;;
     ;; Move
     ;;
-    
-    (define (move! key)
+
+    (define (move-ant! key)
       (cond
         ((and (eq? key 'right) (free? 'right))
          ((ant 'move-right) 1))
@@ -76,6 +76,14 @@
          ((ant 'move-up) 1))
         ((and (eq? key 'down) (free? 'down))
          ((ant 'move-down) 1))))
+
+    ;(define (move-scorpion!)
+    ;  )
+    
+    (define (move! key)
+      (move-ant! key)
+      ;(move-scorpion!)
+      )
 
     (define (for-each-object f object-list)
       (map f object-list))
