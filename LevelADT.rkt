@@ -6,29 +6,6 @@
         (eggs '())
         (ant (make-movingobject initial-ant-pos 'right 'ant))
         (done? #f))
-    #|
-    (define (add-wall start-position end-position orientation)
-      (define (iter-vertical remaining)
-        (if (eq? remaining (end-position 'y))
-            (add-wall-piece (end-position))
-            (begin
-              (add-wall-piece (make-position (end-position 'x) remaining))
-              (iter-vertical (+ remaining 1)))))
-
-      (define (iter-horizontal remaining)
-        (if (eq? remaining (end-position 'x))
-            (add-wall-piece (end-position))
-            (begin
-              (add-wall-piece (make-position remaining (end-position 'y)))
-              (iter-horizontal (+ remaining 1)))))
-      
-      (if (eq? orientation 'vertical)
-          (iter-vertical (start-position 'y))
-          (iter-horizontal (start-position 'x))))
-
-    (define (add-wall-piece position-object)
-      (set! walls (cons (make-wall position-object) walls)))
-    |#
 
     (define (add-wall position-object)
       (set! walls (cons (make-wall position-object) walls)))
