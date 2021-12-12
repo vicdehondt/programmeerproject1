@@ -1,6 +1,4 @@
 
-
-
 (define grid-cell 24)
 
 (define (make-draw)
@@ -66,6 +64,7 @@
     (define (object-piece object kind)
       (let* ((tiles (which-tiles-list kind))
              (result (assoc object tiles)))
+        (display result)
         (if result
             (cdr result)
             (add-object-piece! object kind))))
@@ -99,7 +98,7 @@
 
     (define (update-level! level-object)
       (draw-object! (level-object 'ant) ant-right-tile)
-      ((level 'for-each-object) (lambda (scorpion) (draw-object! (car scorpion) (cdr scorpion))) scorpion-tiles))
+      ((level 'for-each-object) (lambda (scorpion) (draw-object! scorpion (object-piece scorpion 'scorpion))) (level 'scorpions)))
 
     (define (draw-object! obj tile)
       (let* ((position (obj 'position))

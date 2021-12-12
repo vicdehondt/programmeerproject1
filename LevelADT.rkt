@@ -77,7 +77,7 @@
           ((eq? orientation 'down) 'up)))
 
       (define (move! scorpion)
-        (if (and (> scorpion-time 1000) (free? scorpion (scorpion 'orientation)))
+        (if (free? scorpion (scorpion 'orientation))
             (begin
               ;; Move scorpion 1 in current direction
               ((scorpion 'move!) 1)
@@ -91,7 +91,8 @@
               ;; Reset the timer.
               (set! scorpion-time 0))))
       (set! scorpion-time (+ scorpion-time delta-time))
-      (for-each-object move! scorpions))
+      (if (> scorpion-time 1000)
+          (for-each-object move! scorpions)))
 
     (define (move-ant! key)
       (if (or (and (eq? key 'right) (free? ant key))
