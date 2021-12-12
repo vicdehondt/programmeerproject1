@@ -63,8 +63,7 @@
 
     (define (object-piece object kind)
       (let* ((tiles (which-tiles-list kind))
-             (result (assoc object tiles)))
-        (display result)
+             (result (assoc object tiles))) ;; Hier ergens zit de fout
         (if result
             (cdr result)
             (add-object-piece! object kind))))
@@ -98,7 +97,8 @@
 
     (define (update-level! level-object)
       (draw-object! (level-object 'ant) ant-right-tile)
-      ((level 'for-each-object) (lambda (scorpion) (draw-object! scorpion (object-piece scorpion 'scorpion))) (level 'scorpions)))
+      ;((level 'for-each-object) (lambda (scorpion) (draw-object! scorpion (object-piece scorpion 'scorpion))) (level 'scorpions))
+     )
 
     (define (draw-object! obj tile)
       (let* ((position (obj 'position))

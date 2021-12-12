@@ -63,6 +63,14 @@
       (not (list? (member #t (collision-list direction)))))
 
 
+#|
+    (define (check-eggs!)
+      (for-each-object (check) eggs))
+
+    (define (check object)
+      (if (((object 'position) 'equal?) (ant 'position))
+          ))
+|#
     ;;
     ;; Move
     ;;
@@ -119,6 +127,7 @@
         ((eq? m 'ant) ant)
         ((eq? m 'move-ant!) move-ant!)
         ((eq? m 'move-scorpion!) move-scorpion!)
+        ((eq? m 'check-eggs!) check-eggs!)
         ((eq? m 'done?) done?)
         (else (error "ERROR in DISPATCH: Wrong message!"))))
     dispatch))
