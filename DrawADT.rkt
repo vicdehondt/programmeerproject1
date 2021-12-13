@@ -9,39 +9,21 @@
     ;;
     
     (define base-layer (window 'make-layer))
-
     (define egg-layer (window 'make-layer))
-
     (define moving-objects-layer (window 'make-layer))
     
     ;; Ant tiles
-
-    ;(define ant (make-visual ((game-object 'level) 'ant) moving-objects-layer))
-    (define ant-right-tile (make-bitmap-tile "images/FireAnt-Right.png" "images/FireAnt-Right-mask.png"))
-    (define ant-left-tile (make-tile 24 24 "images/FireAnt-Left.png"))
+    (define ant-right (make-bitmap-tile "images/FireAnt-Right.png" "images/FireAnt-Right-mask.png"))
+    (define ant-left (make-bitmap-tile "images/FireAnt-Left.png" "images/FireAnt-Left-mask.png"))
     (define ant-left-right (make-tile-sequence '(ant-right-tile ant-left-tile)))
-    ((moving-objects-layer 'add-drawable) ant-right-tile)
+    ((moving-objects-layer 'add-drawable) ant-right)
+    ;((moving-objects-layer 'add-drawable) ant-left)
 
 
-    ;;
-    ;; Walls
-    ;;
-
+    ;; Tile-lists
     (define wall-tiles '())
     (define egg-tiles '())
     (define scorpion-tiles '())
-
-    (define (draw-wall! wall-object)
-      (let ((tile (object-piece wall-object 'wall)))
-        (draw-object! wall-object tile)))
-
-    (define (draw-egg! egg-object)
-      (let ((tile (object-piece egg-object 'egg)))
-        (draw-object! egg-object tile)))
-    
-    (define (draw-scorpion! moving-object)
-      (let ((tile (object-piece moving-object 'scorpion)))
-        (draw-object! moving-object tile)))
 
     (define (which-tiles-list kind)
       (cond
@@ -49,33 +31,71 @@
         ((eq? kind 'egg) egg-tiles)
         ((eq? kind 'scorpion) scorpion-tiles)))
 
-    (define (which-tile kind)
-      (cond
-        ((eq? kind 'wall) (make-tile 24 24 "images/Wall.png"))
-        ((eq? kind 'egg) (make-bitmap-tile "images/Egg.png" "images/Egg-mask.png"))
-        ((eq? kind 'scorpion) (make-bitmap-tile "images/Scorpion.png" "images/Scorpion-mask.png"))))
+    ;;
+    ;; Draw Procedures
+    ;;
+    
+    (define (draw-walls! level-object)
+      (for-each-object draw-wall-piece! (level-object 'walls)))
 
-    (define (which-layer kind)
-      (cond
-        ((eq? kind 'wall) base-layer)
-        ((eq? kind 'egg) egg-layer)
-        ((eq? kind 'scorpion) moving-objects-layer)))
+    (define (draw-eggs! level-object)
+      (for-each-object draw-egg-piece! (level-object 'eggs)))
 
-    (define (object-piece object kind)
-      (let* ((tiles (which-tiles-list kind))
-             (result (assoc object tiles))) ;; Hier ergens zit de fout
+    (define (draw-scorpions! level-object)
+      (for-each-object draw-scorpion-piece! (level-object 'scorpions)))
+
+    (define (draw-wall-piece! wall-object)
+      (let ((tile (get-object-piece wall-object)))
+        (draw-object! wall-object tile)))
+
+    (define (draw-egg-piece! egg-object)
+      (let ((tile (get-object-piece egg-object)))
+        (draw-object! egg-object tile)))
+    
+    (define (draw-scorpion-piece! scorpion-object)
+      (let ((tile (get-object-piece scorpion-object)))
+        (draw-object! scorpion-object tile)))
+
+    (define (get-object-piece object)
+      (let ((result (assoc object (which-tiles-list (object 'kind)))))
         (if result
             (cdr result)
-            (add-object-piece! object kind))))
+            (add-object-piece! object))))
 
-    (define (add-object-piece! object kind)
-      (let ((tiles (which-tiles-list kind))
-            (layer (which-layer kind))
-            (new-tile (which-tile kind)))
-        (set! tiles (cons (cons object new-tile) tiles))
-        ((layer 'add-drawable) new-tile)
-        new-tile))
+    (define (add-object-piece! object)
+      (define (add-wall-piece! wall-object)
+        (let ((new-tile
+               (make-tile 24 24 "images/Wall.png")))
+          (set! wall-tiles (cons (cons wall-object new-tile) wall-tiles))
+          ((base-layer 'add-drawable) new-tile)
+          new-tile))
+      
+      (define (add-egg-piece! egg-object)
+        (let ((new-tile
+               (make-bitmap-tile "images/Egg.png" "images/Egg-mask.png")))
+          (set! egg-tiles (cons (cons egg-object new-tile) egg-tiles))
+          ((egg-layer 'add-drawable) new-tile)
+          new-tile))
+      
+      (define (add-scorpion-piece! scorpion-object)
+        (let ((new-tile
+               (make-bitmap-tile "images/Scorpion.png" "images/Scorpion-mask.png")))
+          (set! scorpion-tiles (cons (cons scorpion-object new-tile) scorpion-tiles))
+          ((moving-objects-layer 'add-drawable) new-tile)
+          new-tile))
 
+      (cond
+        ((eq? (object 'kind) 'wall) (add-wall-piece! object))
+        ((eq? (object 'kind) 'egg) (add-egg-piece! object))
+        ((eq? (object 'kind) 'scorpion) (add-scorpion-piece! object))))
+
+    (define (draw-object! obj tile)
+      (let* ((position (obj 'position))
+             (new-x (* (position 'x) grid-cell))
+             (new-y (* (position 'y) grid-cell)))
+        ((tile 'set-x!) new-x)
+        ((tile 'set-y!) new-y)))
+    
     ;;
     ;; Start procedure
     ;;
@@ -84,9 +104,7 @@
       ((window 'set-background!) "black")
       ((window 'set-update-callback!) update-function)
       ((window 'set-key-callback!) key-function)
-      (((game-object 'level) 'for-each-object) draw-wall! ((game-object 'level) 'walls))
-      (((game-object 'level) 'for-each-object) draw-egg! ((game-object 'level) 'eggs))
-      (((game-object 'level) 'for-each-object) draw-scorpion! ((game-object 'level) 'scorpions)))
+      (draw-walls! (game-object 'level)))
 
     ;;
     ;; Update procedure
@@ -94,20 +112,12 @@
     
     (define (update! game-object)
       (update-level! (game-object 'level)))
-
-    (define (update-level! level-object)
-      (draw-object! (level-object 'ant) ant-right-tile)
-      ;((level 'for-each-object) (lambda (scorpion) (draw-object! scorpion (object-piece scorpion 'scorpion))) (level 'scorpions))
-     )
-
-    (define (draw-object! obj tile)
-      (let* ((position (obj 'position))
-             (new-x (* (position 'x) grid-cell))
-             (new-y (* (position 'y) grid-cell)))
-        ((tile 'set-x!) new-x)
-        ((tile 'set-y!) new-y)))
-
     
+    (define (update-level! level-object)
+      (draw-object! (level-object 'ant) ant-right)
+      (draw-scorpions! level-object)
+      (draw-eggs! level-object))
+
     (define (dispatch msg)
       (cond ((eq? msg 'start!) start!)
             ((eq? msg 'update!) update!)))

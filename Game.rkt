@@ -8,6 +8,7 @@
 (load "GameADT.rkt")
 (load "DrawADT.rkt")
 (load "VisualADT.rkt")
+(load "HelpProcedures.rkt")
 
 (define level (make-level 1 (make-position 10 3)))
 
@@ -147,7 +148,7 @@
 ;; Third row
 ((level 'add-wall) (make-position 5 6))
 ((level 'add-wall) (make-position 9 6))
-((level 'add-wall) (make-position 10 6)) ;; Needs to become door
+;((level 'add-wall) (make-position 10 6)) ;; Needs to become door
 ((level 'add-wall) (make-position 11 6))
 ((level 'add-wall) (make-position 14 6))
 ((level 'add-wall) (make-position 16 6))
@@ -183,7 +184,7 @@
 ((level 'add-wall) (make-position 17 9))
 
 ;; Seventh row
-((level 'add-wall) (make-position 7 10)) ;; Needs to become door
+;((level 'add-wall) (make-position 7 10)) ;; Needs to become door
 ((level 'add-wall) (make-position 16 10))
 
 ;; Eighth row

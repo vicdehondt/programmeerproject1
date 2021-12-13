@@ -66,13 +66,11 @@
             (begin
               ;; Move scorpion 1 in current direction
               ((scorpion 'move!) 1)
-              (display ((scorpion 'position) 'x))
               ;; Reset the timer.
               (set! scorpion-time 0))
             (begin
               ((scorpion 'orientation!) (opposite (scorpion 'orientation)))
               ((scorpion 'move!) 1)
-              (display ((scorpion 'position) 'x))
               ;; Reset the timer.
               (set! scorpion-time 0))))
       (set! scorpion-time (+ scorpion-time delta-time))
@@ -87,9 +85,6 @@
           (begin
             ((ant 'orientation!) key)
             ((ant 'move!) 1))))
-    
-    (define (for-each-object f object-list)
-      (map f object-list))
   
     (define (dispatch m)
       (cond

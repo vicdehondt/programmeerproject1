@@ -6,7 +6,7 @@
 
     (define (game-loop delta-time)
       ((draw 'update!) dispatch)
-      (level 'check-eggs!)
+      ;(level 'check-eggs!)
       ((level 'move-scorpion!) delta-time))
 
     (define (key-callback status key)
