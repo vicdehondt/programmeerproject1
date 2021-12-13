@@ -13,6 +13,7 @@
     (define moving-objects-layer (window 'make-layer))
     
     ;; Ant tiles
+    (define ant-old-orientation 'right)
     (define ant-right (make-bitmap-tile "images/FireAnt-Right.png" "images/FireAnt-Right-mask.png"))
     (define ant-left (make-bitmap-tile "images/FireAnt-Left.png" "images/FireAnt-Left-mask.png"))
     (define ant-left-right (make-tile-sequence '(ant-right-tile ant-left-tile)))
@@ -25,15 +26,62 @@
     (define egg-tiles '())
     (define scorpion-tiles '())
 
+    ;;
+    ;; Draw Procedures
+    ;;
+
+    (define (draw-ant! level-object)
+      (let* ((tile ant-right)
+            (ant (level-object 'ant))
+            (current-orientation (ant 'orientation)))
+      (cond
+        ((and (eq? ant-old-orientation 'right) (eq? current-orientation 'down)) (set! ant-old-orientation current-orientation)
+                                                                                (tile 'rotate-clockwise)
+                                                                                (draw-object! (level-object 'ant) tile))
+        ((and (eq? ant-old-orientation 'down) (eq? current-orientation 'left)) (set! ant-old-orientation current-orientation)
+                                                                                (tile 'rotate-clockwise)
+                                                                                (draw-object! (level-object 'ant) tile))
+        ((and (eq? ant-old-orientation 'left) (eq? current-orientation 'up)) (set! ant-old-orientation current-orientation)
+                                                                                (tile 'rotate-clockwise)
+                                                                                (draw-object! (level-object 'ant) tile))
+        ((and (eq? ant-old-orientation 'up) (eq? current-orientation 'right)) (set! ant-old-orientation current-orientation)
+                                                                                (tile 'rotate-clockwise)
+                                                                                (draw-object! (level-object 'ant) tile))
+        ((and (eq? ant-old-orientation 'right) (eq? current-orientation 'up)) (set! ant-old-orientation current-orientation)
+                                                                                (tile 'rotate-counterclockwise)
+                                                                                (draw-object! (level-object 'ant) tile))
+        ((and (eq? ant-old-orientation 'up) (eq? current-orientation 'left)) (set! ant-old-orientation current-orientation)
+                                                                                (tile 'rotate-counterclockwise)
+                                                                                (draw-object! (level-object 'ant) tile))
+        ((and (eq? ant-old-orientation 'left) (eq? current-orientation 'down)) (set! ant-old-orientation current-orientation)
+                                                                                (tile 'rotate-counterclockwise)
+                                                                                (draw-object! (level-object 'ant) tile))
+        ((and (eq? ant-old-orientation 'down) (eq? current-orientation 'right)) (set! ant-old-orientation current-orientation)
+                                                                                (tile 'rotate-counterclockwise)
+                                                                                (draw-object! (level-object 'ant) tile))
+        ((and (eq? ant-old-orientation 'left) (eq? current-orientation 'right)) (set! ant-old-orientation current-orientation)
+                                                                                (tile 'rotate-clockwise)
+                                                                                (tile 'rotate-clockwise)
+                                                                                (draw-object! (level-object 'ant) tile))
+        ((and (eq? ant-old-orientation 'right) (eq? current-orientation 'left)) (set! ant-old-orientation current-orientation)
+                                                                                (tile 'rotate-clockwise)
+                                                                                (tile 'rotate-clockwise)
+                                                                                (draw-object! (level-object 'ant) tile))
+        ((and (eq? ant-old-orientation 'up) (eq? current-orientation 'down)) (set! ant-old-orientation current-orientation)
+                                                                                (tile 'rotate-clockwise)
+                                                                                (tile 'rotate-clockwise)
+                                                                                (draw-object! (level-object 'ant) tile))
+        ((and (eq? ant-old-orientation 'down) (eq? current-orientation 'up)) (set! ant-old-orientation current-orientation)
+                                                                                (tile 'rotate-clockwise)
+                                                                                (tile 'rotate-clockwise)
+                                                                                (draw-object! (level-object 'ant) tile))
+        (else (draw-object! (level-object 'ant) tile)))))
+
     (define (which-tiles-list kind)
       (cond
         ((eq? kind 'wall) wall-tiles)
         ((eq? kind 'egg) egg-tiles)
         ((eq? kind 'scorpion) scorpion-tiles)))
-
-    ;;
-    ;; Draw Procedures
-    ;;
     
     (define (draw-walls! level-object)
       (for-each-object draw-wall-piece! (level-object 'walls)))
@@ -114,7 +162,8 @@
       (update-level! (game-object 'level)))
     
     (define (update-level! level-object)
-      (draw-object! (level-object 'ant) ant-right)
+      (draw-ant! level-object)
+      ;(draw-object! (level-object 'ant) ant-right)
       (draw-scorpions! level-object)
       (draw-eggs! level-object))
 
