@@ -74,14 +74,14 @@
               ;; Reset the timer.
               (set! scorpion-time 0))))
       (set! scorpion-time (+ scorpion-time delta-time))
-      (if (> scorpion-time 1000)
+      (if (> scorpion-time 600)
           (for-each-object move! scorpions)))
 
     (define (move-ant! key)
       (if (or (and (eq? key 'right) (free? ant key))
               (and (eq? key 'left) (free? ant key))
-              (and (eq? key 'up) (free? ant key))
-              (and (eq? key 'down) (free? ant key)))
+              (and (eq? key 'up) (free? ant key) (not (<= ((ant 'position) 'y) 3)))
+              (and (eq? key 'down) (free? ant key) (not (>= ((ant 'position) 'y) 12))))
           (begin
             ((ant 'orientation!) key)
             ((ant 'move!) 1))))

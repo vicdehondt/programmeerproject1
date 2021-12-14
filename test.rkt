@@ -110,6 +110,8 @@
 ;; en dat je vervolgens op het scherm kan plaatsen zodanig deze op het scherm
 ;; getekend wordt (zie verderop).
 (define mijn-tile (make-tile 200 100))
+(define tile2 (make-tile 100 200))
+(define sequence (make-tile-sequence (list mijn-tile tile2)))
 
 ;; Een tile is standaard leeg. Je kan op een tile iets tekenen. Dit ga je
 ;; meestal slechts 1 keer moeten doen (je moet bijvoorbeeld niet voor elke frame
@@ -120,6 +122,9 @@
 ;; betekenis kan je terugvinden in de documentatie).
 ((mijn-tile 'draw-rectangle) 10 10 180 80 "red")
 ((mijn-tile 'draw-text) "Hallo!" 12 100 30 "white")
+
+((tile2 'draw-rectangle) 10 10 80 180 "white")
+((tile2 'draw-text) "yo" 12 30 100 "black")
 ;; In plaats van met `draw-rectangle` en `draw-text` iets op een tile te
 ;; tekenen kan je ook `(make-tile breedte hoogte "pad-naar-bitmap.png")`
 ;; gebruiken om rechtstreeks een afbeelding (bitmap) te laden naar een tile. Dit
@@ -136,7 +141,11 @@
 ;; laag. Je wijst een tile best toe aan maximaal 1 laag! Je zal geen foutmelding
 ;; krijgen wanneer je probeert 1 tile aan meer lagen toe te wijzen, maar het
 ;; gedrag hiervan is onbepaald. Maak hier dus geen gebruik van!
-((mijn-eerste-laag 'add-drawable) mijn-tile)
+
+;((mijn-eerste-laag 'add-drawable) mijn-tile)
+;((mijn-eerste-laag 'add-drawable) tile2)
+((mijn-eerste-laag 'add-drawable) sequence)
+
 ;; Tip: met (tile 'clear) kan je alles wat je zelf op een tile getekend hebt
 ;; met `draw-rectangle` en `draw-text` terug verwijderen. Probeer het eens uit.
 ;; Voor terug iets zichtbaar te krijgen kan je de oproepen van 'draw-rectangle
@@ -180,7 +189,9 @@
 ((venster 'set-key-callback!)
  (lambda (type toets)
    (if (and (eq? type 'pressed) (eq? toets 'up))
-       ((mijn-tile 'set-y!) 0))))
+       (begin
+         (sequence 'set-next!)
+         ((mijn-tile 'set-y!) 0)))))
 ;; Als je nu op de toets duwt met pijltje naar boven, dan gaat de tile die
 ;; we gemaakt hebben naar de bovenkant van het scherm.
 ;; Merk op dat we 2 dingen controleren: we kijken na of de toets die ingedrukt
@@ -211,7 +222,7 @@
  (lambda (ms)
    (let* ((huidige-y (mijn-tile 'get-y))
           (nieuwe-y (+ huidige-y (* 0.10 ms))))
-     ((mijn-tile 'set-y!) nieuwe-y))))
+     ((sequence 'set-y!) nieuwe-y))))
 ;; De parameter `ms` bevat het aantal milliseconden sinds de vorige aanroep
 ;; van de procedure die je meegegeven hebt aan `set-update-callback!`.
 ;; Gebruik deze om te vermijden dat je spel onspeelbaar wordt bij een extreem
