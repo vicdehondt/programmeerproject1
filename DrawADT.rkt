@@ -14,15 +14,16 @@
     (define egg-layer (window 'make-layer))
     (define moving-objects-layer (window 'make-layer))
     
-    ;; Ant tiles
-    ;(define ant-old-orientation 'right)
+    ;; Ant Tile-sequence
     (define ant-sequence (make-tile-sequence (list (make-bitmap-tile "images/FireAnt-Right.png" "images/FireAnt-Right-mask.png")
                                                    (make-bitmap-tile "images/FireAnt-Left.png" "images/FireAnt-Left-mask.png")
-                                                   (make-bitmap-tile "images/FireAnt-Up.png" "images/FireAnt-Up-mask.png")
-                                                   (make-bitmap-tile "images/FireAnt-Down.png" "images/FireAnt-Down-mask.png"))))
+                                                   ;(make-bitmap-tile "images/FireAnt-Up.png" "images/FireAnt-Up-mask.png")
+                                                   ;(make-bitmap-tile "images/FireAnt-Down.png" "images/FireAnt-Down-mask.png")
+                                                   )))
 
     (define scorpion-sequence (make-tile-sequence (list (make-bitmap-tile "images/Scorpion.png" "images/Scorpion-mask.png")
                                                         (make-bitmap-tile "images/Scorpion2.png" "images/Scorpion2-mask.png"))))
+
     ((moving-objects-layer 'add-drawable) ant-sequence)
 
 
@@ -35,18 +36,28 @@
     ;; Draw Procedures
     ;;
     
-    (define (set-sequence! object old-orientation current-orientation sequence)
+    (define (set-ant-sequence! current sequence)
       (cond
-        ((and (eq? current-orientation 'right) (eq? old-orientation 'left)) (set! old-orientation current-orientation)
-                                                                                (sequence 'set-previous!))
-        ((and (eq? current-orientation 'left) (eq? old-orientation 'right)) (set! old-orientation current-orientation)
-                                                                                (sequence 'set-next!))))
+        ((and (eq? current 'right) (eq? ant-old-orientation 'left)) (set! ant-old-orientation current)
+                                                                    (sequence 'set-next!))
+        ((and (eq? current 'left) (eq? ant-old-orientation 'right)) (set! ant-old-orientation current)
+                                                                    (sequence 'set-previous!))
+        #|((and (eq? current 'down) (eq? ant-old-orientation 'up)) (set! ant-old-orientation current)
+                                                                 (sequence 'set-next!))
+        ((and (eq? current 'up) (eq? ant-old-orientation down)) (set! ant-old-orientation current)
+                                                                (sequence 'set-previous!))|#))
+
+    (define (set-scorpion-sequence! current sequence)
+      (cond
+        ((and (eq? current 'right) (eq? scorpion-old-orientation 'left)) (set! scorpion-old-orientation current)
+                                                                         (sequence 'set-next!))
+        ((and (eq? current 'left) (eq? scorpion-old-orientation 'right)) (set! scorpion-old-orientation current)
+                                                                         (sequence 'set-previous!))))
 
     (define (draw-ant! level-object)
       (let* ((tile ant-sequence)
-             (ant (level-object 'ant))
-             (current-orientation (ant 'orientation)))
-        (set-sequence! ant ant-old-orientation current-orientation tile)
+             (ant (level-object 'ant)))
+        (set-ant-sequence! (ant 'orientation) tile)
         (draw-object! ant tile)))
 
     (define (which-tiles-list kind)
@@ -73,10 +84,8 @@
         (draw-object! egg-object tile)))
     
     (define (draw-scorpion-piece! scorpion-object)
-      (let (;(tile (get-object-piece scorpion-object))
-            (tile scorpion-sequence)
-            (current-orientation (scorpion-object 'orientation)))
-        (set-sequence! scorpion-object scorpion-old-orientation current-orientation tile)
+      (let ((tile (get-object-piece scorpion-object)))
+        (set-scorpion-sequence! (scorpion-object 'orientation) tile)
         (draw-object! scorpion-object tile)))
 
     (define (get-object-piece object)
@@ -101,9 +110,7 @@
           new-tile))
       
       (define (add-scorpion-piece! scorpion-object)
-        (let ((new-tile
-               (make-tile-sequence (list (make-bitmap-tile "images/Scorpion.png" "images/Scorpion-mask.png")
-                                         (make-bitmap-tile "images/Scorpion2.png" "images/Scorpion2-mask.png")))))
+        (let ((new-tile scorpion-sequence))
           (set! scorpion-tiles (cons (cons scorpion-object new-tile) scorpion-tiles))
           ((moving-objects-layer 'add-drawable) new-tile)
           new-tile))
@@ -135,6 +142,7 @@
     ;;
     
     (define (update! game-object)
+      (display ant-old-orientation)
       (update-level! (game-object 'level)))
     
     (define (update-level! level-object)
