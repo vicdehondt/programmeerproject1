@@ -40,14 +40,25 @@
       (not (list? (member #t (collision-list direction)))))
 
 
-#|
-    (define (check-eggs!)
-      (for-each-object (check) eggs))
+    (define (remove-egg!)
+      (let ((lst (reverse eggs)))
+        (define (look-for-remove current remaining result)
+          (cond
+            ((and (null? remaining) (((current 'position) 'equal?) (ant 'position))) (set! eggs result))
+            ((((current 'position) 'equal?) (ant 'position)) (set! eggs (append result (list remaining))))
+            (else (look-for-remove (car remaining) (cdr remaining) (cons current result)))))
+          (look-for-remove (car eggs) (cdr eggs) '())))
 
-    (define (check object)
-      (if (((object 'position) 'equal?) (ant 'position))
-          ))
-|#
+    (define (on-egg-position?)
+      (let ((lst (for-each-object (lambda (egg) ((egg 'position) 'equal?) (ant 'position)) eggs)))
+      (list? (member #t lst))))
+
+    (define (check-eggs!)
+      (if (on-egg-position?)
+          (begin
+            (remove-egg!)
+            (display eggs))))
+    
     ;;
     ;; Move
     ;;
@@ -80,11 +91,14 @@
     (define (move-ant! key)
       (if (or (and (eq? key 'right) (free? ant key))
               (and (eq? key 'left) (free? ant key))
-              (and (eq? key 'up) (free? ant key) (not (<= ((ant 'position) 'y) 3)))
-              (and (eq? key 'down) (free? ant key) (not (>= ((ant 'position) 'y) 12))))
+              (and (eq? key 'up) (free? ant key) (not (<= ((ant 'position) 'y) top-border)))
+              (and (eq? key 'down) (free? ant key) (not (>= ((ant 'position) 'y) bottom-border))))
           (begin
             ((ant 'orientation!) key)
-            ((ant 'move!) 1))))
+            ((ant 'move!) 1)
+            (check-eggs!)
+            ;(display eggs)
+            )))
   
     (define (dispatch m)
       (cond

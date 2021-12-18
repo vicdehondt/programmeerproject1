@@ -21,10 +21,12 @@
                                                    ;(make-bitmap-tile "images/FireAnt-Down.png" "images/FireAnt-Down-mask.png")
                                                    )))
 
+    ((moving-objects-layer 'add-drawable) ant-sequence)
+
     (define scorpion-sequence (make-tile-sequence (list (make-bitmap-tile "images/Scorpion.png" "images/Scorpion-mask.png")
                                                         (make-bitmap-tile "images/Scorpion2.png" "images/Scorpion2-mask.png"))))
 
-    ((moving-objects-layer 'add-drawable) ant-sequence)
+    
 
 
     ;; Tile-lists
@@ -35,16 +37,17 @@
     ;;
     ;; Draw Procedures
     ;;
+
     
-    (define (set-ant-sequence! current sequence)
+    (define (set-ant-sequence! current-orientation sequence)
       (cond
-        ((and (eq? current 'right) (eq? ant-old-orientation 'left)) (set! ant-old-orientation current)
-                                                                    (sequence 'set-next!))
-        ((and (eq? current 'left) (eq? ant-old-orientation 'right)) (set! ant-old-orientation current)
-                                                                    (sequence 'set-previous!))
-        #|((and (eq? current 'down) (eq? ant-old-orientation 'up)) (set! ant-old-orientation current)
+        ((and (eq? current-orientation 'right) (eq? ant-old-orientation 'left)) (set! ant-old-orientation current-orientation)
+                                                                                (sequence 'set-next!))
+        ((and (eq? current-orientation 'left) (eq? ant-old-orientation 'right)) (set! ant-old-orientation current-orientation)
+                                                                                (sequence 'set-previous!))
+        #|((and (eq? current-orientation 'down) (eq? ant-old-orientation 'up)) (set! ant-old-orientation current-orientation)
                                                                  (sequence 'set-next!))
-        ((and (eq? current 'up) (eq? ant-old-orientation down)) (set! ant-old-orientation current)
+        ((and (eq? current-orientation 'up) (eq? ant-old-orientation down)) (set! ant-old-orientation current-orientation)
                                                                 (sequence 'set-previous!))|#))
 
     (define (set-scorpion-sequence! current sequence)
@@ -142,7 +145,6 @@
     ;;
     
     (define (update! game-object)
-      (display ant-old-orientation)
       (update-level! (game-object 'level)))
     
     (define (update-level! level-object)
