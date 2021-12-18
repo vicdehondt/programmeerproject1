@@ -72,7 +72,7 @@
     (define (draw-walls! level-object)
       (for-each-object draw-wall-piece! (level-object 'walls)))
 
-    (define (draw-eggs! level-object)
+    (define (draw-eggs! level-object) ;; Elk egg-object uit de lijst eggs van het level moet worden getekend
       (for-each-object draw-egg-piece! (level-object 'eggs)))
 
     (define (draw-scorpions! level-object)
@@ -82,7 +82,7 @@
       (let ((tile (get-object-piece wall-object)))
         (draw-object! wall-object tile)))
 
-    (define (draw-egg-piece! egg-object)
+    (define (draw-egg-piece! egg-object) ;; De tile die samenhoort met het object wordt gezocht en getekend
       (let ((tile (get-object-piece egg-object)))
         (draw-object! egg-object tile)))
     
@@ -96,6 +96,8 @@
         (if result
             (cdr result)
             (add-object-piece! object))))
+
+    ;(define (remove-object-piece! object))
 
     (define (add-object-piece! object)
       (define (add-wall-piece! wall-object)

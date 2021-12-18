@@ -23,38 +23,43 @@
     ;; Collision Detection
     ;;
     
-    (define (free? moving-object direction)
+    (define (free? moving-object direction kind)
 
-      (define (collision-list direction)
-        (for-each-object (lambda (wall-object) (collision? wall-object direction)) walls))
+      (define (wall-collision-list direction)
+        (for-each-object (lambda (wall-object) (upcomming-collision? wall-object direction)) walls))
 
-      (define (collision? wall-object direction)
+      (define (egg-collision-list direction)
+        (for-each-object (lambda (egg-object) (collision? egg-object)) eggs))
+
+      (define (upcomming-collision? object direction)
         (let ((current-x ((moving-object 'position) 'x))
               (current-y ((moving-object 'position) 'y)))
           (cond
-            ((eq? direction 'right) (((wall-object 'position) 'equal?) (make-position (+ current-x 1) current-y)))
-            ((eq? direction 'left) (((wall-object 'position) 'equal?) (make-position (- current-x 1) current-y)))
-            ((eq? direction 'up) (((wall-object 'position) 'equal?) (make-position current-x (- current-y 1))))
-            ((eq? direction 'down) (((wall-object 'position) 'equal?) (make-position current-x (+ current-y 1)))))))
-      
-      (not (list? (member #t (collision-list direction)))))
+            ((eq? direction 'right) (((object 'position) 'equal?) (make-position (+ current-x 1) current-y)))
+            ((eq? direction 'left) (((object 'position) 'equal?) (make-position (- current-x 1) current-y)))
+            ((eq? direction 'up) (((object 'position) 'equal?) (make-position current-x (- current-y 1))))
+            ((eq? direction 'down) (((object 'position) 'equal?) (make-position current-x (+ current-y 1)))))))
+
+      (define (collision? object)
+        (((object 'position) 'equal?) (moving-object 'position)))
+
+      (cond
+        ((eq? kind 'wall) (not (list? (member #t (wall-collision-list direction)))))
+        (else (not (list? (member #t (egg-collision-list direction)))))))
 
 
     (define (remove-egg!)
       (let ((lst (reverse eggs)))
         (define (look-for-remove current remaining result)
           (cond
+            ((null? lst) result)
             ((and (null? remaining) (((current 'position) 'equal?) (ant 'position))) (set! eggs result))
-            ((((current 'position) 'equal?) (ant 'position)) (set! eggs (append result (list remaining))))
+            ((((current 'position) 'equal?) (ant 'position)) (set! eggs (append result remaining)))
             (else (look-for-remove (car remaining) (cdr remaining) (cons current result)))))
-          (look-for-remove (car eggs) (cdr eggs) '())))
+        (look-for-remove (car lst) (cdr lst) '())))
 
-    (define (on-egg-position?)
-      (let ((lst (for-each-object (lambda (egg) ((egg 'position) 'equal?) (ant 'position)) eggs)))
-      (list? (member #t lst))))
-
-    (define (check-eggs!)
-      (if (on-egg-position?)
+    (define (check-eggs! key)
+      (if (not (free? ant key 'egg))
           (begin
             (remove-egg!)
             (display eggs))))
@@ -73,7 +78,7 @@
           ((eq? orientation 'down) 'up)))
 
       (define (move! scorpion)
-        (if (free? scorpion (scorpion 'orientation))
+        (if (free? scorpion (scorpion 'orientation) 'wall)
             (begin
               ;; Move scorpion 1 in current direction
               ((scorpion 'move!) 1)
@@ -89,14 +94,14 @@
           (for-each-object move! scorpions)))
 
     (define (move-ant! key)
-      (if (or (and (eq? key 'right) (free? ant key))
-              (and (eq? key 'left) (free? ant key))
-              (and (eq? key 'up) (free? ant key) (not (<= ((ant 'position) 'y) top-border)))
-              (and (eq? key 'down) (free? ant key) (not (>= ((ant 'position) 'y) bottom-border))))
+      (if (or (and (eq? key 'right) (free? ant key 'wall))
+              (and (eq? key 'left) (free? ant key 'wall))
+              (and (eq? key 'up) (free? ant key 'wall) (not (<= ((ant 'position) 'y) top-border)))
+              (and (eq? key 'down) (free? ant key 'wall) (not (>= ((ant 'position) 'y) bottom-border))))
           (begin
             ((ant 'orientation!) key)
             ((ant 'move!) 1)
-            (check-eggs!)
+            (check-eggs! key)
             ;(display eggs)
             )))
   
