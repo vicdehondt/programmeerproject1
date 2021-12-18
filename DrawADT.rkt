@@ -70,32 +70,37 @@
         ((eq? kind 'scorpion) scorpion-tiles)))
     
     (define (draw-walls! level-object)
-      (for-each-object draw-wall-piece! (level-object 'walls)))
+      (for-each-object (lambda (wall) (draw-wall-piece! wall (level-object 'walls))) (level-object 'walls)))
 
     (define (draw-eggs! level-object) ;; Elk egg-object uit de lijst eggs van het level moet worden getekend
-      (for-each-object draw-egg-piece! (level-object 'eggs)))
+      (for-each-object (lambda (egg) (draw-egg-piece! egg (level-object 'eggs))) (level-object 'eggs)))
 
     (define (draw-scorpions! level-object)
-      (for-each-object draw-scorpion-piece! (level-object 'scorpions)))
+      (for-each-object (lambda (scorpion) (draw-scorpion-piece! scorpion (level-object 'scorpions))) (level-object 'scorpions)))
 
-    (define (draw-wall-piece! wall-object)
-      (let ((tile (get-object-piece wall-object)))
+    (define (draw-wall-piece! wall-object level-list)
+      (let ((tile (get-object-piece wall-object level-list)))
         (draw-object! wall-object tile)))
 
-    (define (draw-egg-piece! egg-object) ;; De tile die samenhoort met het object wordt gezocht en getekend
-      (let ((tile (get-object-piece egg-object)))
+    (define (draw-egg-piece! egg-object level-list) ;; De tile die samenhoort met het object wordt gezocht en getekend
+      (let ((tile (get-object-piece egg-object level-list)))
         (draw-object! egg-object tile)))
     
-    (define (draw-scorpion-piece! scorpion-object)
-      (let ((tile (get-object-piece scorpion-object)))
+    (define (draw-scorpion-piece! scorpion-object level-list)
+      (let ((tile (get-object-piece scorpion-object level-list)))
         (set-scorpion-sequence! (scorpion-object 'orientation) tile)
         (draw-object! scorpion-object tile)))
 
-    (define (get-object-piece object)
-      (let ((result (assoc object (which-tiles-list (object 'kind)))))
-        (if result
+    (define (get-object-piece object level-list)
+      (let* ((tile-list (which-tiles-list (object 'kind)))
+             (result (assoc object tile-list)))
+        (cond
+          (result (cdr result))
+          ((and (not result) (> (length level-list) (length tile-list))) (add-object-piece! object))
+          )))
+        #|(if result
             (cdr result)
-            (add-object-piece! object))))
+            (add-object-piece! object))))|#
 
     ;(define (remove-object-piece! object))
 
