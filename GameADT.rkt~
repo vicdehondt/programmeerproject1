@@ -1,16 +1,14 @@
 (define (make-game level)
   (let ((draw (make-draw)))
 
-    ;; Starts the drawing and the game
     (define (start!)
       ((draw 'start!) game-loop key-callback dispatch))
 
-    ;; Initializes the game-loop
     (define (game-loop delta-time)
       ((draw 'update!) dispatch)
+      ;(level 'check-eggs!)
       ((level 'move-scorpion!) delta-time))
 
-    ;; What to do when a key is pressed
     (define (key-callback status key)
       (if (eq? status 'pressed)
           (begin

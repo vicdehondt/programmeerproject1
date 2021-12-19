@@ -9,6 +9,7 @@
 (load "DrawADT.rkt")
 (load "VisualADT.rkt")
 (load "HelpProcedures.rkt")
+(load "Constants.rkt")
 
 (define level (make-level 1 (make-position 10 3)))
 
@@ -17,7 +18,6 @@
 ;;
 
 ;; Left wall
-;#|
 ((level 'add-wall) (make-position 0 3)) ;; Top left
 ((level 'add-wall) (make-position 0 4))
 ((level 'add-wall) (make-position 0 5))
@@ -28,12 +28,7 @@
 ((level 'add-wall) (make-position 0 10))
 ((level 'add-wall) (make-position 0 11))
 ((level 'add-wall) (make-position 0 12)) ;; Bottom left
-;|#
-#|
-((level 'add-wall) (make-position 0 0) (make-position 0 9) 'vertical)
-|#
-;; Top wall
-;#|
+
 ((level 'add-wall) (make-position 1 3))
 ((level 'add-wall) (make-position 2 3))
 ((level 'add-wall) (make-position 3 3))
@@ -43,12 +38,7 @@
 ((level 'add-wall) (make-position 7 3))
 ((level 'add-wall) (make-position 8 3))
 ((level 'add-wall) (make-position 9 3))
-;|#
-#|
-((level 'add-wall) (make-position 1 0) (make-position 9 0) 'horizontal)
-|#
-;; Starting point
-;#|
+
 ((level 'add-wall) (make-position 11 3))
 ((level 'add-wall) (make-position 12 3))
 ((level 'add-wall) (make-position 13 3))
@@ -57,12 +47,7 @@
 ((level 'add-wall) (make-position 16 3))
 ((level 'add-wall) (make-position 17 3))
 ((level 'add-wall) (make-position 18 3)) ;; Top right
-;|#
-#|
-((level 'add-wall) (make-position 18 0) (make-position 11 0) 'horizontal)
-|#
-;; Right wall
-;#|
+
 ((level 'add-wall) (make-position 18 4))
 ((level 'add-wall) (make-position 18 5))
 ((level 'add-wall) (make-position 18 6))
@@ -72,13 +57,7 @@
 ((level 'add-wall) (make-position 18 10))
 ((level 'add-wall) (make-position 18 11))
 ((level 'add-wall) (make-position 18 12)) ;; Bottom right
-;|#
-#|
-((level 'add-wall) (make-position 18 1) (make-position 18 9) 'vertical)
-|#
-;; Bottom wall
-;; Exit point
-;#|
+
 ((level 'add-wall) (make-position 2 12))
 ((level 'add-wall) (make-position 3 12))
 ((level 'add-wall) (make-position 4 12))
@@ -95,39 +74,7 @@
 ((level 'add-wall) (make-position 15 12))
 ((level 'add-wall) (make-position 16 12))
 ((level 'add-wall) (make-position 17 12))
-;|#
-#|
-((level 'add-wall) (make-position 2 9) (make-position 17 9) 'horizontal)
-|#
-;; Inside walls:
 
-#|
-((level 'add-wall) (make-position 11 1) (make-position 11 1) 'horizontal)
-((level 'add-wall) (make-position 16 1) (make-position 17 1) 'horizontal)
-
-((level 'add-wall) (make-position 2 2) (make-position 9 2) 'horizontal)
-((level 'add-wall) (make-position 13 2) (make-position 14 2) 'horizontal)
-
-((level 'add-wall) (make-position 5 3) (make-position 5 6) 'vertical)
-((level 'add-wall) (make-position 9 3) (make-position 11 3) 'horizontal)
-((level 'add-wall) (make-position 14 3) (make-position 14 4) 'vertical)
-((level 'add-wall) (make-position 16 3) (make-position 16 4) 'vertical)
-
-((level 'add-wall) (make-position 11 4) (make-position 11 5) 'vertical)
-((level 'add-wall) (make-position 12 4) (make-position 12 6) 'vertical)
-
-((level 'add-wall) (make-position 7 5) (make-position 10 5) 'horizontal)
-
-((level 'add-wall) (make-position 1 6) (make-position 4 6) 'horizontal)
-((level 'add-wall) (make-position 7 6) (make-position 7 8) 'vertical)
-((level 'add-wall) (make-position 13 6) (make-position 17 6) 'horizontal)
-
-((level 'add-wall) (make-position 16 7) (make-position 16 7) 'horizontal)
-
-((level 'add-wall) (make-position 2 8) (make-position 6 8) 'horizontal)
-((level 'add-wall) (make-position 12 8) (make-position 13 8) 'horizontal)
-|#
-;#|
 ;; First row
 ((level 'add-wall) (make-position 11 4))
 ((level 'add-wall) (make-position 16 4))
@@ -196,7 +143,7 @@
 ((level 'add-wall) (make-position 7 11))
 ((level 'add-wall) (make-position 12 11))
 ((level 'add-wall) (make-position 13 11))
-;|#
+
 ;;
 ;; Eggs
 ;;
@@ -206,6 +153,7 @@
 ((level 'add-egg) (make-position 4 8))
 
 ((level 'add-scorpion) (make-position 8 10))
+((level 'add-scorpion) (make-position 2 4))
 
 
 (define game (make-game level))
