@@ -1,6 +1,8 @@
 (define (make-visual window)
-  (let ((ant-sequence (make-tile-sequence (list (make-bitmap-tile "images/FireAnt-Right.png" "images/FireAnt-Right-mask.png")
-                                                (make-bitmap-tile "images/FireAnt-Left.png" "images/FireAnt-Left-mask.png"))))
+  (let ((ant-sequence (make-tile-sequence (list (make-bitmap-tile "images/48px/FireAnt-Up.png" "images/48px/FireAnt-Up-mask.png")
+                                                (make-bitmap-tile "images/48px/FireAnt-Right.png" "images/48px/FireAnt-Right-mask.png")
+                                                (make-bitmap-tile "images/48px/FireAnt-Down.png" "images/48px/FireAnt-Down-mask.png")
+                                                (make-bitmap-tile "images/48px/FireAnt-Left.png" "images/48px/FireAnt-Left-mask.png"))))
         (wall-tiles '())
         (egg-tiles '())
         (scorpion-tiles '()))
@@ -30,12 +32,19 @@
           ((and (eq? current-orientation 'left) (eq? (object 'old-orientation) 'right)) ((object 'old-orientation!) current-orientation)
                                                                                         (sequence 'set-previous!)))))
 
+    (define (set-current-tile! orientation sequence)
+      (cond
+        ((eq? orientation 'up) ((sequence 'set-current!) 0))
+        ((eq? orientation 'right) ((sequence 'set-current!) 1))
+        ((eq? orientation 'down) ((sequence 'set-current!) 2))
+        ((eq? orientation 'left) ((sequence 'set-current!) 3))
+        (else (error "Worng orientation!"))))
+
     ;; Draws the ant
     (define (draw-ant! level-object)
-      (let* ((tile ant-sequence)
-             (ant (level-object 'ant)))
-        (set-sequence! ant tile)
-        (draw-object! ant tile)))
+      (let* ((ant (level-object 'ant)))
+        (set-current-tile! (ant 'orientation) ant-sequence)
+        (draw-object! ant ant-sequence)))
 
     ;; Draws every wall in the walls-list from the level
     (define (draw-walls! level-object)
@@ -51,9 +60,10 @@
 
     ;; Draws every scorpion
     (define (draw-scorpion-piece! scorpion-object)
-      (let ((tile (get-object-piece scorpion-object)))
-        (set-sequence! scorpion-object tile)
-        (draw-object! scorpion-object tile)))
+      (let ((sequence (get-object-piece scorpion-object))
+            (orientation (scorpion-object 'orientation)))
+        (set-current-tile! orientation sequence)
+        (draw-object! scorpion-object sequence)))
 
     ;; Draws every object that is not moving
     (define (draw-stationary-piece! object level-object)
@@ -78,10 +88,12 @@
     ;; Adds a new object bound to its tile to the tile-list
     (define (add-object-piece! object)
       (let* ((kind (object 'kind))
-             (new-scorpion-sequence (make-tile-sequence (list (make-bitmap-tile "images/Scorpion.png" "images/Scorpion-mask.png")
-                                                              (make-bitmap-tile "images/Scorpion2.png" "images/Scorpion2-mask.png"))))
-             (new-egg-tile (make-bitmap-tile "images/Egg.png" "images/Egg-mask.png"))
-             (new-wall-tile (make-tile 24 24 "images/Wall.png")))
+             (new-scorpion-sequence (make-tile-sequence (list (make-bitmap-tile "images/48px/Scorpion-Up.png" "images/48px/Scorpion-Up-mask.png")
+                                                              (make-bitmap-tile "images/48px/Scorpion-Right.png" "images/48px/Scorpion-Right-mask.png")
+                                                              (make-bitmap-tile "images/48px/Scorpion-Down.png" "images/48px/Scorpion-Down-mask.png")
+                                                              (make-bitmap-tile "images/48px/Scorpion-Left.png" "images/48px/Scorpion-Left-mask.png"))))
+             (new-egg-tile (make-bitmap-tile "images/48px/Egg.png" "images/48px/Egg-mask.png"))
+             (new-wall-tile (make-tile 48 48 "images/48px/Wall.png")))
         
         (define (add-piece new-tile)
           (add-object-tile! object new-tile)
@@ -132,7 +144,7 @@
             (begin
               ((egg-layer 'remove-drawable) (cdr current))
               current)
-            (which-egg-object (car remaining) (cdr remaining)))))
+            (find (car remaining) (cdr remaining)))))
 
     ;; Checks if an egg is removed
     (define (check-for-egg-remove level-object)

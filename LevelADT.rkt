@@ -7,13 +7,49 @@
         (ant (make-movingobject initial-ant-pos 'right 'ant))
         (done? #f))
 
+
+    ;;
+    ;; ADD PROCEDURES
+    ;;
+    
     ;; Add a wall to the level
     (define (add-wall position-object)
-      (set! walls (cons (make-wall position-object) walls)))
+      (set! walls (cons (make-wall (make-position (position-object 'x) (+ (position-object 'y) top-border))) walls)))
+
+    ;; Adds vertical wall
+    (define (add-vertical-wall start-position end-position)
+      (let build-wall ((count (start-position 'y))
+                       (x (start-position 'x)))
+        (if (= count (end-position 'y))
+            (add-wall (make-position x count))
+            (begin
+              (add-wall (make-position x count))
+              (build-wall (+ count 1) x)))))
+
+    ;; Adds a horizontal wall
+    (define (add-horizontal-wall start-position end-position)
+      (let build-wall ((count (start-position 'x))
+                       (y (start-position 'y)))
+        (if (= count (end-position 'x))
+            (add-wall (make-position count y))
+            (begin
+              (add-wall (make-position count y))
+              (build-wall (+ count 1) y)))))
+
+    ;; The main procedure that makes a long wall, it sees if you want to build a vertical or horizontal wall
+    (define (add-multiple-walls position1 position2)
+      (let ((x1 (position1 'x))
+            (x2 (position2 'x))
+            (y1 (position1 'y))
+            (y2 (position2 'y)))
+      (cond
+        ((= x1 x2) (add-vertical-wall position1 position2))
+        ((= y1 y2) (add-horizontal-wall position1 position2))
+        (else (error "Cannot make walls diagonally!")))))
 
     ;; Add a scorpion to the level
-    (define (add-scorpion position-object)
-      (set! scorpions (cons (make-movingobject position-object 'right 'scorpion) scorpions)))
+    (define (add-scorpion position-object orientation)
+      (set! scorpions (cons (make-movingobject position-object orientation 'scorpion) scorpions)))
 
     ;; Add an egg to the level
     (define (add-egg position-object)
@@ -74,7 +110,7 @@
             (remove-egg!))))
     
     ;;
-    ;; Move
+    ;; MOVING
     ;;
 
     ;; Moves a scorpion every ... milliseconds
@@ -115,7 +151,7 @@
   
     (define (dispatch m)
       (cond
-        ((eq? m 'add-wall) add-wall)
+        ((eq? m 'add-wall) add-multiple-walls)
         ((eq? m 'walls) walls)
         ((eq? m 'add-scorpion) add-scorpion)
         ((eq? m 'scorpions) scorpions)

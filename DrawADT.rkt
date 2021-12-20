@@ -1,5 +1,5 @@
 (define (make-draw)
-  (let* ((window (make-window 456 360 "Fire Ant"))
+  (let* ((window (make-window 912 720 "Fire Ant"))
          (visual (make-visual window)))
     
     ;;
