@@ -2,44 +2,13 @@
   (let ((x-value x)
         (y-value y))
 
-    ;; Set new x-value
-    (define (x! new-x)
-      (set! x-value new-x))
-
-    ;; Set new y-value
-    (define (y! new-y)
-      (set! y-value new-y))
-
-    ;; Check if this position is the same as given position
     (define (equal? position-object)
       (and (= x-value (position-object 'x)) (= y-value (position-object 'y))))
-
-    (define (distance point-a point-b)
-      (abs (- point-a point-b)))
-
-    ;; Get horizontal distance to given position
-    (define (horizontal-distance position-object)
-      (distance x-value (position-object 'x)))
-
-    ;; Get vertical distance to given position
-    (define (vertical-distance position-object)
-      (distance y-value (position-object 'y)))
-
-    ;; Set new x- and y-value at the same time
-    (define (set-x-y! new-x new-y)
-      (begin
-        (x! new-x)
-        (y! new-y)))
 
     (define (dispatch m)
       (cond
         ((eq? m 'x) x-value)
         ((eq? m 'y) y-value)
-        ((eq? m 'x!) x!)
-        ((eq? m 'y!) y!)
         ((eq? m 'equal?) equal?)
-        ((eq? m 'horizontal-distance) horizontal-distance)
-        ((eq? m 'vertical-distance) vertical-distance)
-        ((eq? m 'set-x-y!) set-x-y!)
-        (else (error "ERROR in DISPATCH: Wrong message!"))))
+        (else (error "[ERROR in PositionADT DISPATCH] Wrong message: ") (display m))))
     dispatch))

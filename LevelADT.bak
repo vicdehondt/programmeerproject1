@@ -38,10 +38,10 @@
             (x2 (position2 'x))
             (y1 (position1 'y))
             (y2 (position2 'y)))
-        (cond
-          ((= x1 x2) (add-vertical-wall position1 position2))
-          ((= y1 y2) (add-horizontal-wall position1 position2))
-          (else (error "Cannot make walls diagonally!")))))
+      (cond
+        ((= x1 x2) (add-vertical-wall position1 position2))
+        ((= y1 y2) (add-horizontal-wall position1 position2))
+        (else (error "Cannot make walls diagonally!")))))
 
     (define (add-scorpion position-object orientation)
       (set! scorpions (cons (make-movingobject position-object orientation 'scorpion) scorpions)))
@@ -56,8 +56,8 @@
     ;; COLLISION DETECTION
     ;;
 
-    ;; Can a given object move in the given direction without obstruction?
-    (define (can-move? moving-object direction kind)
+    ;; Is the next position free?
+    (define (free? moving-object direction kind)
 
       ;; Gives list with every wall it collides with
       (define (wall-collision-list direction)
@@ -85,48 +85,55 @@
         (else (not (list? (member #t (egg-collision-list direction)))))))
 
     (define (remove-egg!)
-      (let ((current-eggs (reverse eggs)))
+      (let ((lst (reverse eggs)))
         (define (look-for-remove current remaining result)
           (cond
-            ((null? current-eggs) result)
+            ((null? lst) result)
             ((and (null? remaining) (((current 'position) 'equal?) (ant 'position))) (set! eggs result))
             ((((current 'position) 'equal?) (ant 'position)) (set! eggs (append result remaining)))
             (else (look-for-remove (car remaining) (cdr remaining) (cons current result)))))
-        (look-for-remove (car current-eggs) (cdr current-eggs) '())))
+        (look-for-remove (car lst) (cdr lst) '())))
 
     ;; Checks if an egg needs to be removed
-    (define (check-and-remove-eggs! direction)
-      (if (not (can-move? ant direction 'egg))
-          (remove-egg!)))
+    (define (check-eggs! key)
+      (if (not (free? ant key 'egg))
+          (begin
+            (remove-egg!))))
     
     ;;
     ;; MOVING
     ;;
 
     (define (move-scorpion! delta-time)
+      (define (opposite orientation)
+        (cond
+          ((eq? orientation 'right) 'left)
+          ((eq? orientation 'left) 'right)
+          ((eq? orientation 'up) 'down)
+          ((eq? orientation 'down) 'up)))
+
       (define (move! scorpion)
-        (let ((orientation (scorpion 'orientation)))
-          (if (can-move? scorpion orientation 'wall)
-              (begin
-                ((scorpion 'move!) 1)
-                (set! scorpion-time 0))
-              (begin
-                ((scorpion 'change-orientation!) orientation)
-                ((scorpion 'move!) 1)
-                (set! scorpion-time 0)))))
+        (if (free? scorpion (scorpion 'orientation) 'wall)
+            (begin
+              ((scorpion 'move!) 1)
+              (set! scorpion-time 0))
+            (begin
+              ((scorpion 'orientation!) (opposite (scorpion 'orientation)))
+              ((scorpion 'move!) 1)
+              (set! scorpion-time 0))))
       (set! scorpion-time (+ scorpion-time delta-time))
       (if (> scorpion-time 600)
           (for-each-object move! scorpions)))
 
     (define (move-ant! key)
-      (if (or (and (eq? key 'right) (can-move? ant key 'wall))
-              (and (eq? key 'left) (can-move? ant key 'wall))
-              (and (eq? key 'up) (can-move? ant key 'wall) (not (<= ((ant 'position) 'y) top-border)))
-              (and (eq? key 'down) (can-move? ant key 'wall) (not (>= ((ant 'position) 'y) bottom-border))))
+      (if (or (and (eq? key 'right) (free? ant key 'wall))
+              (and (eq? key 'left) (free? ant key 'wall))
+              (and (eq? key 'up) (free? ant key 'wall) (not (<= ((ant 'position) 'y) top-border)))
+              (and (eq? key 'down) (free? ant key 'wall) (not (>= ((ant 'position) 'y) bottom-border))))
           (begin
             ((ant 'orientation!) key)
             ((ant 'move!) 1)
-            (check-and-remove-eggs! key))))
+            (check-eggs! key))))
   
     (define (dispatch m)
       (cond
@@ -140,6 +147,7 @@
         ((eq? m 'ant) ant)
         ((eq? m 'move-ant!) move-ant!)
         ((eq? m 'move-scorpion!) move-scorpion!)
+        ((eq? m 'check-eggs!) check-eggs!)
         ((eq? m 'done?) done?)
         (else  (error "[ERROR in LevelADT DISPATCH] Wrong message: ") (display m))))
     dispatch))

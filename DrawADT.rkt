@@ -22,7 +22,8 @@
     (define (update-level! level-object)
       ((visual 'update!) level-object))
 
-    (define (dispatch msg)
-      (cond ((eq? msg 'start!) start!)
-            ((eq? msg 'update!) update!)))
+    (define (dispatch m)
+      (cond ((eq? m 'start!) start!)
+            ((eq? m 'update!) update!)
+            (else  (error "[ERROR in DrawADT DISPATCH] Wrong message: ") (display m))))
     dispatch))

@@ -27,9 +27,9 @@
     (define (set-sequence! object sequence)
       (let ((current-orientation (object 'orientation)))
         (cond
-          ((and (eq? current-orientation 'right) (eq? (object 'old-orientation) 'left)) ((object 'old-orientation!) current-orientation)
+          ((and (eq? current-orientation 'right) (eq? (object 'previous-orientation) 'left)) ((object 'previous-orientation!) current-orientation)
                                                                                         (sequence 'set-next!))
-          ((and (eq? current-orientation 'left) (eq? (object 'old-orientation) 'right)) ((object 'old-orientation!) current-orientation)
+          ((and (eq? current-orientation 'left) (eq? (object 'previous-orientation) 'right)) ((object 'previous-orientation!) current-orientation)
                                                                                         (sequence 'set-previous!)))))
 
     (define (set-current-tile! orientation sequence)
@@ -38,39 +38,32 @@
         ((eq? orientation 'right) ((sequence 'set-current!) 1))
         ((eq? orientation 'down) ((sequence 'set-current!) 2))
         ((eq? orientation 'left) ((sequence 'set-current!) 3))
-        (else (error "Worng orientation!"))))
+        (else (error "[ERROR in VisualADT/set-current-tile!] Wrong orientation: ") (display orientation))))
 
-    ;; Draws the ant
     (define (draw-ant! level-object)
       (let* ((ant (level-object 'ant)))
         (set-current-tile! (ant 'orientation) ant-sequence)
         (draw-object! ant ant-sequence)))
 
-    ;; Draws every wall in the walls-list from the level
     (define (draw-walls! level-object)
       (for-each-object (lambda (wall) (draw-stationary-piece! wall level-object)) (level-object 'walls)))
 
-    ;; Draws every egg in the eggs-list from the level
-    (define (draw-eggs! level-object) ;; Elk egg-object uit de lijst eggs van het level moet worden getekend
+    (define (draw-eggs! level-object)
       (for-each-object (lambda (egg) (draw-stationary-piece! egg level-object)) (level-object 'eggs)))
 
-    ;; Draws every scorpion in the scorpion-list from the level
     (define (draw-scorpions! level-object)
       (for-each-object (lambda (scorpion) (draw-scorpion-piece! scorpion)) (level-object 'scorpions)))
 
-    ;; Draws every scorpion
     (define (draw-scorpion-piece! scorpion-object)
       (let ((sequence (get-object-piece scorpion-object))
             (orientation (scorpion-object 'orientation)))
         (set-current-tile! orientation sequence)
         (draw-object! scorpion-object sequence)))
 
-    ;; Draws every object that is not moving
     (define (draw-stationary-piece! object level-object)
       (let ((tile (get-object-piece object)))
         (draw-object! object tile)))
 
-    ;; Looks for the right tile-list based on the kind of the object
     (define (which-tiles-list kind)
       (cond
         ((eq? kind 'wall) wall-tiles)
@@ -85,7 +78,6 @@
             (cdr result)
             (add-object-piece! object))))
 
-    ;; Adds a new object bound to its tile to the tile-list
     (define (add-object-piece! object)
       (let* ((kind (object 'kind))
              (new-scorpion-sequence (make-tile-sequence (list (make-bitmap-tile "images/48px/Scorpion-Up.png" "images/48px/Scorpion-Up-mask.png")
@@ -104,9 +96,8 @@
           ((eq? kind 'scorpion) (add-piece new-scorpion-sequence))
           ((eq? kind 'egg) (add-piece new-egg-tile))
           ((eq? kind 'wall) (add-piece new-wall-tile))
-          (else (error "Wrong kind given!")))))
+          (else (error "[ERROR in VisualADT/add-object-piece!] Wrong kind: ") (display kind)))))
 
-    ;; Draws a given object in the window
     (define (draw-object! obj tile)
       (let* ((position (obj 'position))
              (new-x (* (position 'x) grid-cell))
@@ -114,22 +105,21 @@
         ((tile 'set-x!) new-x)
         ((tile 'set-y!) new-y)))
 
-    ;; Help procedure for adding object and its tile
+    ;; Help procedure for adding an object and its tile
     (define (add-object-tile! object tile )
       (let ((kind (object 'kind)))
         (cond
           ((eq? kind 'scorpion) (set! scorpion-tiles (cons (cons object tile) scorpion-tiles)))
           ((eq? kind 'egg) (set! egg-tiles (cons (cons object tile) egg-tiles)))
           ((eq? kind 'wall) (set! wall-tiles (cons (cons object tile) wall-tiles)))
-          (else (error "Wrong kind given!")))))
+          (else (error "[ERROR in VisualADT/add-object-tile!] Wrong kind: ") (display kind)))))
 
-    ;; Help procedure to show the tile in the window (add-drawable)
     (define (show! tile kind)
       (cond
         ((eq? kind 'scorpion) ((moving-objects-layer 'add-drawable) tile))
         ((eq? kind 'egg) ((egg-layer 'add-drawable) tile))
         ((eq? kind 'wall) ((base-layer 'add-drawable) tile))
-        (else (error "Wrong kind given!"))))
+        (else (error "[ERROR in VisualADT/show!] Wrong kind: ") (display kind))))
 
     
     ;;
@@ -156,11 +146,9 @@
     ;; PUBLIC PROCEDURES
     ;;
 
-    ;; Executes once
     (define (start! level-object)
       (draw-walls! level-object))
     
-    ;; Update loop
     (define (update! level-object)
       (draw-ant! level-object)
       (draw-scorpions! level-object)
@@ -171,5 +159,6 @@
     (define (dispatch m)
       (cond
         ((eq? m 'start!) start!)
-        ((eq? m 'update!) update!)))
+        ((eq? m 'update!) update!)
+        (else (error "[ERROR in VisualADT DISPATCH] Wrong message: ") (display m))))
     dispatch))

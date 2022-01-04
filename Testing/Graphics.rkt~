@@ -4,7 +4,7 @@
 ;;;;*       >>> Graphics.rkt  <<<      *;;;;
 ;;;;* > Programmeerproject 2021-2022 < *;;;;
 ;;;;*                                  *;;;;
-;;;;*         >>  Versie 2  <<         *;;;;
+;;;;*         >>  Versie 1  <<         *;;;;
 ;;;;*                                  *;;;;
 ;;;;*            Adapted by:           *;;;;
 ;;;;*           Bjarno Oeyen           *;;;;
@@ -521,7 +521,7 @@
 ;;;;---------------------------------------------------------------------  
 (define (make-tile-sequence tiles-in)
   ;; Initialize the current index and its callback.
-  (let ((tiles (if (mlist? tiles-in) (mlist->list tiles-in) tiles-in)) ;; converts mutable list (r5rs) to immutable list (Racket).
+  (let ((tiles (if (mlist? tiles-in) (mlist->list tiles-in) tiles-in))
         (index 0)
         (update-callback (lambda () #t)))
     
@@ -542,10 +542,11 @@
     (define (set-current! new_index)
       (if (or (>= new_index (length tiles))
               (< new_index 0))
-          (error 'error "illegal index given for tile-sequence: ~a" new_index)
+          (begin (display "ERROR ::: illegal index given for tile-sequence: ")
+                 (display new_index)
+                 (newline))
           (begin (set! index new_index)
                  (update-callback))))
-    
     ;; Set the previous tile as active tile. 
     ;; void -> void
     (define (set-previous!)
@@ -615,7 +616,7 @@
       (list-ref tiles index))
     
     ;; Dispatch
-    (define (dispatch msg)    
+    (define (dispatch msg )    
       (cond 
         ;; Not to be called manually
         ((eq? msg 'draw)  draw)
@@ -631,7 +632,6 @@
         
         ;; Animations to switch between tiles
         ((eq? msg 'set-current!) set-current!)
-        ((eq? msg 'get-current) index)
         ((eq? msg 'set-next!) (set-next!))
         ((eq? msg 'set-previous!) (set-previous!))    
         

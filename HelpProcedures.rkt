@@ -1,8 +1,10 @@
 ;; Executes a function on each element of the given data-structure
-(define (for-each-object function lst)
+(define (map-object function lst)
   (map function lst))
 
-;; Removes an element from a list
+(define (for-each-object function lst)
+  (for-each function lst))
+
 (define (remove-from-list element lst)
   (let ((search-list (reverse lst)))
     (let search-and-remove ((current (car search-list))
