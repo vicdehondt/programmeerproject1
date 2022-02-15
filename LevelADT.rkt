@@ -72,13 +72,13 @@
         (let ((current-x ((moving-object 'position) 'x))
               (current-y ((moving-object 'position) 'y)))
           (cond
-            ((eq? direction 'right) (((object 'position) 'equal?) (make-position (+ current-x 1) current-y)))
-            ((eq? direction 'left) (((object 'position) 'equal?) (make-position (- current-x 1) current-y)))
-            ((eq? direction 'up) (((object 'position) 'equal?) (make-position current-x (- current-y 1))))
-            ((eq? direction 'down) (((object 'position) 'equal?) (make-position current-x (+ current-y 1)))))))
+            ((eq? direction 'right) ((object 'position) 'equal? (make-position (+ current-x 1) current-y)))
+            ((eq? direction 'left) ((object 'position) 'equal? (make-position (- current-x 1) current-y)))
+            ((eq? direction 'up) ((object 'position) 'equal? (make-position current-x (- current-y 1))))
+            ((eq? direction 'down) ((object 'position) 'equal? (make-position current-x (+ current-y 1)))))))
 
       (define (collision? object)
-        (((object 'position) 'equal?) (moving-object 'position)))
+        ((object 'position) 'equal? (moving-object 'position)))
 
       (cond
         ((eq? kind 'wall) (not (list? (member #t (wall-collision-list direction)))))
@@ -89,8 +89,8 @@
         (define (look-for-remove current remaining result)
           (cond
             ((null? current-eggs) result)
-            ((and (null? remaining) (((current 'position) 'equal?) (ant 'position))) (set! eggs result))
-            ((((current 'position) 'equal?) (ant 'position)) (set! eggs (append result remaining)))
+            ((and (null? remaining) ((current 'position) 'equal? (ant 'position))) (set! eggs result))
+            (((current 'position) 'equal? (ant 'position)) (set! eggs (append result remaining)))
             (else (look-for-remove (car remaining) (cdr remaining) (cons current result)))))
         (look-for-remove (car current-eggs) (cdr current-eggs) '())))
 
@@ -108,11 +108,11 @@
         (let ((orientation (scorpion 'orientation)))
           (if (can-move? scorpion orientation 'wall)
               (begin
-                ((scorpion 'move!) 1)
+                (scorpion 'move! 1)
                 (set! scorpion-time 0))
               (begin
-                ((scorpion 'change-orientation!) orientation)
-                ((scorpion 'move!) 1)
+                (scorpion 'change-orientation! orientation)
+                (scorpion 'move! 1)
                 (set! scorpion-time 0)))))
       (set! scorpion-time (+ scorpion-time delta-time))
       (if (> scorpion-time 600)
@@ -124,22 +124,21 @@
               (and (eq? key 'up) (can-move? ant key 'wall) (not (<= ((ant 'position) 'y) top-border)))
               (and (eq? key 'down) (can-move? ant key 'wall) (not (>= ((ant 'position) 'y) bottom-border))))
           (begin
-            ((ant 'orientation!) key)
-            ((ant 'move!) 1)
+            (ant 'orientation! key)
+            (ant 'move! 1)
             (check-and-remove-eggs! key))))
-  
-    (define (dispatch m)
+
+    (lambda (message . parameters)
       (cond
-        ((eq? m 'add-wall) add-multiple-walls)
-        ((eq? m 'walls) walls)
-        ((eq? m 'add-scorpion) add-scorpion)
-        ((eq? m 'scorpions) scorpions)
-        ((eq? m 'add-egg) add-egg)
-        ((eq? m 'eggs) eggs)
-        ((eq? m 'initial-ant-pos!) initial-ant-pos!)
-        ((eq? m 'ant) ant)
-        ((eq? m 'move-ant!) move-ant!)
-        ((eq? m 'move-scorpion!) move-scorpion!)
-        ((eq? m 'done?) done?)
-        (else  (error "[ERROR in LevelADT DISPATCH] Wrong message: ") (display m))))
-    dispatch))
+        ((eq? message 'add-wall) (apply add-multiple-walls parameters))
+        ((eq? message 'walls) walls)
+        ((eq? message 'add-scorpion) (apply add-scorpion parameters))
+        ((eq? message 'scorpions) scorpions)
+        ((eq? message 'add-egg) (apply add-egg parameters))
+        ((eq? message 'eggs) eggs)
+        ((eq? message 'initial-ant-pos!) (apply initial-ant-pos! parameters))
+        ((eq? message 'ant) ant)
+        ((eq? message 'move-ant!) (apply move-ant! parameters))
+        ((eq? message 'move-scorpion!) (apply move-scorpion! parameters))
+        ((eq? message 'done?) done?)
+        (else  (error "[ERROR in LevelADT DISPATCH] Wrong message: ") (display message))))))

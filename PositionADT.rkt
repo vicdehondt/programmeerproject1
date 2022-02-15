@@ -5,10 +5,9 @@
     (define (equal? position-object)
       (and (= x-value (position-object 'x)) (= y-value (position-object 'y))))
 
-    (define (dispatch m)
+    (lambda (message . parameters)
       (cond
-        ((eq? m 'x) x-value)
-        ((eq? m 'y) y-value)
-        ((eq? m 'equal?) equal?)
-        (else (error "[ERROR in PositionADT DISPATCH] Wrong message: ") (display m))))
-    dispatch))
+        ((eq? message 'x) x-value)
+        ((eq? message 'y) y-value)
+        ((eq? message 'equal?) (apply equal? parameters))
+        (else (error "[ERROR in PositionADT DISPATCH] Wrong message: ") (display message))))))

@@ -27,9 +27,9 @@
     (define (set-sequence! object sequence)
       (let ((current-orientation (object 'orientation)))
         (cond
-          ((and (eq? current-orientation 'right) (eq? (object 'previous-orientation) 'left)) (object 'previous-orientation! current-orientation)
+          ((and (eq? current-orientation 'right) (eq? (object 'previous-orientation) 'left)) ((object 'previous-orientation!) current-orientation)
                                                                                         (sequence 'set-next!))
-          ((and (eq? current-orientation 'left) (eq? (object 'previous-orientation) 'right)) (object 'previous-orientation! current-orientation)
+          ((and (eq? current-orientation 'left) (eq? (object 'previous-orientation) 'right)) ((object 'previous-orientation!) current-orientation)
                                                                                         (sequence 'set-previous!)))))
 
     (define (set-current-tile! orientation sequence)
@@ -154,9 +154,11 @@
       (draw-scorpions! level-object)
       (draw-eggs! level-object)
       (check-for-egg-remove level-object))
-
-    (lambda (message . parameters)
+    
+  
+    (define (dispatch m)
       (cond
-        ((eq? message 'start!) (apply start! parameters))
-        ((eq? message 'update!) (apply update! parameters))
-        (else (error "[ERROR in VisualADT DISPATCH] Wrong message: ") (display message))))))
+        ((eq? m 'start!) start!)
+        ((eq? m 'update!) update!)
+        (else (error "[ERROR in VisualADT DISPATCH] Wrong message: ") (display m))))
+    dispatch))

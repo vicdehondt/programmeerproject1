@@ -1,8 +1,6 @@
 (define (make-wall position-object)
-  
-    (define (dispatch m)
-      (cond
-        ((eq? m 'position) position-object)
-        ((eq? m 'kind) 'wall)
-        (else  (error "[ERROR in WallADT DISPATCH] Wrong message: ") (display m))))
-    dispatch)
+  (lambda (message . parameters)
+    (cond
+      ((eq? message 'position) position-object)
+      ((eq? message 'kind) 'wall)
+      (else  (error "[ERROR in WallADT DISPATCH] Wrong message: ") (display message)))))
