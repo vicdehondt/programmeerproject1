@@ -70,11 +70,11 @@
 
       ;; Gives list with every wall it collides with
       (define (wall-collision-list direction)
-        (map (lambda (wall-object) (upcomming-collision? wall-object direction)) walls))
+        (map-object (lambda (wall-object) (upcomming-collision? wall-object direction)) walls))
 
       ;; Gives list with every egg it collides with
       (define (egg-collision-list direction)
-        (map (lambda (egg-object) (collision? egg-object)) eggs))
+        (map-object (lambda (egg-object) (collision? egg-object)) eggs))
 
       ;; Checks if there is going to be a collision
       (define (upcomming-collision? object direction)
@@ -91,7 +91,7 @@
 
       (cond
         ((eq? kind 'wall) (not (list? (member #t (wall-collision-list direction)))))
-        ((eq? kind 'egg) (not (list? (member #t (egg-collision-list direction)))))))
+        (else (not (list? (member #t (egg-collision-list direction)))))))
 
     (define (remove-egg!)
       (let ((current-eggs (reverse eggs)))
@@ -107,10 +107,6 @@
     (define (check-and-remove-eggs! direction)
       (if (not (can-move? ant direction 'egg))
           (remove-egg!)))
-
-    (define (check-for-ant-scorpion-collision)
-      (if (list? (member #t (map (lambda (scorpion-object) ((ant 'position) 'equal? (scorpion-object 'position))) scorpions)))
-          (ant 'position! initial-ant-pos)))
     
     ;;
     ;; MOVING
@@ -129,7 +125,7 @@
                 (set! scorpion-time 0)))))
       (set! scorpion-time (+ scorpion-time delta-time))
       (if (> scorpion-time 600)
-          (for-each move! scorpions)))
+          (for-each-object move! scorpions)))
 
     (define (move-ant! key)
       (if (or (and (eq? key 'right) (can-move? ant key 'wall))
@@ -153,6 +149,5 @@
         ((eq? message 'ant) ant)
         ((eq? message 'move-ant!) (apply move-ant! parameters))
         ((eq? message 'move-scorpion!) (apply move-scorpion! parameters))
-        ((eq? message 'check-for-ant-scorpion-collision) (check-for-ant-scorpion-collision))
         ((eq? message 'done?) done?)
         (else  (error "[ERROR in LevelADT DISPATCH] Wrong message: ") (display message))))))

@@ -7,8 +7,7 @@
     ;; What happens every tick
     (define (game-loop delta-time)
       (draw 'update! level)
-      (level 'move-scorpion! delta-time)
-      (level 'check-for-ant-scorpion-collision))
+      (level 'move-scorpion! delta-time))
 
     ;; What to do when a key is pressed
     (define (key-callback status key)

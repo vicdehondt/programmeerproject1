@@ -136,17 +136,6 @@
               current)
             (find (car remaining) (cdr remaining)))))
 
-    (define (remove-from-list element lst)
-  (let ((search-list (reverse lst)))
-    (let search-and-remove ((current (car search-list))
-                            (remaining (cdr search-list))
-                            (result '()))
-      (cond
-        ((and (null? remaining) (eq? current element)) result)
-        ((null? remaining) (cons current result))
-        ((eq? current element) (append result remaining))
-        (else (search-and-remove (car remaining) (cdr remaining) (cons current result)))))))
-
     ;; Checks if an egg is removed
     (define (check-for-egg-remove level-object)
       (if (> (length egg-tiles) (length (level-object 'eggs)))
