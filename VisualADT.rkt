@@ -19,7 +19,7 @@
     ;;
     ;; DRAW PROCEDURES
     ;;
-
+    
     ;; Show ant on screen
     ((moving-objects-layer 'add-drawable) ant-sequence)
 
@@ -28,9 +28,9 @@
       (let ((current-orientation (object 'orientation)))
         (cond
           ((and (eq? current-orientation 'right) (eq? (object 'previous-orientation) 'left)) (object 'previous-orientation! current-orientation)
-                                                                                        (sequence 'set-next!))
+                                                                                             (sequence 'set-next!))
           ((and (eq? current-orientation 'left) (eq? (object 'previous-orientation) 'right)) (object 'previous-orientation! current-orientation)
-                                                                                        (sequence 'set-previous!)))))
+                                                                                             (sequence 'set-previous!)))))
 
     (define (set-current-tile! orientation sequence)
       (cond
@@ -130,26 +130,26 @@
     (define (which-egg-to-remove level-object)
       (let find ((current (car egg-tiles))
                  (remaining (cdr egg-tiles)))
-        (if (not (member (car current) (level-object 'eggs)))
+        (if (not (level-object 'member? (car current) 'eggs))
             (begin
               ((egg-layer 'remove-drawable) (cdr current))
               current)
             (find (car remaining) (cdr remaining)))))
 
     (define (remove-from-list element lst)
-  (let ((search-list (reverse lst)))
-    (let search-and-remove ((current (car search-list))
-                            (remaining (cdr search-list))
-                            (result '()))
-      (cond
-        ((and (null? remaining) (eq? current element)) result)
-        ((null? remaining) (cons current result))
-        ((eq? current element) (append result remaining))
-        (else (search-and-remove (car remaining) (cdr remaining) (cons current result)))))))
+      (let ((search-list (reverse lst)))
+        (let search-and-remove ((current (car search-list))
+                                (remaining (cdr search-list))
+                                (result '()))
+          (cond
+            ((and (null? remaining) (eq? current element)) result)
+            ((null? remaining) (cons current result))
+            ((eq? current element) (append result remaining))
+            (else (search-and-remove (car remaining) (cdr remaining) (cons current result)))))))
 
     ;; Checks if an egg is removed
     (define (check-for-egg-remove level-object)
-      (if (> (length egg-tiles) (length (level-object 'eggs)))
+      (if (> (length egg-tiles) (level-object 'length? 'eggs))
           (set! egg-tiles (remove-from-list (which-egg-to-remove level-object) egg-tiles))))
 
 

@@ -141,6 +141,16 @@
             (ant 'move! 1)
             (check-and-remove-eggs! key))))
 
+    (define (member? element object-list)
+      (cond
+        ((eq? object-list 'eggs) (member element eggs))
+        (else (display "[ERROR in LevelADT member?] Wrong object-list") (display object-list))))
+
+    (define (length? object-list)
+      (cond
+        ((eq? object-list 'eggs) (length eggs))
+        (else (display "[ERROR in LevelADT length?] Wrong object-list") (display object-list))))
+
     (lambda (message . parameters)
       (cond
         ((eq? message 'add-wall) (apply add-multiple-walls parameters))
@@ -154,5 +164,7 @@
         ((eq? message 'move-ant!) (apply move-ant! parameters))
         ((eq? message 'move-scorpion!) (apply move-scorpion! parameters))
         ((eq? message 'check-for-ant-scorpion-collision) (check-for-ant-scorpion-collision))
+        ((eq? message 'member?) (apply member? parameters))
+        ((eq? message 'length?) (apply length? parameters))
         ((eq? message 'done?) done?)
         (else  (error "[ERROR in LevelADT DISPATCH] Wrong message: ") (display message))))))
