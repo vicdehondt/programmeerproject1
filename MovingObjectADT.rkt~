@@ -4,7 +4,7 @@
     (define (position! new-position-object)
       (set! position new-position-object))
 
-    (define (set-opposite-orientation! orientation)
+    (define (change-orientation! orientation)
         (cond
           ((eq? orientation 'right) (orientation! 'left))
           ((eq? orientation 'left) (orientation! 'right))
@@ -30,7 +30,7 @@
         ((eq? message 'position!) (apply position! parameters))
         ((eq? message 'orientation) orientation)
         ((eq? message 'orientation!) (apply orientation! parameters))
-        ((eq? message 'set-opposite-orientation!) (apply set-opposite-orientation! parameters))
+        ((eq? message 'change-orientation!) (apply change-orientation! parameters))
         ((eq? message 'previous-orientation) previous-orientation)
         ((eq? message 'previous-orientation!) (apply previous-orientation! parameters))
         ((eq? message 'kind) kind)

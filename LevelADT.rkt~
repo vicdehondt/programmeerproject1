@@ -124,7 +124,7 @@
                 (scorpion 'move! 1)
                 (set! scorpion-time 0))
               (begin
-                (scorpion 'set-opposite-orientation! orientation)
+                (scorpion 'change-orientation! orientation)
                 (scorpion 'move! 1)
                 (set! scorpion-time 0)))))
       (set! scorpion-time (+ scorpion-time delta-time))
