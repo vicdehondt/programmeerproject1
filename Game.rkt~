@@ -12,13 +12,13 @@
 (load "Constants.rkt")
 
 ;;
-;; LEVEL INITIALIZATION
+;; Level initialization
 ;;
 
 (define level (make-level 1 (make-position 10 3)))
 
 ;;
-;; WALLS
+;; Walls
 ;;
 
 (level 'add-wall (make-position 0 0) (make-position 0 9))
@@ -45,7 +45,7 @@
 (level 'add-wall (make-position 16 7) (make-position 16 7))
 
 ;;
-;; EGGS
+;; Eggs
 ;;
 
 (level 'add-egg (make-position 2 8))
@@ -53,14 +53,14 @@
 (level 'add-egg (make-position 4 8))
 
 ;;
-;; SCORPIONS
+;; Scorpions
 ;;
 
 (level 'add-scorpion (make-position 8 10) 'right)
 (level 'add-scorpion (make-position 4 6) 'down)
 
 ;;
-;; STARTING GAME
+;; Starting Game
 ;;
 
 (define game (make-game level))

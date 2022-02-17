@@ -3,7 +3,7 @@
          (visual (make-visual window)))
     
     ;;
-    ;; START PROCEDURE
+    ;; Start procedure
     ;;
     
     (define (start! update-function key-function level-object)
@@ -13,7 +13,7 @@
       (visual 'start! level-object))
 
     ;;
-    ;; UPDATE PROCEDURE
+    ;; Update procedure
     ;;
     
     (define (update! level-object)

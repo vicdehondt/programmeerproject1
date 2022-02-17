@@ -14,9 +14,6 @@
     (define (add-wall position-object)
       (set! walls (cons (make-wall (make-position (position-object 'x) (+ (position-object 'y) top-border))) walls)))
 
-    #|(define (add-wall position-object)
-      (add-to! walls (make-wall (make-position (position-object 'x) (+ (position-object 'y) top-border)))))|#
-
     (define (add-vertical-wall start-position end-position)
       (let build-wall ((count (start-position 'y))
                        (x (start-position 'x)))
@@ -49,14 +46,8 @@
     (define (add-scorpion position-object orientation)
       (set! scorpions (cons (make-movingobject position-object orientation 'scorpion) scorpions)))
     
-    #|(define (add-scorpion position-object orientation)
-      (add-to! scorpions (make-movingobject position-object orientation 'scorpion)))|#
-
     (define (add-egg position-object)
       (set! eggs (cons (make-egg position-object) eggs)))
-
-    #|(define (add-egg position-object)
-      (add-to! eggs (make-egg position-object)))|#
 
     (define (initial-ant-pos! position-object)
       (set! initial-ant-pos position-object))
