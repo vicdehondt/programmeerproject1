@@ -32,7 +32,8 @@
               (add-wall (make-position count y))
               (build-wall (+ count 1) y)))))
 
-    ;; The main procedure that makes a long wall, it sees if you want to build a vertical or horizontal wall
+    ;; The main procedure that makes a long wall, it checks if you want to build a vertical or a horizontal wall
+    ;; and then calls for seperate procedures to build those walls
     (define (add-multiple-walls position1 position2)
       (let ((x1 (position1 'x))
             (x2 (position2 'x))
@@ -41,7 +42,7 @@
         (cond
           ((= x1 x2) (add-vertical-wall position1 position2))
           ((= y1 y2) (add-horizontal-wall position1 position2))
-          (else (error "Cannot make walls diagonally!")))))
+          (else (error "[ERROR in LevelADT add-multiple-walls] Cannot build walls diagonally!")))))
 
     (define (add-scorpion position-object orientation)
       (set! scorpions (cons (make-movingobject position-object orientation 'scorpion) scorpions)))
@@ -59,15 +60,15 @@
     ;; Can a given object move in the given direction without obstruction?
     (define (can-move? moving-object direction kind)
 
-      ;; Gives list with every wall it collides with
+      ;; Returns list with every wall it collides with
       (define (wall-collision-list direction)
         (map (lambda (wall-object) (upcomming-collision? wall-object direction)) walls))
 
-      ;; Gives list with every egg it collides with
+      ;; Returns list with every egg it collides with
       (define (egg-collision-list direction)
         (map (lambda (egg-object) (collision? egg-object)) eggs))
 
-      ;; Checks if there is going to be a collision
+      ;; Checks if there is going to be a collision when moving to given direction
       (define (upcomming-collision? object direction)
         (let ((current-x ((moving-object 'position) 'x))
               (current-y ((moving-object 'position) 'y)))
@@ -99,6 +100,7 @@
       (if (not (can-move? ant direction 'egg))
           (remove-egg!)))
 
+    ;; Checks if any scorpion collides with the ant and moves the ant back to initial-ant-pos
     (define (check-for-ant-scorpion-collision)
       (if (list? (member #t (map (lambda (scorpion-object) ((ant 'position) 'equal? (scorpion-object 'position))) scorpions)))
           (ant 'position! initial-ant-pos)))
@@ -132,6 +134,10 @@
             (ant 'move! 1)
             (check-and-remove-eggs! key))))
 
+    ;;
+    ;; DATA ABSTRACTION PROCEDURES
+    ;;
+    
     (define (member? element object-list)
       (cond
         ((eq? object-list 'eggs) (member element eggs))

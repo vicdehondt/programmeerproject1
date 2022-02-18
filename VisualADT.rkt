@@ -9,8 +9,9 @@
     
 
     ;;
-    ;; Layer initialization
+    ;; LAYER INITIALIZATION
     ;;
+    
     (define base-layer (window 'make-layer))
     (define egg-layer (window 'make-layer))
     (define moving-objects-layer (window 'make-layer))
