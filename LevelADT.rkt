@@ -1,15 +1,20 @@
 (define (make-level level-number initial-ant-pos)
-  (let ((scorpion-time 0)
-        (walls '())
+  (let ((walls '())
+        (scorpion-time 0)
         (scorpions '())
         (eggs '())
         (ant (make-movingobject initial-ant-pos 'right 'ant))
+        (update-score? #f)
+        (remove-live? #f)
         (done? #f))
 
 
     ;;
     ;; ADD PROCEDURES
     ;;
+
+    (define (add-walls lst)
+      (for-each (lambda (positions) (add-multiple-walls (make-position (caar positions) (cadar positions))  (make-position (caadr positions) (cadadr positions)))) lst))
     
     (define (add-wall position-object)
       (set! walls (cons (make-wall (make-position (position-object 'x) (+ (position-object 'y) top-border))) walls)))
@@ -32,7 +37,7 @@
               (add-wall (make-position count y))
               (build-wall (+ count 1) y)))))
 
-    ;; The main procedure that makes a long wall, it checks if you want to build a vertical or a horizontal wall
+    ;; The main procedure that makes a long wall, it checks if you want to build a vertical or a horzizontal wall
     ;; and then calls for seperate procedures to build those walls
     (define (add-multiple-walls position1 position2)
       (let ((x1 (position1 'x))
@@ -44,8 +49,14 @@
           ((= y1 y2) (add-horizontal-wall position1 position2))
           (else (error "[ERROR in LevelADT add-multiple-walls] Cannot build walls diagonally!")))))
 
+    (define (add-scorpions lst)
+      (for-each (lambda (scorpion-info) (add-scorpion (make-position (car scorpion-info) (cadr scorpion-info)) (caddr scorpion-info))) lst))
+
     (define (add-scorpion position-object orientation)
       (set! scorpions (cons (make-movingobject position-object orientation 'scorpion) scorpions)))
+
+    (define (add-eggs lst)
+      (for-each (lambda (x-and-y) (add-egg (make-position (car x-and-y) (cadr x-and-y)))) lst))
     
     (define (add-egg position-object)
       (set! eggs (cons (make-egg position-object) eggs)))
@@ -98,12 +109,33 @@
     ;; Checks if an egg needs to be removed
     (define (check-and-remove-eggs! direction)
       (if (not (can-move? ant direction 'egg))
-          (remove-egg!)))
+          (begin
+            (remove-egg!)
+            (update-score! #t))))
 
     ;; Checks if any scorpion collides with the ant and moves the ant back to initial-ant-pos
     (define (check-for-ant-scorpion-collision)
       (if (list? (member #t (map (lambda (scorpion-object) ((ant 'position) 'equal? (scorpion-object 'position))) scorpions)))
-          (ant 'position! initial-ant-pos)))
+        (begin
+          (remove-live! #t)
+          (reset))))
+
+    ;;
+    ;; RESET
+    ;;
+
+    (define (reset)
+      (ant 'position! initial-ant-pos)
+      )
+
+    ;;
+    ;; Lives
+    ;;
+
+    (define (remove-live! bool)
+      (if bool
+          (set! remove-live? #t)
+          (set! remove-live? #f)))
     
     ;;
     ;; MOVING
@@ -114,14 +146,14 @@
         (let ((orientation (scorpion 'orientation)))
           (if (can-move? scorpion orientation 'wall)
               (begin
-                (scorpion 'move! 1)
+                (scorpion 'move! distance)
                 (set! scorpion-time 0))
               (begin
                 (scorpion 'set-opposite-orientation! orientation)
-                (scorpion 'move! 1)
+                (scorpion 'move! distance)
                 (set! scorpion-time 0)))))
       (set! scorpion-time (+ scorpion-time delta-time))
-      (if (> scorpion-time 600)
+      (if (> scorpion-time max-scorpion-time)
           (for-each move! scorpions)))
 
     (define (move-ant! key)
@@ -131,9 +163,18 @@
               (and (eq? key 'down) (can-move? ant key 'wall) (not (>= ((ant 'position) 'y) bottom-border))))
           (begin
             (ant 'orientation! key)
-            (ant 'move! 1)
+            (ant 'move! distance)
             (check-and-remove-eggs! key))))
 
+    ;;
+    ;; SCORE
+    ;;
+
+    (define (update-score! bool)
+      (if bool
+          (set! update-score? #t)
+          (set! update-score? #f)))
+    
     ;;
     ;; DATA ABSTRACTION PROCEDURES
     ;;
@@ -148,20 +189,26 @@
         ((eq? object-list 'eggs) (length eggs))
         (else (display "[ERROR in LevelADT length?] Wrong object-list") (display object-list))))
 
-    (lambda (message . parameters)
+    (define (dispatch message . parameters)
       (cond
-        ((eq? message 'add-wall) (apply add-multiple-walls parameters))
+        ((eq? message 'add-walls) (apply add-walls parameters))
         ((eq? message 'walls) walls)
-        ((eq? message 'add-scorpion) (apply add-scorpion parameters))
+        ((eq? message 'add-scorpions) (apply add-scorpions parameters))
         ((eq? message 'scorpions) scorpions)
-        ((eq? message 'add-egg) (apply add-egg parameters))
+        ((eq? message 'add-eggs) (apply add-eggs parameters))
         ((eq? message 'eggs) eggs)
         ((eq? message 'initial-ant-pos!) (apply initial-ant-pos! parameters))
         ((eq? message 'ant) ant)
         ((eq? message 'move-ant!) (apply move-ant! parameters))
         ((eq? message 'move-scorpion!) (apply move-scorpion! parameters))
         ((eq? message 'check-for-ant-scorpion-collision) (check-for-ant-scorpion-collision))
+        ((eq? message 'update-score?) update-score?)
+        ((eq? message 'update-score!) (apply update-score! parameters))
+        ((eq? message 'remove-live?) remove-live?)
+        ((eq? message 'remove-live!) (apply remove-live! parameters))
         ((eq? message 'member?) (apply member? parameters))
         ((eq? message 'length?) (apply length? parameters))
         ((eq? message 'done?) done?)
-        (else  (error "[ERROR in LevelADT DISPATCH] Wrong message: ") (display message))))))
+        (else  (error "[ERROR in LevelADT DISPATCH] Wrong message: ") (display message))))
+
+    dispatch))

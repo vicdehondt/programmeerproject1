@@ -24,7 +24,7 @@
         ((eq? orientation 'up) (position! (make-position (position 'x) (- (position 'y) distance))))
         ((eq? orientation 'down) (position! (make-position (position 'x) (+ (position 'y) distance))))))
 
-    (lambda (message . parameters)
+    (define (dispatch message . parameters)
       (cond
         ((eq? message 'position) position)
         ((eq? message 'position!) (apply position! parameters))
@@ -35,4 +35,6 @@
         ((eq? message 'previous-orientation!) (apply previous-orientation! parameters))
         ((eq? message 'kind) kind)
         ((eq? message 'move!) (apply move! parameters))
-        (else  (error "[ERROR in MovingObjectADT DISPATCH] Wrong message: ") (display message))))))
+        (else  (error "[ERROR in MovingObjectADT DISPATCH] Wrong message: ") (display message))))
+    
+    dispatch))

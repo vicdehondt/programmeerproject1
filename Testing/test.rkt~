@@ -76,7 +76,7 @@
 
 ;; Onderstaande lijn code maakt een nieuw venster (window) aan van 800 pixels
 ;; breed en 600 pixels hoog. De titel van de window is "Hallo, wereld!".
-(define venster (make-window 912 720 "Hallo, wereld!"))
+(define venster (make-window 800 600 "Hallo, wereld!"))
 
 ;; Je kan de achtergrondkleur aanpassen door de `set-background!` message te
 ;; sturen naar het `venster` object. Deze geeft een procedure terug die, wanneer
@@ -109,7 +109,7 @@
 ;; hoog. Je kan een tile beschouwen als een "canvas" waarop je kan tekenen,
 ;; en dat je vervolgens op het scherm kan plaatsen zodanig deze op het scherm
 ;; getekend wordt (zie verderop).
-(define mijn-tile (make-tile 200 96))
+(define mijn-tile (make-tile 200 100))
 (define tile2 (make-tile 100 200))
 (define sequence (make-tile-sequence (list mijn-tile tile2)))
 
@@ -121,7 +121,7 @@
 ;; rood) en een tekst (in het wit). De volgorde van de parameters (en hun
 ;; betekenis kan je terugvinden in de documentatie).
 ((mijn-tile 'draw-rectangle) 10 10 180 80 "red")
-((mijn-tile 'draw-text) "Score: 5000" 12 100 30 "white")
+((mijn-tile 'draw-text) "Hallo!" 12 100 30 "white")
 
 ((tile2 'draw-rectangle) 10 10 80 180 "white")
 ((tile2 'draw-text) "yo" 12 30 100 "black")
@@ -157,8 +157,8 @@
 ;; Een tile wordt standaard op positie (0, 0) geplaatst (= linksboven). Je kan
 ;; de postie wijzigen door er berichten te sturen. Het eerste bericht past de
 ;; locatie aan op de x-as. Het tweede bericht past de locatie aan op de y-as.
-((mijn-tile 'set-x!) 0)
-((mijn-tile 'set-y!) 624)
+((mijn-tile 'set-x!) 500)
+((mijn-tile 'set-y!) 300)
 ;; Merk op! De coördinaat (0, 0) staat helemaal linksboven in het scherm. Om
 ;; naar links te gaan moet de x-coördinaat groter worden, om naar beneden te
 ;; gaan moet de y-coördinaat groter worden. Het assenstelsel ziet er dus als
@@ -218,13 +218,11 @@
 ;; Onderstaande procedure registreert een procedure die na elke update
 ;; (hertekening) van het venster opgeroepen wordt. Met deze procedure kan je
 ;; de spelsituatie laten veranderen doorheen het verloop van de tijd.
-
-#|((venster 'set-update-callback!)
+((venster 'set-update-callback!)
  (lambda (ms)
    (let* ((huidige-y (mijn-tile 'get-y))
           (nieuwe-y (+ huidige-y (* 0.10 ms))))
-     ((sequence 'set-y!) nieuwe-y))))|#
-
+     ((sequence 'set-y!) nieuwe-y))))
 ;; De parameter `ms` bevat het aantal milliseconden sinds de vorige aanroep
 ;; van de procedure die je meegegeven hebt aan `set-update-callback!`.
 ;; Gebruik deze om te vermijden dat je spel onspeelbaar wordt bij een extreem

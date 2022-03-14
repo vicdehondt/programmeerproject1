@@ -3,7 +3,6 @@
                                                 (make-bitmap-tile "images/48px/FireAnt-Right.png" "images/48px/FireAnt-Right-mask.png")
                                                 (make-bitmap-tile "images/48px/FireAnt-Down.png" "images/48px/FireAnt-Down-mask.png")
                                                 (make-bitmap-tile "images/48px/FireAnt-Left.png" "images/48px/FireAnt-Left-mask.png"))))
-        (highscore-tile (make-tile 300 96))
         (score-tile (make-tile 200 96))
         (lives-tile (make-tile 200 96))
         (wall-tiles '())
@@ -25,13 +24,6 @@
     ;; INFORMATION VISUALISATION
     ;;
 
-    ((egg-layer 'add-drawable) highscore-tile)
-    ((highscore-tile 'set-x!) 410)
-    ((highscore-tile 'set-y!) 624)
-
-    (define (highscore-text highscore)
-      (string-append "Highscore: " (number->string highscore)))
-
     ((egg-layer 'add-drawable) score-tile)
     ((score-tile 'set-x!) 0)
     ((score-tile 'set-y!) 624)
@@ -49,12 +41,6 @@
     ;;
     ;; DRAW PROCEDURES
     ;;
-
-    ; Show the highscore on screen
-    (define (draw-highscore! game)
-      (let ((highscore (game 'highscore)))
-        (highscore-tile 'clear)
-        ((highscore-tile 'draw-text) (highscore-text highscore) 18 80 40 "white")))
 
     ; Show the score on screen
     (define (draw-score! game)
@@ -245,8 +231,6 @@
         (draw-eggs! level-object)
         
         (check-for-egg-remove level-object)
-
-        (draw-highscore! game)
         
         (draw-score! game)
         
