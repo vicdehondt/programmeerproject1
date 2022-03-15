@@ -1,10 +1,7 @@
-(define (make-level level-number initial-ant-pos top-border bottom-border)
+(define (make-level level-number initial-ant-pos)
   (let ((walls '())
         (scorpion-time 0)
         (scorpions '())
-        (keys '())
-        (doors '())
-        (power-ups '())
         (eggs '())
         (ant (make-movingobject initial-ant-pos 'right 'ant))
         (update-score? #f)
@@ -20,7 +17,7 @@
       (for-each (lambda (positions) (add-multiple-walls (make-position (caar positions) (cadar positions))  (make-position (caadr positions) (cadadr positions)))) lst))
     
     (define (add-wall position-object)
-      (set! walls (cons (make-wall (make-position (position-object 'x) (position-object 'y))) walls)))
+      (set! walls (cons (make-wall (make-position (position-object 'x) (+ (position-object 'y) top-border))) walls)))
 
     (define (add-vertical-wall start-position end-position)
       (let build-wall ((count (start-position 'y))
@@ -64,17 +61,6 @@
     (define (add-egg position-object)
       (set! eggs (cons (make-egg position-object) eggs)))
 
-    (define (add-puzzleobjects lst)
-      (for-each (lambda (x-y-kind) (add-puzzleobject (make-position (car x-y-kind) (cadr x-y-kind)) (caddr x-y-kind))) lst))
-
-    (define (add-puzzleobject position-object kind)
-      (cond
-        ((eq? kind 'key) (set! keys (cons (make-puzzleobject position-object kind) keys)))
-        ((eq? kind 'door) (set! doors (cons (make-puzzleobject position-object kind) doors)))))
-
-    #|(define (add-powerups lst)
-      (for-each (lambda (x-and-y) (add-powerup (make-position (car x-and-y) (cadr x-and-y)))) lst))|#
-
     (define (initial-ant-pos! position-object)
       (set! initial-ant-pos position-object))
 
@@ -88,9 +74,6 @@
       ;; Returns list with every wall it collides with
       (define (wall-collision-list direction)
         (map (lambda (wall-object) (upcomming-collision? wall-object direction)) walls))
-
-      (define (door-collision-list direction)
-        (map (lambda (door-object) (upcomming-collision? door-object direction)) doors))
 
       ;; Returns list with every egg it collides with
       (define (egg-collision-list direction)
@@ -111,7 +94,6 @@
 
       (cond
         ((eq? kind 'wall) (not (list? (member #t (wall-collision-list direction)))))
-        ((eq? kind 'door) (not (list? (member #t (door-collision-list direction)))))
         ((eq? kind 'egg) (not (list? (member #t (egg-collision-list direction)))))))
 
     (define (remove-egg!)
@@ -162,7 +144,7 @@
     (define (move-scorpion! delta-time)
       (define (move! scorpion)
         (let ((orientation (scorpion 'orientation)))
-          (if (and (can-move? scorpion orientation 'wall) (can-move? scorpion orientation 'door))
+          (if (can-move? scorpion orientation 'wall)
               (begin
                 (scorpion 'move! distance)
                 (set! scorpion-time 0))
@@ -175,10 +157,10 @@
           (for-each move! scorpions)))
 
     (define (move-ant! key)
-      (if (or (and (eq? key 'right) (can-move? ant key 'wall) (can-move? ant key 'door))
-              (and (eq? key 'left) (can-move? ant key 'wall) (can-move? ant key 'door))
-              (and (eq? key 'up) (can-move? ant key 'wall) (can-move? ant key 'door) (not (<= ((ant 'position) 'y) top-border)))
-              (and (eq? key 'down) (can-move? ant key 'wall) (can-move? ant key 'door) (not (>= ((ant 'position) 'y) bottom-border))))
+      (if (or (and (eq? key 'right) (can-move? ant key 'wall))
+              (and (eq? key 'left) (can-move? ant key 'wall))
+              (and (eq? key 'up) (can-move? ant key 'wall) (not (<= ((ant 'position) 'y) top-border)))
+              (and (eq? key 'down) (can-move? ant key 'wall) (not (>= ((ant 'position) 'y) bottom-border))))
           (begin
             (ant 'orientation! key)
             (ant 'move! distance)
@@ -215,11 +197,6 @@
         ((eq? message 'scorpions) scorpions)
         ((eq? message 'add-eggs) (apply add-eggs parameters))
         ((eq? message 'eggs) eggs)
-        ((eq? message 'add-puzzleobjects) (apply add-puzzleobjects parameters))
-        ((eq? message 'keys) keys)
-        ((eq? message 'doors) doors)
-        ((eq? message 'add-powerups) (apply add-powerups parameters))
-        ((eq? message 'power-ups) power-ups)
         ((eq? message 'initial-ant-pos!) (apply initial-ant-pos! parameters))
         ((eq? message 'ant) ant)
         ((eq? message 'move-ant!) (apply move-ant! parameters))

@@ -5,3 +5,8 @@
 (define (when test consequent)
   (if test
       consequent))
+
+(define (read-file filename)
+      (let* ((read-file (open-input-file filename))
+             (data (read read-file)))
+        data))

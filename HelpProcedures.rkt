@@ -10,3 +10,12 @@
       (let* ((read-file (open-input-file filename))
              (data (read read-file)))
         data))
+
+(define (get-from-list place list)
+  (let find ((count 1)
+             (lst list)
+             (result (car list)))
+    (cond
+      ((null? lst) (display "Error in get-from-list"))
+      ((= count place) result)
+      (else (find (+ count 1) (cdr lst) (cadr lst))))))
