@@ -1,6 +1,8 @@
 (define (make-game . levels)
   (let* ((draw (make-draw))
         (current-level 1)
+        (press-space-time 0)
+        (shown? #t)
         (score 0)
         (lives 3)
         (highscore (read-file "highscore.txt"))
@@ -10,7 +12,20 @@
     (define level (get-from-list current-level levels))
 
     (define (start-up!)
-      (draw 'show-splash! key-callback))
+      (draw 'show-splash! key-callback press-space!))
+
+    (define (press-space! delta-time)
+      (set! press-space-time (+ press-space-time delta-time))
+      (if (> press-space-time press-space-interval)
+          (if shown?
+              (begin
+                (set! shown? #f)
+                (draw 'press-space shown?)
+                (set! press-space-time 0))
+              (begin
+                (set! shown? #t)
+                (draw 'press-space shown?)
+                (set! press-space-time 0)))))
 
     (define (start-game!)
       (draw 'start! game-loop dispatch))

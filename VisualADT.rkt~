@@ -4,10 +4,12 @@
                                                 (make-bitmap-tile "images/48px/FireAnt-Down.png" "images/48px/FireAnt-Down-mask.png")
                                                 (make-bitmap-tile "images/48px/FireAnt-Left.png" "images/48px/FireAnt-Left-mask.png"))))
         (highscore-tile (make-tile 300 96))
-        (score-tile (make-tile 200 96))
+        (score-tile (make-tile 250 96))
         (lives-tile (make-tile 200 96))
         (wall-tiles '())
         (egg-tiles '())
+        (key-tiles '())
+        (door-tiles '())
         (scorpion-tiles '()))
     
 
@@ -91,10 +93,16 @@
         (draw-object! ant ant-sequence)))
 
     (define (draw-walls! level-object)
-      (for-each-object (lambda (wall) (draw-stationary-piece! wall level-object)) (level-object 'walls)))
+      (for-each-object (lambda (wall) (draw-stationary-piece! wall)) (level-object 'walls)))
 
     (define (draw-eggs! level-object)
-      (for-each-object (lambda (egg) (draw-stationary-piece! egg level-object)) (level-object 'eggs)))
+      (for-each-object (lambda (egg) (draw-stationary-piece! egg)) (level-object 'eggs)))
+
+    (define (draw-keys! level-object)
+      (for-each-object (lambda (key) (draw-stationary-piece! key)) (level-object 'keys)))
+
+    (define (draw-doors! level-object)
+      (for-each-object (lambda (door) (draw-stationary-piece! door)) (level-object 'doors)))
 
     (define (draw-scorpions! level-object)
       (for-each-object (lambda (scorpion) (draw-scorpion-piece! scorpion)) (level-object 'scorpions)))
@@ -105,7 +113,7 @@
         (set-current-tile! orientation sequence)
         (draw-object! scorpion-object sequence)))
 
-    (define (draw-stationary-piece! object level-object)
+    (define (draw-stationary-piece! object)
       (let ((tile (get-object-piece object)))
         (draw-object! object tile)))
 
@@ -113,6 +121,8 @@
       (cond
         ((eq? kind 'wall) wall-tiles)
         ((eq? kind 'egg) egg-tiles)
+        ((eq? kind 'key) key-tiles)
+        ((eq? kind 'door) door-tiles)
         ((eq? kind 'scorpion) scorpion-tiles)))
 
     ;; Looks for the right tile bound to the given object
@@ -130,6 +140,8 @@
                                                               (make-bitmap-tile "images/48px/Scorpion-Down.png" "images/48px/Scorpion-Down-mask.png")
                                                               (make-bitmap-tile "images/48px/Scorpion-Left.png" "images/48px/Scorpion-Left-mask.png"))))
              (new-egg-tile (make-bitmap-tile "images/48px/Egg.png" "images/48px/Egg-mask.png"))
+             (new-key-tile (make-bitmap-tile "images/48px/Key.png" "images/48px/Key-mask.png"))
+             (new-door-tile (make-tile 48 48 "images/48px/Door.png"))
              (new-wall-tile (make-tile 48 48 "images/48px/Wall.png")))
         
         (define (add-piece new-tile)
@@ -140,6 +152,8 @@
         (cond
           ((eq? kind 'scorpion) (add-piece new-scorpion-sequence))
           ((eq? kind 'egg) (add-piece new-egg-tile))
+          ((eq? kind 'key) (add-piece new-key-tile))
+          ((eq? kind 'door) (add-piece new-door-tile))
           ((eq? kind 'wall) (add-piece new-wall-tile))
           (else (error "[ERROR in VisualADT/add-object-piece!] Wrong kind: ") (display kind)))))
 
@@ -156,6 +170,8 @@
         (cond
           ((eq? kind 'scorpion) (set! scorpion-tiles (cons (cons object tile) scorpion-tiles)))
           ((eq? kind 'egg) (set! egg-tiles (cons (cons object tile) egg-tiles)))
+          ((eq? kind 'key) (set! key-tiles (cons (cons object tile) key-tiles)))
+          ((eq? kind 'door) (set! door-tiles (cons (cons object tile) door-tiles)))
           ((eq? kind 'wall) (set! wall-tiles (cons (cons object tile) wall-tiles)))
           (else (error "[ERROR in VisualADT/add-object-tile!] Wrong kind: ") (display kind)))))
 
@@ -163,6 +179,8 @@
       (cond
         ((eq? kind 'scorpion) ((moving-objects-layer 'add-drawable) tile))
         ((eq? kind 'egg) ((egg-layer 'add-drawable) tile))
+        ((eq? kind 'key) ((egg-layer 'add-drawable) tile))
+        ((eq? kind 'door) ((egg-layer 'add-drawable) tile))
         ((eq? kind 'wall) ((base-layer 'add-drawable) tile))
         (else (error "[ERROR in VisualADT/show!] Wrong kind: ") (display kind))))
 
@@ -243,6 +261,10 @@
         (draw-scorpions! level-object)
         
         (draw-eggs! level-object)
+
+        (draw-keys! level-object)
+
+        (draw-doors! level-object)
         
         (check-for-egg-remove level-object)
 

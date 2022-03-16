@@ -236,9 +236,16 @@
     ;;
 
     (define splash-screen-tile (make-bitmap-tile "images/SplashScreen.png"))
+    (define press-space-tile (make-bitmap-tile "images/Press-space.png"))
+    ((press-space-tile 'set-y!) 600)
 
     (define (show-splash!)
       ((base-layer 'add-drawable) splash-screen-tile))
+
+    (define (press-space show?)
+      (if show?
+          ((moving-objects-layer 'remove-drawable) press-space-tile)
+          ((moving-objects-layer 'add-drawable) press-space-tile)))
 
     ;;
     ;; PUBLIC PROCEDURES
@@ -247,6 +254,7 @@
     (define (start! level-object)
       
       ((base-layer 'remove-drawable) splash-screen-tile)
+      ((moving-objects-layer 'remove-drawable) press-space-tile)
       
       ;; Show ant on screen
       ((moving-objects-layer 'add-drawable) ant-sequence)
@@ -280,6 +288,7 @@
         ((eq? message 'update!) (apply update! parameters))
         ((eq? message 'game-over!) (apply game-over! parameters))
         ((eq? message 'show-splash!) (apply show-splash! parameters))
+        ((eq? message 'press-space) (apply press-space parameters))
         (else (error "[ERROR in VisualADT DISPATCH] Wrong message: ") (display message))))
 
     dispatch))

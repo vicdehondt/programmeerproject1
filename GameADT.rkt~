@@ -1,10 +1,13 @@
-(define (make-game level)
-  (let ((draw (make-draw))
+(define (make-game . levels)
+  (let* ((draw (make-draw))
+        (current-level 1)
         (score 0)
         (lives 3)
         (highscore (read-file "highscore.txt"))
         (game-over? #f)
         (running #f))
+
+    (define level (get-from-list current-level levels))
 
     (define (start-up!)
       (draw 'show-splash! key-callback))
@@ -39,6 +42,7 @@
     (define (update-lives!)
       (if (level 'remove-live?)
           (begin
+            ;(reset-level!)
             (level 'remove-live! #f)
             (set! lives (- lives 1)))))
 
@@ -48,6 +52,14 @@
               (begin
                 (start-game!)
                 (set! running #t)))))
+
+    #|(define (reset-level!)
+      (display "Hallo")
+      (set! level (get-from-list current-level levels))
+      (start-game!))|#
+
+    #|(define (check-level-done)
+      (if ))|#
 
     (define (check-game-over)
       (if (<= lives 0)

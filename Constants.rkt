@@ -5,6 +5,8 @@
 
 (define max-scorpion-time 600)
 
+(define press-space-interval 400)
+
 (define score-interval 1000)
 
 (define distance 1)
