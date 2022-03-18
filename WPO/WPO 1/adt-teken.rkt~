@@ -1,0 +1,149 @@
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;                                 Teken ADT                                  ;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;; maak-adt-teken :: number, number -> teken
+(define (maak-adt-teken pixels-horizontaal pixels-verticaal)
+  (let ((venster (make-window pixels-horizontaal pixels-verticaal "Snake")))
+    
+    ;;
+    ;; Configureren van het spelvenster
+    ;;
+    
+    ((venster 'set-background!) "black")
+    
+    
+    ;;
+    ;; Slang stukken tiles beheren
+    ;; Voor een slang te tekenen moeten we een dynamisch aantal stukken
+    ;; tekenen. Het is dus onmogelijk om op voorhand deze 'tiles' te
+    ;; definieren. Daarom gaan we dus een associatie-lijst bijhouden van tiles.
+    ;; Elk element in die lijst zal dus een cons-cell zijn waarbij de car gelijk
+    ;; is aan het object, en de cdr die tile is die gebruikt wordt om dat object
+    ;; op het scherm te tekenen.
+    ;;
+    
+    (define slang-laag (venster 'make-layer))
+    (define slang-tiles '())
+    
+    ;; voeg-slang-stuk-toe! :: slang-stuk -> tile
+    (define (voeg-slang-stuk-toe! slang-stuk-adt)
+      (let ((nieuwe-tile
+              (make-bitmap-tile "images/snake.png" "images/snake-mask.png")))
+        (set! slang-tiles (cons (cons slang-stuk-adt nieuwe-tile) slang-tiles))
+        ((slang-laag 'add-drawable) nieuwe-tile)
+        nieuwe-tile))
+    
+    ;; neem-slang-stuk :: slang-stuk -> tile
+    (define (neem-slang-stuk slang-stuk-adt)
+      (let ((result (assoc slang-stuk-adt slang-tiles)))
+        (if result
+            (cdr result)
+            (voeg-slang-stuk-toe! slang-stuk-adt))))
+    
+   
+    
+    ;;
+    ;; Appel tiles beheren
+    ;; In dit voorbeeldspel is er slechts 1 appel, dus 1 vaste tile in het Teken
+    ;; ADT is voldoende.
+    ;;
+    
+    (define appel-laag (venster 'make-layer))
+    (define appel-tile
+      (make-bitmap-tile "images/apple.png" "images/apple-mask.png"))
+    ((appel-laag 'add-drawable) appel-tile)
+    
+   
+    
+    
+    ;;
+    ;; Teken Functies
+    ;;
+    
+    ;; Generieke teken procedure
+   
+    ;; OPGAVE: (4/7) Gegeven een objectje (bijvoorbeeld een slang stuk, of een
+    ;; appel), bereken de positie waar zijn tile naar verplaatst moet worden op
+    ;; het scherm door de coördinaten in de spellogica om te zetten naar
+    ;; coördinaten op het scherm (tekenlogica).
+    ;;
+    ;; Implementeer je oplossing in 3 stappen:
+    ;;
+    ;;  (1) Het opvragen van de positie van het object (= coördinaten in
+    ;;      spellogica). Kijk bijvoorbeeld naar de operaties van het Slang Stuk
+    ;;      ADT voor hoe dit kan.
+    ;;  (2) De x- en y-waarde van deze positie omzetten naar coördinaten op het
+    ;;      scherm (= coördinaten in tekenlogica).
+    ;;  (3) De meegegeven tile verplaatsen naar de juiste locatie op het scherm.
+    ;;      Maak gebruik van de operaties `set-x!` en `set-y!` zoals voorzien
+    ;;      door de grafische bibliotheek. Bekijk de documentatie voor meer
+    ;;      informatie over welke operaties ondersteund worden.
+   
+    (define (teken-object! obj tile)
+      ;; Verwijder de '#f' en implementeer je oplossing hier!
+      #f)
+   
+   
+   
+    
+    ;; Appel
+    ;; teken-appel! :: appel -> /
+    (define (teken-appel! appel-adt)
+      (if appel-adt
+          (teken-object! appel-adt appel-tile)))
+    
+    ;; Slang
+    ;; teken-slang-stuk! :: slang-stuk -> /
+    (define (teken-slang-stuk! slang-stuk-adt)
+      (let ((tile (neem-slang-stuk slang-stuk-adt)))
+        (teken-object! slang-stuk-adt tile)))
+    
+    ;; Spel
+    ;; teken-spel! :: spel -> /
+    (define (teken-spel! spel-adt)
+      (teken-level! (spel-adt 'level)))
+    
+    ;; Level
+    ;; teken-level! :: level -> /
+    (define (teken-level! level-adt)
+      (teken-appel! (level-adt 'appel))
+      (teken-slang! (level-adt 'slang)))
+    
+    ;; Slang
+    ;; teken-slang! :: slang -> /
+   
+    ;; OPGAVE: (5/7) Implementeer de logica om een slang te tekenen. Merk op dat
+    ;; een slang bestaat uit meerdere stukken. Roep voor elk stukje van de slang
+    ;; de `teken-slang-stuk!` procedure (die zelf gebruik maakt van de 
+    ;; `teken-object!` procedure) op.
+   
+    (define (teken-slang! slang-adt)
+      #f)
+   
+   
+   
+    
+    
+    ;;
+    ;; Callbacks instellen
+    ;;
+    
+    ;; set-spel-lus-functie! :: (number -> /) -> /
+    (define (set-spel-lus-functie! fun)
+      ((venster 'set-update-callback!) fun))
+    
+    ;; set-toets-functie! :: (symbol, any -> /) -> /
+    (define (set-toets-functie! fun)
+      ((venster 'set-key-callback!) fun))
+    
+    
+    ;;
+    ;; Dispatch
+    ;;
+    
+    (define (dispatch-teken-adt msg)
+      (cond ((eq? msg 'set-toets-functie!) set-toets-functie!)
+            ((eq? msg 'set-spel-lus-functie!) set-spel-lus-functie!)
+            ((eq? msg 'teken-spel!) teken-spel!)))
+    dispatch-teken-adt))

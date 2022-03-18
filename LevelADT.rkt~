@@ -9,7 +9,6 @@
         (ant (make-movingobject initial-ant-pos 'right 'ant))
         (update-score? #f)
         (remove-live? #f)
-        (inventory '((empty) (empty) (empty)))
         (done? #f))
 
 
@@ -73,6 +72,9 @@
         ((eq? kind 'key) (set! keys (cons (make-puzzleobject position-object kind) keys)))
         ((eq? kind 'door) (set! doors (cons (make-puzzleobject position-object kind) doors)))))
 
+    #|(define (add-powerups lst)
+      (for-each (lambda (x-and-y) (add-powerup (make-position (car x-and-y) (cadr x-and-y)))) lst))|#
+
     (define (initial-ant-pos! position-object)
       (set! initial-ant-pos position-object))
 
@@ -90,53 +92,27 @@
       (define (door-collision-list direction)
         (map (lambda (door-object) (upcomming-collision? door-object direction)) doors))
 
-      (define (key-collision-list direction)
-        (map (lambda (key-object) (collision? key-object)) keys))
-
       ;; Returns list with every egg it collides with
       (define (egg-collision-list direction)
         (map (lambda (egg-object) (collision? egg-object)) eggs))
 
-      (define (next-position)
+      ;; Checks if there is going to be a collision when moving to given direction
+      (define (upcomming-collision? object direction)
         (let ((current-x ((moving-object 'position) 'x))
               (current-y ((moving-object 'position) 'y)))
           (cond
-            ((eq? direction 'right) (make-position (+ current-x 1) current-y))
-            ((eq? direction 'left) (make-position (- current-x 1) current-y))
-            ((eq? direction 'up) (make-position current-x (- current-y 1)))
-            ((eq? direction 'down) (make-position current-x (+ current-y 1))))))
-      
-      ;; Checks if there is going to be a collision when moving to given direction
-      (define (upcomming-collision? object direction)
-        ((object 'position) 'equal? (next-position)))
+            ((eq? direction 'right) ((object 'position) 'equal? (make-position (+ current-x 1) current-y)))
+            ((eq? direction 'left) ((object 'position) 'equal? (make-position (- current-x 1) current-y)))
+            ((eq? direction 'up) ((object 'position) 'equal? (make-position current-x (- current-y 1))))
+            ((eq? direction 'down) ((object 'position) 'equal? (make-position current-x (+ current-y 1)))))))
 
       (define (collision? object)
         ((object 'position) 'equal? (moving-object 'position)))
 
-      (define (check-for-opening)
-        (cond
-          ((and (list? (member #t (door-collision-list direction))) (eq? (caar inventory) 'key)) (remove-door!)
-                                                                                                 #t)
-          ((and (list? (member #t (door-collision-list direction))) (eq? (caar inventory) 'empty)) #f)
-          (else #t)))
-
-    (define (remove-door!)
-      (let ((current-doors (reverse doors)))
-        (define (look-for-remove current remaining result)
-          (set-car! inventory (cdar inventory))
-          (cond
-            ((null? current-doors) result)
-            ((and (null? remaining) ((current 'position) 'equal? (next-position))) (set! doors result))
-            (((current 'position) 'equal? (next-position)) (set! doors (append result remaining)))
-            (else (look-for-remove (car remaining) (cdr remaining) (cons current result)))))
-        (look-for-remove (car current-doors) (cdr current-doors) '())))
-
       (cond
         ((eq? kind 'wall) (not (list? (member #t (wall-collision-list direction)))))
-        ((eq? kind 'door) (if (eq? (moving-object 'kind) 'ant) (check-for-opening)
-                              (not (list? (member #t (door-collision-list direction))))))
-        ((eq? kind 'egg) (not (list? (member #t (egg-collision-list direction)))))
-        ((eq? kind 'key) (not (list? (member #t (key-collision-list direction)))))))
+        ((eq? kind 'door) (not (list? (member #t (door-collision-list direction)))))
+        ((eq? kind 'egg) (not (list? (member #t (egg-collision-list direction)))))))
 
     (define (remove-egg!)
       (let ((current-eggs (reverse eggs)))
@@ -148,23 +124,6 @@
             (else (look-for-remove (car remaining) (cdr remaining) (cons current result)))))
         (look-for-remove (car current-eggs) (cdr current-eggs) '())))
 
-    (define (add-to-inventory! object)
-      (cond
-        ((eq? (object 'kind) 'key) (set-car! inventory (cons 'key (car inventory))))
-        (else (display "[ERROR in LevelADT add-to-inventory!] Wrong kind given!") (display (object 'kind)))))
-
-    (define (remove-and-add-to-inv!)
-      (let ((current-keys (reverse keys)))
-        (define (look-for-remove current remaining result)
-          (cond
-            ((null? current-keys) result)
-            ((and (null? remaining) ((current 'position) 'equal? (ant 'position))) (add-to-inventory! current)
-                                                                                   (set! keys result))
-            (((current 'position) 'equal? (ant 'position)) (add-to-inventory! current)
-                                                           (set! keys (append result remaining)))
-            (else (look-for-remove (car remaining) (cdr remaining) (cons current result)))))
-        (look-for-remove (car current-keys) (cdr current-keys) '())))
-
     ;; Checks if an egg needs to be removed
     (define (check-and-remove-eggs! direction)
       (if (not (can-move? ant direction 'egg))
@@ -172,18 +131,12 @@
             (remove-egg!)
             (update-score! #t))))
 
-    ;; Check if the ant collides with a key
-    (define (check-for-key direction)
-      (if (not (can-move? ant direction 'key))
-          (begin
-            (remove-and-add-to-inv!))))
-
     ;; Checks if any scorpion collides with the ant and moves the ant back to initial-ant-pos
     (define (check-for-ant-scorpion-collision)
       (if (list? (member #t (map (lambda (scorpion-object) ((ant 'position) 'equal? (scorpion-object 'position))) scorpions)))
-          (begin
-            (remove-live! #t)
-            (reset))))
+        (begin
+          (remove-live! #t)
+          (reset))))
 
     ;;
     ;; RESET
@@ -229,8 +182,7 @@
           (begin
             (ant 'orientation! key)
             (ant 'move! distance)
-            (check-and-remove-eggs! key)
-            (check-for-key key))))
+            (check-and-remove-eggs! key))))
 
     ;;
     ;; SCORE
@@ -248,15 +200,11 @@
     (define (member? element object-list)
       (cond
         ((eq? object-list 'eggs) (member element eggs))
-        ((eq? object-list 'keys) (member element keys))
-        ((eq? object-list 'doors) (member element doors))
         (else (display "[ERROR in LevelADT member?] Wrong object-list") (display object-list))))
 
     (define (length? object-list)
       (cond
         ((eq? object-list 'eggs) (length eggs))
-        ((eq? object-list 'keys) (length keys))
-        ((eq? object-list 'doors) (length doors))
         (else (display "[ERROR in LevelADT length?] Wrong object-list") (display object-list))))
 
     (define (dispatch message . parameters)
@@ -269,7 +217,6 @@
         ((eq? message 'eggs) eggs)
         ((eq? message 'add-puzzleobjects) (apply add-puzzleobjects parameters))
         ((eq? message 'keys) keys)
-        ((eq? message 'inventory) inventory)
         ((eq? message 'doors) doors)
         ((eq? message 'add-powerups) (apply add-powerups parameters))
         ((eq? message 'power-ups) power-ups)

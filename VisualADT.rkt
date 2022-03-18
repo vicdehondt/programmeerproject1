@@ -199,6 +199,24 @@
               current)
             (find (car remaining) (cdr remaining)))))
 
+    (define (which-key-to-remove level-object)
+      (let find ((current (car key-tiles))
+                 (remaining (cdr key-tiles)))
+        (if (not (level-object 'member? (car current) 'keys))
+            (begin
+              ((egg-layer 'remove-drawable) (cdr current))
+              current)
+            (find (car remaining) (cdr remaining)))))
+
+    (define (which-door-to-remove level-object)
+      (let find ((current (car door-tiles))
+                 (remaining (cdr door-tiles)))
+        (if (not (level-object 'member? (car current) 'doors))
+            (begin
+              ((egg-layer 'remove-drawable) (cdr current))
+              current)
+            (find (car remaining) (cdr remaining)))))
+    
     (define (remove-from-list element lst)
       (let ((search-list (reverse lst)))
         (let search-and-remove ((current (car search-list))
@@ -214,6 +232,14 @@
     (define (check-for-egg-remove level-object)
       (if (> (length egg-tiles) (level-object 'length? 'eggs))
           (set! egg-tiles (remove-from-list (which-egg-to-remove level-object) egg-tiles))))
+
+    (define (check-for-key-remove level-object)
+      (if (> (length key-tiles) (level-object 'length? 'keys))
+          (set! key-tiles (remove-from-list (which-key-to-remove level-object) key-tiles))))
+
+    (define (check-for-door-remove level-object)
+      (if (> (length door-tiles) (level-object 'length? 'doors))
+          (set! door-tiles (remove-from-list (which-door-to-remove level-object) door-tiles))))
 
     ;;
     ;; GAME OVER
@@ -275,6 +301,10 @@
         (draw-doors! level-object)
         
         (check-for-egg-remove level-object)
+
+        (check-for-key-remove level-object)
+
+        (check-for-door-remove level-object)
 
         (draw-highscore! game)
         

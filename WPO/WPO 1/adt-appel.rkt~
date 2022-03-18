@@ -1,0 +1,28 @@
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;                                 Appel ADT                                  ;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;; OPGAVE: (6/7) Implementeer het Appel ADT. De operaties (en signaturen) van
+;; het ADT staan hieronder vermeld.
+;;
+;; ADT Appel
+;;   maak-adt-appel :: positie -> appel
+;;          positie :: / -> positie
+;;         positie! :: positie -> /
+;;
+;; Om een object van het Appel ADT aan te maken moet een positie meegegeven
+;; worden. Dit is de initiele positie van een appel-object. De `positie`
+;; operatie geeft de huidige positie terug, en met `positie!` kan deze aangepast
+;; worden.
+;;
+;; Je kan gebruik maken van onderstaand sjabloon om een ADT in een object-
+;; gebaseerde stijl te implementeren.
+;;
+;; (define (maak-adt-appel positie)
+;;
+;;  ;; Implementeer hier het Appel ADT
+;;
+;;   (define (dispatch-appel msg)
+;;     ;; Test hier op alle mogelijke berichten die ontvangen kunnen worden...
+;;     ...)
+;;   dispatch-appel))
