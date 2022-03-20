@@ -10,6 +10,7 @@
         (update-score? #f)
         (remove-live? #f)
         (inventory '((empty) (empty) (empty)))
+        (speed-up? #f)
         (done? #f))
 
 
@@ -207,6 +208,7 @@
     ;;
 
     (define (move-scorpion! delta-time)
+      (let ((interval (if speed-up? speed-interval normal-interval)))
       (define (move! scorpion)
         (let ((orientation (scorpion 'orientation)))
           (if (and (can-move? scorpion orientation 'wall) (can-move? scorpion orientation 'door))
@@ -218,8 +220,8 @@
                 (scorpion 'move! distance)
                 (set! scorpion-time 0)))))
       (set! scorpion-time (+ scorpion-time delta-time))
-      (if (> scorpion-time max-scorpion-time)
-          (for-each move! scorpions)))
+      (if (> scorpion-time interval)
+          (for-each move! scorpions))))
 
     (define (move-ant! key)
       (if (or (and (eq? key 'right) (can-move? ant key 'wall) (can-move? ant key 'door))
@@ -247,16 +249,16 @@
     
     (define (member? element object-list)
       (cond
-        ((eq? object-list 'eggs) (member element eggs))
-        ((eq? object-list 'keys) (member element keys))
-        ((eq? object-list 'doors) (member element doors))
+        ((eq? object-list 'egg) (member element eggs))
+        ((eq? object-list 'key) (member element keys))
+        ((eq? object-list 'door) (member element doors))
         (else (display "[ERROR in LevelADT member?] Wrong object-list") (display object-list))))
 
     (define (length? object-list)
       (cond
-        ((eq? object-list 'eggs) (length eggs))
-        ((eq? object-list 'keys) (length keys))
-        ((eq? object-list 'doors) (length doors))
+        ((eq? object-list 'egg) (length eggs))
+        ((eq? object-list 'key) (length keys))
+        ((eq? object-list 'door) (length doors))
         (else (display "[ERROR in LevelADT length?] Wrong object-list") (display object-list))))
 
     (define (dispatch message . parameters)

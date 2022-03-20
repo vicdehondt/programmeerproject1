@@ -3,9 +3,10 @@
 
 (define grid-cell 48)
 
-(define max-scorpion-time 600)
+(define normal-interval 600)
+(define speed-interval 300)
 
-(define press-space-interval 400)
+(define press-space-interval 500)
 
 (define score-interval 1000)
 
@@ -13,3 +14,5 @@
 
 (define width 912)
 (define height 720)
+
+(define score-size 8)

@@ -4,7 +4,8 @@
                                                 (make-bitmap-tile "images/48px/FireAnt-Down.png" "images/48px/FireAnt-Down-mask.png")
                                                 (make-bitmap-tile "images/48px/FireAnt-Left.png" "images/48px/FireAnt-Left-mask.png"))))
         (highscore-tile (make-tile 300 96))
-        (score-tile (make-tile 250 96))
+        (score-text-tile (make-bitmap-tile "images/Score/Score.png" "images/Score/Score-mask.png"))
+        (score (make-vector 8 0))
         (lives-tile (make-tile 200 96))
         (wall-tiles '())
         (egg-tiles '())
@@ -20,28 +21,26 @@
     ;;
     
     (define base-layer (window 'make-layer))
-    (define egg-layer (window 'make-layer))
-    (define moving-objects-layer (window 'make-layer))
+    (define game-objects-layer (window 'make-layer))
 
     ;;
     ;; INFORMATION VISUALISATION
     ;;
 
-    ((egg-layer 'add-drawable) highscore-tile)
+    ((game-objects-layer 'add-drawable) highscore-tile)
     ((highscore-tile 'set-x!) 410)
     ((highscore-tile 'set-y!) 624)
 
     (define (highscore-text highscore)
       (string-append "Highscore: " (number->string highscore)))
 
-    ((egg-layer 'add-drawable) score-tile)
-    ((score-tile 'set-x!) 0)
-    ((score-tile 'set-y!) 624)
+    ((score-text-tile 'set-x!) 120)
+    ((score-text-tile 'set-y!) 624)
 
     (define (score-text score)
       (string-append "Score: " (number->string score)))
 
-    ((egg-layer 'add-drawable) lives-tile)
+    ((game-objects-layer 'add-drawable) lives-tile)
     ((lives-tile 'set-x!) 205)
     ((lives-tile 'set-y!) 624)
 
@@ -51,18 +50,26 @@
     ;;
     ;; DRAW PROCEDURES
     ;;
-
+    
     ; Show the highscore on screen
     (define (draw-highscore! game)
       (let ((highscore (game 'highscore)))
         (highscore-tile 'clear)
         ((highscore-tile 'draw-text) (highscore-text highscore) 18 80 40 "white")))
 
-    ; Show the score on screen
     (define (draw-score! game)
+      (let loop ((game-score (game 'score))
+                 (count 0))
+        (if (<= count (- score-size 1))
+            (begin
+              (((vector-ref score count) 'set-current!) (vector-ref game-score count))
+              (loop game-score (+ count 1))))))
+    
+    ; Show the score on screen
+    #|(define (draw-score! game)
       (let ((score (game 'score)))
         (score-tile 'clear)
-        ((score-tile 'draw-text) (score-text score) 18 80 40 "white")))
+        ((score-tile 'draw-text) (score-text score) 18 80 40 "white")))|#
 
     ; Show lives remaining on screen
     (define (draw-lives! game)
@@ -92,20 +99,13 @@
         (set-current-tile! (ant 'orientation) ant-sequence)
         (draw-object! ant ant-sequence)))
 
-    (define (draw-walls! level-object)
-      (for-each-object (lambda (wall) (draw-stationary-piece! wall)) (level-object 'walls)))
-
-    (define (draw-eggs! level-object)
-      (for-each-object (lambda (egg) (draw-stationary-piece! egg)) (level-object 'eggs)))
-
-    (define (draw-keys! level-object)
-      (for-each-object (lambda (key) (draw-stationary-piece! key)) (level-object 'keys)))
-
-    (define (draw-doors! level-object)
-      (for-each-object (lambda (door) (draw-stationary-piece! door)) (level-object 'doors)))
-
-    (define (draw-scorpions! level-object)
-      (for-each-object (lambda (scorpion) (draw-scorpion-piece! scorpion)) (level-object 'scorpions)))
+    (define (draw! level-object kind)
+      (cond
+        ((eq? kind 'wall) (for-each-object (lambda (wall) (draw-stationary-piece! wall)) (level-object 'walls)))
+        ((eq? kind 'egg) (for-each-object (lambda (egg) (draw-stationary-piece! egg)) (level-object 'eggs)))
+        ((eq? kind 'key) (for-each-object (lambda (key) (draw-stationary-piece! key)) (level-object 'keys)))
+        ((eq? kind 'door) (for-each-object (lambda (door) (draw-stationary-piece! door)) (level-object 'doors)))
+        ((eq? kind 'scorpion) (for-each-object (lambda (scorpion) (draw-scorpion-piece! scorpion)) (level-object 'scorpions)))))
 
     (define (draw-scorpion-piece! scorpion-object)
       (let ((sequence (get-object-piece scorpion-object))
@@ -176,44 +176,61 @@
           (else (error "[ERROR in VisualADT/add-object-tile!] Wrong kind: ") (display kind)))))
 
     (define (show! tile kind)
+      (define (show-score! count x y)
+        (if (<= count (- score-size 1))
+            (let ((sequence (make-tile-sequence (list (make-bitmap-tile "images/Numbers/0.png" "images/Numbers/0-mask.png")
+                                                        (make-bitmap-tile "images/Numbers/1.png" "images/Numbers/1-mask.png")
+                                                        (make-bitmap-tile "images/Numbers/2.png" "images/Numbers/2-mask.png")
+                                                        (make-bitmap-tile "images/Numbers/3.png" "images/Numbers/3-mask.png")
+                                                        (make-bitmap-tile "images/Numbers/4.png" "images/Numbers/4-mask.png")
+                                                        (make-bitmap-tile "images/Numbers/5.png" "images/Numbers/5-mask.png")
+                                                        (make-bitmap-tile "images/Numbers/6.png" "images/Numbers/6-mask.png")
+                                                        (make-bitmap-tile "images/Numbers/7.png" "images/Numbers/7-mask.png")
+                                                        (make-bitmap-tile "images/Numbers/8.png" "images/Numbers/8-mask.png")
+                                                        (make-bitmap-tile "images/Numbers/9.png" "images/Numbers/9-mask.png")))))
+              ((game-objects-layer 'add-drawable) sequence)
+              ((sequence 'set-x!) x)
+              ((sequence 'set-y!) y)
+              (vector-set! score count sequence)
+              (show-score! (+ count 1) (+ x 31) y))))
       (cond
-        ((eq? kind 'scorpion) ((moving-objects-layer 'add-drawable) tile))
-        ((eq? kind 'egg) ((egg-layer 'add-drawable) tile))
-        ((eq? kind 'key) ((egg-layer 'add-drawable) tile))
-        ((eq? kind 'door) ((egg-layer 'add-drawable) tile))
-        ((eq? kind 'wall) ((base-layer 'add-drawable) tile))
+        ((eq? kind 'scorpion) ((game-objects-layer 'add-drawable) tile))
+        ((eq? kind 'egg) ((game-objects-layer 'add-drawable) tile))
+        ((eq? kind 'key) ((game-objects-layer 'add-drawable) tile))
+        ((eq? kind 'door) ((game-objects-layer 'add-drawable) tile))
+        ((eq? kind 'wall) ((game-objects-layer 'add-drawable) tile))
+        ((eq? kind 'score) (show-score! 0 324 624))
         (else (error "[ERROR in VisualADT/show!] Wrong kind: ") (display kind))))
 
     
     ;;
-    ;; EGG REMOVAL
+    ;; REMOVING
     ;;
 
-    ;; Finds the right egg to remove
     (define (which-egg-to-remove level-object)
       (let find ((current (car egg-tiles))
                  (remaining (cdr egg-tiles)))
-        (if (not (level-object 'member? (car current) 'eggs))
+        (if (not (level-object 'member? (car current) 'egg))
             (begin
-              ((egg-layer 'remove-drawable) (cdr current))
+              ((game-objects-layer 'remove-drawable) (cdr current))
               current)
             (find (car remaining) (cdr remaining)))))
 
     (define (which-key-to-remove level-object)
       (let find ((current (car key-tiles))
                  (remaining (cdr key-tiles)))
-        (if (not (level-object 'member? (car current) 'keys))
+        (if (not (level-object 'member? (car current) 'key))
             (begin
-              ((egg-layer 'remove-drawable) (cdr current))
+              ((game-objects-layer 'remove-drawable) (cdr current))
               current)
             (find (car remaining) (cdr remaining)))))
 
     (define (which-door-to-remove level-object)
       (let find ((current (car door-tiles))
                  (remaining (cdr door-tiles)))
-        (if (not (level-object 'member? (car current) 'doors))
+        (if (not (level-object 'member? (car current) 'door))
             (begin
-              ((egg-layer 'remove-drawable) (cdr current))
+              ((game-objects-layer 'remove-drawable) (cdr current))
               current)
             (find (car remaining) (cdr remaining)))))
     
@@ -230,15 +247,15 @@
 
     ;; Checks if an egg is removed
     (define (check-for-egg-remove level-object)
-      (if (> (length egg-tiles) (level-object 'length? 'eggs))
+      (if (> (length egg-tiles) (level-object 'length? 'egg))
           (set! egg-tiles (remove-from-list (which-egg-to-remove level-object) egg-tiles))))
 
     (define (check-for-key-remove level-object)
-      (if (> (length key-tiles) (level-object 'length? 'keys))
+      (if (> (length key-tiles) (level-object 'length? 'key))
           (set! key-tiles (remove-from-list (which-key-to-remove level-object) key-tiles))))
 
     (define (check-for-door-remove level-object)
-      (if (> (length door-tiles) (level-object 'length? 'doors))
+      (if (> (length door-tiles) (level-object 'length? 'door))
           (set! door-tiles (remove-from-list (which-door-to-remove level-object) door-tiles))))
 
     ;;
@@ -251,9 +268,7 @@
       
       (base-layer 'empty)
       
-      (egg-layer 'empty)
-      
-      (moving-objects-layer 'empty)
+      (game-objects-layer 'empty)
       
       ((base-layer 'add-drawable) game-over-tile))
 
@@ -270,8 +285,8 @@
 
     (define (press-space show?)
       (if show?
-          ((moving-objects-layer 'remove-drawable) press-space-tile)
-          ((moving-objects-layer 'add-drawable) press-space-tile)))
+          ((game-objects-layer 'remove-drawable) press-space-tile)
+          ((game-objects-layer 'add-drawable) press-space-tile)))
 
     ;;
     ;; PUBLIC PROCEDURES
@@ -280,37 +295,35 @@
     (define (start! level-object)
       
       ((base-layer 'remove-drawable) splash-screen-tile)
-      ((moving-objects-layer 'remove-drawable) press-space-tile)
+      ((game-objects-layer 'remove-drawable) press-space-tile)
       
       ;; Show ant on screen
-      ((moving-objects-layer 'add-drawable) ant-sequence)
-      
-      (draw-walls! level-object))
+      ((game-objects-layer 'add-drawable) ant-sequence)
+      ((base-layer 'add-drawable) score-text-tile)
+      (show! 'none 'score)
+
+      (draw! level-object 'wall))
     
     (define (update! game)
       (let ((level-object (game 'level)))
         
         (draw-ant! level-object)
-        
-        (draw-scorpions! level-object)
-        
-        (draw-eggs! level-object)
 
-        (draw-keys! level-object)
+        (draw! level-object 'egg)
+        (draw! level-object 'key)
+        (draw! level-object 'door)
+        (draw! level-object 'scorpion)
 
-        (draw-doors! level-object)
-        
         (check-for-egg-remove level-object)
-
         (check-for-key-remove level-object)
-
         (check-for-door-remove level-object)
 
-        (draw-highscore! game)
+        ;(draw-highscore! game)
         
         (draw-score! game)
         
-        (draw-lives! game)))
+        ;(draw-lives! game)
+        ))
 
     (define (dispatch message . parameters)
       (cond

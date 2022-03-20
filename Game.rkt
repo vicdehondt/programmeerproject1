@@ -50,9 +50,9 @@
 ;; EGGS
 ;;
 
-(level 'add-eggs '((2 8)
-                   (3 8)
-                   (4 8)))
+(level 'add-eggs '((1 8)
+                   (2 8)
+                   (3 8)))
 
 ;;
 ;; SCORPIONS
@@ -66,7 +66,7 @@
 ;;
 
 (level 'add-puzzleobjects '((13 8 key)
-                            (4 6 key)
+                            (4 8 key)
                             (10 6 door)
                             (7 10 door)))
 

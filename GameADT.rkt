@@ -3,7 +3,7 @@
         (current-level 1)
         (press-space-time 0)
         (shown? #t)
-        (score 0)
+        (score (make-vector 8 0))
         (lives 3)
         (highscore (read-file "highscore.txt"))
         (game-over? #f)
@@ -52,7 +52,11 @@
       (if (level 'update-score?)
           (begin
             (level 'update-score! #f)
-            (set! score (+ score 500)))))
+            (if (>= (+ (vector-ref score 5) 5) 10)
+                (begin
+                  (vector-set! score 5 (remainder (+ (vector-ref score 5) 5) 10))
+                  (vector-set! score 6 (+ (vector-ref score 6) (quotient (+ (vector-ref score 5) 5) 10))))
+                (vector-set! score 5 (remainder (+ (vector-ref score 5) 5) 10))))))
 
     (define (update-lives!)
       (if (level 'remove-live?)
