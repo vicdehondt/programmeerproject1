@@ -3,11 +3,31 @@
                                                 (make-bitmap-tile "images/48px/FireAnt-Right.png" "images/48px/FireAnt-Right-mask.png")
                                                 (make-bitmap-tile "images/48px/FireAnt-Down.png" "images/48px/FireAnt-Down-mask.png")
                                                 (make-bitmap-tile "images/48px/FireAnt-Left.png" "images/48px/FireAnt-Left-mask.png"))))
-        (highscore-tile (make-tile 300 96))
+        (highscore-sequence (make-tile-sequence (list (make-bitmap-tile "images/Numbers/0.png" "images/Numbers/0-mask.png")
+                                                      (make-bitmap-tile "images/Numbers/1.png" "images/Numbers/1-mask.png")
+                                                      (make-bitmap-tile "images/Numbers/2.png" "images/Numbers/2-mask.png")
+                                                      (make-bitmap-tile "images/Numbers/3.png" "images/Numbers/3-mask.png")
+                                                      (make-bitmap-tile "images/Numbers/4.png" "images/Numbers/4-mask.png")
+                                                      (make-bitmap-tile "images/Numbers/5.png" "images/Numbers/5-mask.png")
+                                                      (make-bitmap-tile "images/Numbers/6.png" "images/Numbers/6-mask.png")
+                                                      (make-bitmap-tile "images/Numbers/7.png" "images/Numbers/7-mask.png")
+                                                      (make-bitmap-tile "images/Numbers/8.png" "images/Numbers/8-mask.png")
+                                                      (make-bitmap-tile "images/Numbers/9.png" "images/Numbers/9-mask.png"))))
         (score-text-tile (make-bitmap-tile "images/Score/Score.png" "images/Score/Score-mask.png"))
         (highscore-text-tile (make-bitmap-tile "images/Highscore/Highscore.png" "images/Highscore/Highscore-mask.png"))
+        (lives-text-tile (make-bitmap-tile "images/Lives/Lives.png" "images/Lives/Lives-mask.png"))
         (score (make-vector 8 0))
-        (lives-tile (make-tile 200 96))
+        (highscore (make-vector 8 0))
+        (lives-sequence (make-tile-sequence (list (make-bitmap-tile "images/Lives/0.png" "images/Numbers/0-mask.png")
+                                                  (make-bitmap-tile "images/Lives/1.png" "images/Numbers/1-mask.png")
+                                                  (make-bitmap-tile "images/Lives/2.png" "images/Numbers/2-mask.png")
+                                                  (make-bitmap-tile "images/Lives/3.png" "images/Numbers/3-mask.png")
+                                                  (make-bitmap-tile "images/Lives/4.png" "images/Numbers/4-mask.png")
+                                                  (make-bitmap-tile "images/Lives/5.png" "images/Numbers/5-mask.png")
+                                                  (make-bitmap-tile "images/Lives/6.png" "images/Numbers/6-mask.png")
+                                                  (make-bitmap-tile "images/Lives/7.png" "images/Numbers/7-mask.png")
+                                                  (make-bitmap-tile "images/Lives/8.png" "images/Numbers/8-mask.png")
+                                                  (make-bitmap-tile "images/Lives/9.png" "images/Numbers/9-mask.png"))))
         (wall-tiles '())
         (egg-tiles '())
         (key-tiles '())
@@ -28,22 +48,17 @@
     ;; INFORMATION VISUALISATION
     ;;
 
-    ((game-objects-layer 'add-drawable) highscore-tile)
-    ((highscore-tile 'set-x!) 410)
-    ((highscore-tile 'set-y!) 624)
-
     ((score-text-tile 'set-x!) 168)
     ((score-text-tile 'set-y!) 624)
 
     ((highscore-text-tile 'set-x!) 0)
     ((highscore-text-tile 'set-y!) 656)
 
-    ((game-objects-layer 'add-drawable) lives-tile)
-    ((lives-tile 'set-x!) 205)
-    ((lives-tile 'set-y!) 624)
+    ((lives-text-tile 'set-x!) 648)
+    ((lives-text-tile 'set-y!) 624)
 
-    (define (lives-text lives)
-      (string-append "Lives: " (number->string lives)))
+    ((lives-sequence 'set-x!) 884)
+    ((lives-sequence 'set-y!) 624)
 
     ;;
     ;; DRAW PROCEDURES
@@ -51,9 +66,12 @@
     
     ; Show the highscore on screen
     (define (draw-highscore! game)
-      (let ((highscore (game 'highscore)))
-        (highscore-tile 'clear)
-        ((highscore-tile 'draw-text) (highscore-text highscore) 18 80 40 "white")))
+      (let loop ((game-highscore (game 'highscore))
+                 (count 0))
+        (if (<= count (- score-size 1))
+            (begin
+              (((vector-ref highscore count) 'set-current!) (vector-ref game-highscore count))
+              (loop game-highscore (+ count 1))))))
 
     (define (draw-score! game)
       (let loop ((game-score (game 'score))
@@ -62,18 +80,11 @@
             (begin
               (((vector-ref score count) 'set-current!) (vector-ref game-score count))
               (loop game-score (+ count 1))))))
-    
-    ; Show the score on screen
-    #|(define (draw-score! game)
-      (let ((score (game 'score)))
-        (score-tile 'clear)
-        ((score-tile 'draw-text) (score-text score) 18 80 40 "white")))|#
 
     ; Show lives remaining on screen
     (define (draw-lives! game)
       (let ((lives (game 'lives)))
-        (lives-tile 'clear)
-        ((lives-tile 'draw-text) (lives-text lives) 18 80 40 "white")))
+        ((lives-sequence 'set-current!) lives)))
 
     ;; Lets the tile look to the direction it's going
     (define (set-sequence! object sequence)
@@ -174,30 +185,42 @@
           (else (error "[ERROR in VisualADT/add-object-tile!] Wrong kind: ") (display kind)))))
 
     (define (show! tile kind)
-      (define (show-score! count x y)
+      (define (show-score! count x y vector kind)
         (if (<= count (- score-size 1))
-            (let ((sequence (make-tile-sequence (list (make-bitmap-tile "images/Numbers/0.png" "images/Numbers/0-mask.png")
-                                                        (make-bitmap-tile "images/Numbers/1.png" "images/Numbers/1-mask.png")
-                                                        (make-bitmap-tile "images/Numbers/2.png" "images/Numbers/2-mask.png")
-                                                        (make-bitmap-tile "images/Numbers/3.png" "images/Numbers/3-mask.png")
-                                                        (make-bitmap-tile "images/Numbers/4.png" "images/Numbers/4-mask.png")
-                                                        (make-bitmap-tile "images/Numbers/5.png" "images/Numbers/5-mask.png")
-                                                        (make-bitmap-tile "images/Numbers/6.png" "images/Numbers/6-mask.png")
-                                                        (make-bitmap-tile "images/Numbers/7.png" "images/Numbers/7-mask.png")
-                                                        (make-bitmap-tile "images/Numbers/8.png" "images/Numbers/8-mask.png")
-                                                        (make-bitmap-tile "images/Numbers/9.png" "images/Numbers/9-mask.png")))))
+            (let ((sequence (if (eq? kind 'score) (make-tile-sequence (list (make-bitmap-tile "images/Numbers/0.png" "images/Numbers/0-mask.png")
+                                                                            (make-bitmap-tile "images/Numbers/1.png" "images/Numbers/1-mask.png")
+                                                                            (make-bitmap-tile "images/Numbers/2.png" "images/Numbers/2-mask.png")
+                                                                            (make-bitmap-tile "images/Numbers/3.png" "images/Numbers/3-mask.png")
+                                                                            (make-bitmap-tile "images/Numbers/4.png" "images/Numbers/4-mask.png")
+                                                                            (make-bitmap-tile "images/Numbers/5.png" "images/Numbers/5-mask.png")
+                                                                            (make-bitmap-tile "images/Numbers/6.png" "images/Numbers/6-mask.png")
+                                                                            (make-bitmap-tile "images/Numbers/7.png" "images/Numbers/7-mask.png")
+                                                                            (make-bitmap-tile "images/Numbers/8.png" "images/Numbers/8-mask.png")
+                                                                            (make-bitmap-tile "images/Numbers/9.png" "images/Numbers/9-mask.png")))
+                                (make-tile-sequence (list (make-bitmap-tile "images/Highscore/0.png" "images/Numbers/0-mask.png")
+                                                          (make-bitmap-tile "images/Highscore/1.png" "images/Numbers/1-mask.png")
+                                                          (make-bitmap-tile "images/Highscore/2.png" "images/Numbers/2-mask.png")
+                                                          (make-bitmap-tile "images/Highscore/3.png" "images/Numbers/3-mask.png")
+                                                          (make-bitmap-tile "images/Highscore/4.png" "images/Numbers/4-mask.png")
+                                                          (make-bitmap-tile "images/Highscore/5.png" "images/Numbers/5-mask.png")
+                                                          (make-bitmap-tile "images/Highscore/6.png" "images/Numbers/6-mask.png")
+                                                          (make-bitmap-tile "images/Highscore/7.png" "images/Numbers/7-mask.png")
+                                                          (make-bitmap-tile "images/Highscore/8.png" "images/Numbers/8-mask.png")
+                                                          (make-bitmap-tile "images/Highscore/9.png" "images/Numbers/9-mask.png"))))))
               ((game-objects-layer 'add-drawable) sequence)
               ((sequence 'set-x!) x)
               ((sequence 'set-y!) y)
-              (vector-set! score count sequence)
-              (show-score! (+ count 1) (+ x 31) y))))
+              (vector-set! vector count sequence)
+              (show-score! (+ count 1) (+ x 31) y vector kind))))
       (cond
         ((eq? kind 'scorpion) ((game-objects-layer 'add-drawable) tile))
         ((eq? kind 'egg) ((game-objects-layer 'add-drawable) tile))
         ((eq? kind 'key) ((game-objects-layer 'add-drawable) tile))
         ((eq? kind 'door) ((game-objects-layer 'add-drawable) tile))
         ((eq? kind 'wall) ((game-objects-layer 'add-drawable) tile))
-        ((eq? kind 'score) (show-score! 0 372 624))
+        ((eq? kind 'score) (show-score! 0 372 624 score 'score))
+        ((eq? kind 'highscore) (show-score! 0 372 656 highscore 'highscore))
+        ((eq? kind 'lives) ((game-objects-layer 'add-drawable) tile))
         (else (error "[ERROR in VisualADT/show!] Wrong kind: ") (display kind))))
 
     
@@ -299,7 +322,10 @@
       ((game-objects-layer 'add-drawable) ant-sequence)
       ((base-layer 'add-drawable) score-text-tile)
       ((base-layer 'add-drawable) highscore-text-tile)
+      ((base-layer 'add-drawable) lives-text-tile)
       (show! 'none 'score)
+      (show! 'none 'highscore)
+      (show! lives-sequence 'lives)
 
       (draw! level-object 'wall))
     
@@ -317,11 +343,11 @@
         (check-for-key-remove level-object)
         (check-for-door-remove level-object)
 
-        ;(draw-highscore! game)
+        (draw-highscore! game)
         
         (draw-score! game)
         
-        ;(draw-lives! game)
+        (draw-lives! game)
         ))
 
     (define (dispatch message . parameters)

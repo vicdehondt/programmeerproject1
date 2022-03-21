@@ -63,12 +63,7 @@
       (if (level 'update-score?)
           (begin
             (level 'update-score! #f)
-            (add)
-            #|(if (>= (+ (vector-ref score 5) 5) 10)
-                (begin
-                  (vector-set! score 5 (remainder (+ (vector-ref score 5) 5) 10))
-                  (vector-set! score 6 (+ (vector-ref score 6) (quotient (+ (vector-ref score 5) 5) 10))))
-                (vector-set! score 5 (remainder (+ (vector-ref score 5) 5) 10)))|#)))
+            (add))))
 
     (define (update-lives!)
       (if (level 'remove-live?)
@@ -83,14 +78,6 @@
               (begin
                 (start-game!)
                 (set! running #t)))))
-
-    #|(define (reset-level!)
-      (display "Hallo")
-      (set! level (get-from-list current-level levels))
-      (start-game!))|#
-
-    #|(define (check-level-done)
-      (if ))|#
 
     (define (check-game-over)
       (if (<= lives 0)
