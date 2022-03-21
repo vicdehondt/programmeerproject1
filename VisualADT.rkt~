@@ -5,7 +5,6 @@
                                                 (make-bitmap-tile "images/48px/FireAnt-Left.png" "images/48px/FireAnt-Left-mask.png"))))
         (highscore-tile (make-tile 300 96))
         (score-text-tile (make-bitmap-tile "images/Score/Score.png" "images/Score/Score-mask.png"))
-        (highscore-text-tile (make-bitmap-tile "images/Highscore/Highscore.png" "images/Highscore/Highscore-mask.png"))
         (score (make-vector 8 0))
         (lives-tile (make-tile 200 96))
         (wall-tiles '())
@@ -32,11 +31,14 @@
     ((highscore-tile 'set-x!) 410)
     ((highscore-tile 'set-y!) 624)
 
-    ((score-text-tile 'set-x!) 168)
+    (define (highscore-text highscore)
+      (string-append "Highscore: " (number->string highscore)))
+
+    ((score-text-tile 'set-x!) 120)
     ((score-text-tile 'set-y!) 624)
 
-    ((highscore-text-tile 'set-x!) 0)
-    ((highscore-text-tile 'set-y!) 656)
+    (define (score-text score)
+      (string-append "Score: " (number->string score)))
 
     ((game-objects-layer 'add-drawable) lives-tile)
     ((lives-tile 'set-x!) 205)
@@ -197,7 +199,7 @@
         ((eq? kind 'key) ((game-objects-layer 'add-drawable) tile))
         ((eq? kind 'door) ((game-objects-layer 'add-drawable) tile))
         ((eq? kind 'wall) ((game-objects-layer 'add-drawable) tile))
-        ((eq? kind 'score) (show-score! 0 372 624))
+        ((eq? kind 'score) (show-score! 0 324 624))
         (else (error "[ERROR in VisualADT/show!] Wrong kind: ") (display kind))))
 
     
@@ -298,7 +300,6 @@
       ;; Show ant on screen
       ((game-objects-layer 'add-drawable) ant-sequence)
       ((base-layer 'add-drawable) score-text-tile)
-      ((base-layer 'add-drawable) highscore-text-tile)
       (show! 'none 'score)
 
       (draw! level-object 'wall))

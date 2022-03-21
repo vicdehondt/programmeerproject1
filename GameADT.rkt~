@@ -1,13 +1,13 @@
 (define (make-game . levels)
   (let* ((draw (make-draw))
-         (current-level 1)
-         (press-space-time 0)
-         (shown? #t)
-         (score (make-vector 8 0))
-         (lives 3)
-         (highscore (read-file "highscore.txt"))
-         (game-over? #f)
-         (running #f))
+        (current-level 1)
+        (press-space-time 0)
+        (shown? #t)
+        (score (make-vector 8 0))
+        (lives 3)
+        (highscore (read-file "highscore.txt"))
+        (game-over? #f)
+        (running #f))
 
     (define level (get-from-list current-level levels))
 
@@ -48,27 +48,15 @@
             (level 'move-ant! key)
             (start-game? key))))
 
-    (define (add)
-      (define byte (make-vector 8))
-      (define carry 0)
-      (do ((pos 7 (- pos 1))) ((< pos 0) byte)
-        (let ((cnt (+ (vector-ref (vector 0 0 0 0 0 5 0 0) pos)
-                      (vector-ref Score pos)
-                      carry)))
-          (vector-set! score pos (if (>= cnt 10) (- cnt 10) cnt))
-          (set! carry (if (>= cnt 10) 1 0)))))
-
-
     (define (update-score!)
       (if (level 'update-score?)
           (begin
             (level 'update-score! #f)
-            (add)
-            #|(if (>= (+ (vector-ref score 5) 5) 10)
+            (if (>= (+ (vector-ref score 5) 5) 10)
                 (begin
                   (vector-set! score 5 (remainder (+ (vector-ref score 5) 5) 10))
                   (vector-set! score 6 (+ (vector-ref score 6) (quotient (+ (vector-ref score 5) 5) 10))))
-                (vector-set! score 5 (remainder (+ (vector-ref score 5) 5) 10)))|#)))
+                (vector-set! score 5 (remainder (+ (vector-ref score 5) 5) 10))))))
 
     (define (update-lives!)
       (if (level 'remove-live?)
