@@ -20,5 +20,5 @@
 ;; STARTING GAME
 ;;
 
-(define game (make-game level-1 level-2))
+(define game (make-game level-1 level-2 level-3))
 (game 'start!)

@@ -13,8 +13,9 @@
 
 (define (get-from-list place list)
   (let find ((count 1)
-             (lst list))
+             (lst list)
+             (result (car list)))
     (cond
       ((null? lst) (display "Error in get-from-list"))
-      ((= count place) (car lst))
-      (else (find (+ count 1) (cdr lst))))))
+      ((= count place) result)
+      (else (find (+ count 1) (cdr lst) (cadr lst))))))
