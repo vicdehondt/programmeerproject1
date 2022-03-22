@@ -1,4 +1,4 @@
-(define (make-level level-number initial-ant-pos top-border bottom-border end-point)
+(define (make-level level-number initial-ant-pos top-border bottom-border)
   (let ((walls '())
         (scorpion-time 0)
         (scorpions '())
@@ -286,7 +286,6 @@
         ((eq? message 'remove-live!) (apply remove-live! parameters))
         ((eq? message 'member?) (apply member? parameters))
         ((eq? message 'length?) (apply length? parameters))
-        ((eq? message 'end-point) end-point)
         ((eq? message 'done?) done?)
         (else  (error "[ERROR in LevelADT DISPATCH] Wrong message: ") (display message))))
 

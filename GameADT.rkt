@@ -9,7 +9,7 @@
          (game-over? #f)
          (running #f))
 
-    (define level (get-from-list current-level levels))
+    (define (level) (get-from-list current-level levels))
 
     (define (start-up!)
       (draw 'show-splash! key-callback press-space!))
@@ -38,14 +38,15 @@
             (update-score!)
             (update-lives!)
             (check-game-over)
-            (level 'move-scorpion! delta-time)
-            (level 'check-for-ant-scorpion-collision))))
+            (next-level?)
+            ((level) 'move-scorpion! delta-time)
+            ((level) 'check-for-ant-scorpion-collision))))
 
     ;; What to do when a key is pressed
     (define (key-callback status key)
       (if (eq? status 'pressed)
           (begin
-            (level 'move-ant! key)
+            ((level) 'move-ant! key)
             (start-game? key))))
 
     (define (add)
@@ -60,17 +61,25 @@
 
 
     (define (update-score!)
-      (if (level 'update-score?)
+      (if ((level) 'update-score?)
           (begin
-            (level 'update-score! #f)
+            ((level) 'update-score! #f)
             (add))))
 
     (define (update-lives!)
-      (if (level 'remove-live?)
+      (if ((level) 'remove-live?)
           (begin
             ;(reset-level!)
-            (level 'remove-live! #f)
+            ((level) 'remove-live! #f)
             (set! lives (- lives 1)))))
+
+    (define (next-level!)
+      (set! current-level (+ current-level 1))
+      (draw 'initialize!))
+    
+    (define (next-level?)
+      (if ((((level) 'ant) 'position) 'equal? ((level) 'end-point))
+          (next-level!)))
 
     (define (start-game? key)
       (if (not running)
@@ -88,8 +97,9 @@
     (define (dispatch message . parameters)
       (cond
         ((eq? message 'start!) (start-up!))
-        ((eq? message 'level) level)
+        ((eq? message 'level) (level))
         ((eq? message 'score) score)
+        ((eq? message 'current) current-level)
         ((eq? message 'highscore) highscore)
         ((eq? message 'lives) lives)
         (else  (error "[ERROR in GameADT DISPATCH] Wrong message: ") (display message))))

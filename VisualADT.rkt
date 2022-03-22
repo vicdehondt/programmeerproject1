@@ -328,6 +328,24 @@
       (show! lives-sequence 'lives)
 
       (draw! level-object 'wall))
+
+    (define (initialize! level-object)
+      (base-layer 'empty)
+      (game-objects-layer 'empty)
+      
+      (set! wall-tiles '())
+      (set! egg-tiles '())
+      (set! key-tiles '())
+      (set! door-tiles '())
+      (set! scorpion-tiles '())
+      
+      ((base-layer 'add-drawable) score-text-tile)
+      ((base-layer 'add-drawable) highscore-text-tile)
+      ((base-layer 'add-drawable) lives-text-tile)
+
+      ((game-objects-layer 'add-drawable) ant-sequence)
+
+      (draw! level-object 'wall))
     
     (define (update! game)
       (let ((level-object (game 'level)))
@@ -357,6 +375,7 @@
         ((eq? message 'game-over!) (apply game-over! parameters))
         ((eq? message 'show-splash!) (apply show-splash! parameters))
         ((eq? message 'press-space) (apply press-space parameters))
+        ((eq? message 'initialize!) (apply initialize! parameters))
         (else (error "[ERROR in VisualADT DISPATCH] Wrong message: ") (display message))))
 
     dispatch))

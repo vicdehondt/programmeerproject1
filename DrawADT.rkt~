@@ -19,9 +19,6 @@
       ((window 'set-update-callback!) update-function)
       (visual 'start! (game 'level)))
 
-    (define (initialize!)
-      (visual 'initialize! (game 'level)))
-
     ;;
     ;; UPDATE PROCEDURE
     ;;
@@ -34,7 +31,6 @@
             ((eq? message 'update!) (apply update! parameters))
             ((eq? message 'show-splash!) (apply show-splash! parameters))
             ((eq? message 'press-space) (apply press-space parameters))
-            ((eq? message 'initialize!) (apply initialize! parameters))
             ((eq? message 'game-over!) (visual 'game-over!))
             (else  (error "[ERROR in DrawADT DISPATCH] Wrong message: ") (display message))))
 
