@@ -3,9 +3,13 @@
         (scorpion-time 0)
         (scorpions '())
         (keys '())
+        (removed-keys '())
         (doors '())
+        (removed-doors '())
         (power-ups '())
+        (removed-power-ups '())
         (eggs '())
+        (removed-eggs '())
         (ant (make-movingobject initial-ant-pos 'right 'ant))
         (update-score? #f)
         (remove-live? #f)
@@ -121,16 +125,18 @@
           ((and (list? (member #t (door-collision-list direction))) (eq? (caar inventory) 'empty)) #f)
           (else #t)))
 
-    (define (remove-door!)
-      (let ((current-doors (reverse doors)))
-        (define (look-for-remove current remaining result)
-          (set-car! inventory (cdar inventory))
-          (cond
-            ((null? current-doors) result)
-            ((and (null? remaining) ((current 'position) 'equal? (next-position))) (set! doors result))
-            (((current 'position) 'equal? (next-position)) (set! doors (append result remaining)))
-            (else (look-for-remove (car remaining) (cdr remaining) (cons current result)))))
-        (look-for-remove (car current-doors) (cdr current-doors) '())))
+      (define (remove-door!)
+        (let ((current-doors (reverse doors)))
+          (define (look-for-remove current remaining result)
+            (set-car! inventory (cdar inventory))
+            (cond
+              ((null? current-doors) result)
+              ((and (null? remaining) ((current 'position) 'equal? (next-position))) (set! removed-doors (cons current removed-doors))
+                                                                                     (set! doors result))
+              (((current 'position) 'equal? (next-position)) (set! removed-doors (cons current removed-doors))
+                                                             (set! doors (append result remaining)))
+              (else (look-for-remove (car remaining) (cdr remaining) (cons current result)))))
+          (look-for-remove (car current-doors) (cdr current-doors) '())))
 
       (cond
         ((eq? kind 'wall) (not (list? (member #t (wall-collision-list direction)))))
@@ -144,8 +150,10 @@
         (define (look-for-remove current remaining result)
           (cond
             ((null? current-eggs) result)
-            ((and (null? remaining) ((current 'position) 'equal? (ant 'position))) (set! eggs result))
-            (((current 'position) 'equal? (ant 'position)) (set! eggs (append result remaining)))
+            ((and (null? remaining) ((current 'position) 'equal? (ant 'position))) (set! removed-eggs (cons current removed-eggs))
+                                                                                   (set! eggs result))
+            (((current 'position) 'equal? (ant 'position)) (set! removed-eggs (cons current removed-eggs))
+                                                           (set! eggs (append result remaining)))
             (else (look-for-remove (car remaining) (cdr remaining) (cons current result)))))
         (look-for-remove (car current-eggs) (cdr current-eggs) '())))
 
@@ -159,9 +167,11 @@
         (define (look-for-remove current remaining result)
           (cond
             ((null? current-keys) result)
-            ((and (null? remaining) ((current 'position) 'equal? (ant 'position))) (add-to-inventory! current)
+            ((and (null? remaining) ((current 'position) 'equal? (ant 'position))) (set! removed-keys (cons current removed-keys))
+                                                                                   (add-to-inventory! current)
                                                                                    (set! keys result))
-            (((current 'position) 'equal? (ant 'position)) (add-to-inventory! current)
+            (((current 'position) 'equal? (ant 'position)) (set! removed-keys (cons current removed-keys))
+                                                           (add-to-inventory! current)
                                                            (set! keys (append result remaining)))
             (else (look-for-remove (car remaining) (cdr remaining) (cons current result)))))
         (look-for-remove (car current-keys) (cdr current-keys) '())))
@@ -192,7 +202,20 @@
 
     (define (reset)
       (ant 'position! initial-ant-pos)
-      )
+      (set! inventory '((empty) (empty) (empty)))
+      (give-back! removed-keys)
+      (give-back! removed-doors)
+      (give-back! removed-eggs))
+
+    (define (give-back! lst)
+      (if (not (null? lst))
+          (cond
+            ((eq? ((car lst) 'kind) 'key) (set! keys (cons (car lst) keys))
+                                          (give-back! (cdr lst)))
+            ((eq? ((car lst) 'kind) 'door) (set! doors (cons (car lst) doors))
+                                           (give-back! (cdr lst)))
+            ((eq? ((car lst) 'kind) 'egg) (set! eggs (cons (car lst) eggs))
+                                          (give-back! (cdr lst))))))
 
     ;;
     ;; Lives
@@ -209,19 +232,19 @@
 
     (define (move-scorpion! delta-time)
       (let ((interval (if speed-up? speed-interval normal-interval)))
-      (define (move! scorpion)
-        (let ((orientation (scorpion 'orientation)))
-          (if (and (can-move? scorpion orientation 'wall) (can-move? scorpion orientation 'door))
-              (begin
-                (scorpion 'move! distance)
-                (set! scorpion-time 0))
-              (begin
-                (scorpion 'set-opposite-orientation! orientation)
-                (scorpion 'move! distance)
-                (set! scorpion-time 0)))))
-      (set! scorpion-time (+ scorpion-time delta-time))
-      (if (> scorpion-time interval)
-          (for-each move! scorpions))))
+        (define (move! scorpion)
+          (let ((orientation (scorpion 'orientation)))
+            (if (and (can-move? scorpion orientation 'wall) (can-move? scorpion orientation 'door))
+                (begin
+                  (scorpion 'move! distance)
+                  (set! scorpion-time 0))
+                (begin
+                  (scorpion 'set-opposite-orientation! orientation)
+                  (scorpion 'move! distance)
+                  (set! scorpion-time 0)))))
+        (set! scorpion-time (+ scorpion-time delta-time))
+        (if (> scorpion-time interval)
+            (for-each move! scorpions))))
 
     (define (move-ant! key)
       (if (or (and (eq? key 'right) (can-move? ant key 'wall) (can-move? ant key 'door))
@@ -275,6 +298,7 @@
         ((eq? message 'doors) doors)
         ((eq? message 'add-powerups) (apply add-powerups parameters))
         ((eq? message 'power-ups) power-ups)
+        ((eq? message 'initial-ant-pos) initial-ant-pos)
         ((eq? message 'initial-ant-pos!) (apply initial-ant-pos! parameters))
         ((eq? message 'ant) ant)
         ((eq? message 'move-ant!) (apply move-ant! parameters))

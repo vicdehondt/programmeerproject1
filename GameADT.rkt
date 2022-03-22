@@ -69,7 +69,7 @@
     (define (update-lives!)
       (if ((level) 'remove-live?)
           (begin
-            ;(reset-level!)
+            (reset-level!)
             ((level) 'remove-live! #f)
             (set! lives (- lives 1)))))
 
@@ -80,6 +80,9 @@
     (define (next-level?)
       (if ((((level) 'ant) 'position) 'equal? ((level) 'end-point))
           (next-level!)))
+
+    (define (reset-level!)
+      (draw 'initialize!))
 
     (define (start-game? key)
       (if (not running)
