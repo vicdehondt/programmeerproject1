@@ -11,10 +11,6 @@
              (data (read read-file)))
         data))
 
-(define (write-file value filename)
-      (let ((write-file (open-output-file filename)))
-        (write value write-file)))
-
 (define (get-from-list place list)
   (let find ((count 1)
              (lst list))

@@ -3,11 +3,9 @@
          (current-level 1)
          (press-space-time 0)
          (shown? #t)
-         (score 0)
-         (score-vect (make-vector 8 0))
+         (score (make-vector 8 0))
          (lives 3)
-         (highscore (cadr (read-file "highscore.txt")))
-         (highscore-vect (car (read-file "highscore.txt")))
+         (highscore (read-file "highscore.txt"))
          (game-over? #f)
          (running #f))
 
@@ -51,14 +49,14 @@
             ((level) 'move-ant! key)
             (start-game? key))))
 
-    (define (add vect)
+    (define (add)
       (define byte (make-vector 8))
       (define carry 0)
       (do ((pos 7 (- pos 1))) ((< pos 0) byte)
         (let ((cnt (+ (vector-ref (vector 0 0 0 0 0 5 0 0) pos)
-                      (vector-ref vect pos)
+                      (vector-ref Score pos)
                       carry)))
-          (vector-set! vect pos (if (>= cnt 10) (- cnt 10) cnt))
+          (vector-set! score pos (if (>= cnt 10) (- cnt 10) cnt))
           (set! carry (if (>= cnt 10) 1 0)))))
 
 
@@ -66,18 +64,12 @@
       (if ((level) 'update-score?)
           (begin
             ((level) 'update-score! #f)
-            (set! score (+ score 500))
-            (add score-vect)
-            (if (> score highscore)
-                (begin
-                  (add highscore-vect)
-                  (set! highscore (+ highscore 500))
-                  ;(write-file highscore "highscore.txt")
-                  )))))
+            (add))))
 
     (define (update-lives!)
       (if ((level) 'remove-live?)
           (begin
+            (reset-level!)
             ((level) 'remove-live! #f)
             (set! lives (- lives 1)))))
 
@@ -88,6 +80,9 @@
     (define (next-level?)
       (if ((((level) 'ant) 'position) 'equal? ((level) 'end-point))
           (next-level!)))
+
+    (define (reset-level!)
+      (draw 'initialize!))
 
     (define (start-game? key)
       (if (not running)
@@ -106,9 +101,9 @@
       (cond
         ((eq? message 'start!) (start-up!))
         ((eq? message 'level) (level))
-        ((eq? message 'score) score-vect)
+        ((eq? message 'score) score)
         ((eq? message 'current) current-level)
-        ((eq? message 'highscore) highscore-vect)
+        ((eq? message 'highscore) highscore)
         ((eq? message 'lives) lives)
         (else  (error "[ERROR in GameADT DISPATCH] Wrong message: ") (display message))))
 

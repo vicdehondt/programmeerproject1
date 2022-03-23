@@ -332,15 +332,12 @@
     (define (initialize! level-object)
       (base-layer 'empty)
       (game-objects-layer 'empty)
-      (show! 'none 'score)
-      (show! 'none 'highscore)
-      (show! lives-sequence 'lives)
-
-      #|(set! wall-tiles '())
+      
+      (set! wall-tiles '())
       (set! egg-tiles '())
       (set! key-tiles '())
       (set! door-tiles '())
-      (set! scorpion-tiles '())|#
+      (set! scorpion-tiles '())
       
       ((base-layer 'add-drawable) score-text-tile)
       ((base-layer 'add-drawable) highscore-text-tile)

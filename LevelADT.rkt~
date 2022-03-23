@@ -3,9 +3,13 @@
         (scorpion-time 0)
         (scorpions '())
         (keys '())
+        (removed-keys '())
         (doors '())
+        (removed-doors '())
         (power-ups '())
+        (removed-power-ups '())
         (eggs '())
+        (removed-eggs '())
         (ant (make-movingobject initial-ant-pos 'right 'ant))
         (update-score? #f)
         (remove-live? #f)
@@ -127,8 +131,10 @@
             (set-car! inventory (cdar inventory))
             (cond
               ((null? current-doors) result)
-              ((and (null? remaining) ((current 'position) 'equal? (next-position))) (set! doors result))
-              (((current 'position) 'equal? (next-position)) (set! doors (append result remaining)))
+              ((and (null? remaining) ((current 'position) 'equal? (next-position))) (set! removed-doors (cons current removed-doors))
+                                                                                     (set! doors result))
+              (((current 'position) 'equal? (next-position)) (set! removed-doors (cons current removed-doors))
+                                                             (set! doors (append result remaining)))
               (else (look-for-remove (car remaining) (cdr remaining) (cons current result)))))
           (look-for-remove (car current-doors) (cdr current-doors) '())))
 
@@ -144,8 +150,10 @@
         (define (look-for-remove current remaining result)
           (cond
             ((null? current-eggs) result)
-            ((and (null? remaining) ((current 'position) 'equal? (ant 'position))) (set! eggs result))
-            (((current 'position) 'equal? (ant 'position)) (set! eggs (append result remaining)))
+            ((and (null? remaining) ((current 'position) 'equal? (ant 'position))) (set! removed-eggs (cons current removed-eggs))
+                                                                                   (set! eggs result))
+            (((current 'position) 'equal? (ant 'position)) (set! removed-eggs (cons current removed-eggs))
+                                                           (set! eggs (append result remaining)))
             (else (look-for-remove (car remaining) (cdr remaining) (cons current result)))))
         (look-for-remove (car current-eggs) (cdr current-eggs) '())))
 
@@ -159,9 +167,11 @@
         (define (look-for-remove current remaining result)
           (cond
             ((null? current-keys) result)
-            ((and (null? remaining) ((current 'position) 'equal? (ant 'position))) (add-to-inventory! current)
+            ((and (null? remaining) ((current 'position) 'equal? (ant 'position))) (set! removed-keys (cons current removed-keys))
+                                                                                   (add-to-inventory! current)
                                                                                    (set! keys result))
-            (((current 'position) 'equal? (ant 'position)) (add-to-inventory! current)
+            (((current 'position) 'equal? (ant 'position)) (set! removed-keys (cons current removed-keys))
+                                                           (add-to-inventory! current)
                                                            (set! keys (append result remaining)))
             (else (look-for-remove (car remaining) (cdr remaining) (cons current result)))))
         (look-for-remove (car current-keys) (cdr current-keys) '())))
@@ -191,7 +201,11 @@
     ;;
 
     (define (reset)
-      (ant 'position! initial-ant-pos))
+      (ant 'position! initial-ant-pos)
+      (set! inventory '((empty) (empty) (empty)))
+      (give-back! removed-keys)
+      (give-back! removed-doors)
+      (give-back! removed-eggs))
 
     (define (give-back! lst)
       (if (not (null? lst))
