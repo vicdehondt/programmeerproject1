@@ -11,9 +11,10 @@
              (data (read read-file)))
         data))
 
-(define (write-file value filename)
-      (let ((write-file (open-output-file filename)))
-        (write value write-file)))
+(define (write-file filename value)
+      (let ((port (open-output-file filename #:exists 'replace)))
+    (display value port)
+    (close-output-port port)))
 
 (define (get-from-list place list)
   (let find ((count 1)

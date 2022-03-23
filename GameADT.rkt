@@ -72,8 +72,7 @@
                 (begin
                   (add highscore-vect)
                   (set! highscore (+ highscore 500))
-                  ;(write-file highscore "highscore.txt")
-                  )))))
+                  (write-file "highscore.txt" (list highscore-vect highscore)))))))
 
     (define (update-lives!)
       (if ((level) 'remove-live?)
