@@ -48,7 +48,7 @@
     (define (key-callback status key)
       (if (eq? status 'pressed)
           (begin
-            ((level) 'move-ant! key)
+            (if (or (eq? key 'up) (eq? key 'down) (eq? key 'left) (eq? key 'right)) ((level) 'move-ant! key))
             (start-game? key))))
 
     (define (add vect)
@@ -68,10 +68,12 @@
             ((level) 'update-score! #f)
             (set! score (+ score 500))
             (add score-vect)
+            (draw 'update-score! score-vect)
             (if (> score highscore)
                 (begin
                   (add highscore-vect)
                   (set! highscore (+ highscore 500))
+                  (draw 'update-highscore! highscore-vect)
                   (write-file "highscore.txt" (list highscore-vect highscore)))))))
 
     (define (update-lives!)

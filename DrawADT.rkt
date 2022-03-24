@@ -22,6 +22,12 @@
     (define (initialize!)
       (visual 'initialize! (game 'level)))
 
+    (define (update-score! score)
+      (visual 'update-score! score))
+
+    (define (update-highscore! highscore)
+      (visual 'update-highscore! highscore))
+
     ;;
     ;; UPDATE PROCEDURE
     ;;
@@ -35,6 +41,8 @@
             ((eq? message 'show-splash!) (apply show-splash! parameters))
             ((eq? message 'press-space) (apply press-space parameters))
             ((eq? message 'initialize!) (apply initialize! parameters))
+            ((eq? message 'update-score!) (apply update-score! parameters))
+            ((eq? message 'update-highscore!) (apply update-highscore! parameters))
             ((eq? message 'game-over!) (visual 'game-over!))
             (else  (error "[ERROR in DrawADT DISPATCH] Wrong message: ") (display message))))
 

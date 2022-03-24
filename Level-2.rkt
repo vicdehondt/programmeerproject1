@@ -39,7 +39,7 @@
 ;; SCORPIONS
 ;;
 
-(level-2 'add-scorpions '((14 7 right)))
+(level-2 'add-scorpions '((14 7 right normal)))
 
 ;;
 ;; PUZZLE OBJECTS

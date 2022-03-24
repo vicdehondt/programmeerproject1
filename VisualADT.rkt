@@ -32,7 +32,8 @@
         (egg-tiles '())
         (key-tiles '())
         (door-tiles '())
-        (scorpion-tiles '()))
+        (normal-scorpion-tiles '())
+        (random-scorpion-tiles '()))
     
 
     
@@ -65,21 +66,19 @@
     ;;
     
     ; Show the highscore on screen
-    (define (draw-highscore! game)
-      (let loop ((game-highscore (game 'highscore))
-                 (count 0))
+    (define (draw-highscore! game-highscore)
+      (let loop ((count 0))
         (if (<= count (- score-size 1))
             (begin
               (((vector-ref highscore count) 'set-current!) (vector-ref game-highscore count))
-              (loop game-highscore (+ count 1))))))
+              (loop (+ count 1))))))
 
-    (define (draw-score! game)
-      (let loop ((game-score (game 'score))
-                 (count 0))
+    (define (draw-score! game-score)
+      (let loop ((count 0))
         (if (<= count (- score-size 1))
             (begin
               (((vector-ref score count) 'set-current!) (vector-ref game-score count))
-              (loop game-score (+ count 1))))))
+              (loop (+ count 1))))))
 
     ; Show lives remaining on screen
     (define (draw-lives! game)
@@ -114,7 +113,8 @@
         ((eq? kind 'egg) (for-each-object (lambda (egg) (draw-stationary-piece! egg)) (level-object 'eggs)))
         ((eq? kind 'key) (for-each-object (lambda (key) (draw-stationary-piece! key)) (level-object 'keys)))
         ((eq? kind 'door) (for-each-object (lambda (door) (draw-stationary-piece! door)) (level-object 'doors)))
-        ((eq? kind 'scorpion) (for-each-object (lambda (scorpion) (draw-scorpion-piece! scorpion)) (level-object 'scorpions)))))
+        ((eq? kind 'scorpion) (for-each-object (lambda (scorpion) (draw-scorpion-piece! scorpion)) (level-object 'normal-scorpions))
+                              (for-each-object (lambda (scorpion) (draw-scorpion-piece! scorpion)) (level-object 'random-scorpions)))))
 
     (define (draw-scorpion-piece! scorpion-object)
       (let ((sequence (get-object-piece scorpion-object))
@@ -132,7 +132,8 @@
         ((eq? kind 'egg) egg-tiles)
         ((eq? kind 'key) key-tiles)
         ((eq? kind 'door) door-tiles)
-        ((eq? kind 'scorpion) scorpion-tiles)))
+        ((eq? kind 'normal-scorpion) normal-scorpion-tiles)
+        ((eq? kind 'random-scorpion) random-scorpion-tiles)))
 
     ;; Looks for the right tile bound to the given object
     (define (get-object-piece object)
@@ -144,7 +145,11 @@
 
     (define (add-object-piece! object)
       (let* ((kind (object 'kind))
-             (new-scorpion-sequence (make-tile-sequence (list (make-bitmap-tile "images/48px/Scorpion-Up.png" "images/48px/Scorpion-Up-mask.png")
+             (new-normal-scorpion-sequence (make-tile-sequence (list (make-bitmap-tile "images/48px/Scorpion-Up.png" "images/48px/Scorpion-Up-mask.png")
+                                                              (make-bitmap-tile "images/48px/Scorpion-Right.png" "images/48px/Scorpion-Right-mask.png")
+                                                              (make-bitmap-tile "images/48px/Scorpion-Down.png" "images/48px/Scorpion-Down-mask.png")
+                                                              (make-bitmap-tile "images/48px/Scorpion-Left.png" "images/48px/Scorpion-Left-mask.png"))))
+             (new-random-scorpion-sequence (make-tile-sequence (list (make-bitmap-tile "images/48px/Scorpion-Up.png" "images/48px/Scorpion-Up-mask.png")
                                                               (make-bitmap-tile "images/48px/Scorpion-Right.png" "images/48px/Scorpion-Right-mask.png")
                                                               (make-bitmap-tile "images/48px/Scorpion-Down.png" "images/48px/Scorpion-Down-mask.png")
                                                               (make-bitmap-tile "images/48px/Scorpion-Left.png" "images/48px/Scorpion-Left-mask.png"))))
@@ -159,7 +164,8 @@
           new-tile)
         
         (cond
-          ((eq? kind 'scorpion) (add-piece new-scorpion-sequence))
+          ((eq? kind 'normal-scorpion) (add-piece new-normal-scorpion-sequence))
+          ((eq? kind 'random-scorpion) (add-piece new-random-scorpion-sequence))
           ((eq? kind 'egg) (add-piece new-egg-tile))
           ((eq? kind 'key) (add-piece new-key-tile))
           ((eq? kind 'door) (add-piece new-door-tile))
@@ -177,7 +183,8 @@
     (define (add-object-tile! object tile )
       (let ((kind (object 'kind)))
         (cond
-          ((eq? kind 'scorpion) (set! scorpion-tiles (cons (cons object tile) scorpion-tiles)))
+          ((eq? kind 'normal-scorpion) (set! normal-scorpion-tiles (cons (cons object tile) normal-scorpion-tiles)))
+          ((eq? kind 'random-scorpion) (set! random-scorpion-tiles (cons (cons object tile) random-scorpion-tiles)))
           ((eq? kind 'egg) (set! egg-tiles (cons (cons object tile) egg-tiles)))
           ((eq? kind 'key) (set! key-tiles (cons (cons object tile) key-tiles)))
           ((eq? kind 'door) (set! door-tiles (cons (cons object tile) door-tiles)))
@@ -213,7 +220,8 @@
               (vector-set! vector count sequence)
               (show-score! (+ count 1) (+ x 31) y vector kind))))
       (cond
-        ((eq? kind 'scorpion) ((game-objects-layer 'add-drawable) tile))
+        ((or (eq? kind 'normal-scorpion)
+             (eq? kind 'random-scorpion)) ((game-objects-layer 'add-drawable) tile))
         ((eq? kind 'egg) ((game-objects-layer 'add-drawable) tile))
         ((eq? kind 'key) ((game-objects-layer 'add-drawable) tile))
         ((eq? kind 'door) ((game-objects-layer 'add-drawable) tile))
@@ -312,22 +320,6 @@
     ;;
     ;; PUBLIC PROCEDURES
     ;;
-    
-    (define (start! level-object)
-      
-      ((base-layer 'remove-drawable) splash-screen-tile)
-      ((game-objects-layer 'remove-drawable) press-space-tile)
-      
-      ;; Show ant on screen
-      ((game-objects-layer 'add-drawable) ant-sequence)
-      ((base-layer 'add-drawable) score-text-tile)
-      ((base-layer 'add-drawable) highscore-text-tile)
-      ((base-layer 'add-drawable) lives-text-tile)
-      (show! 'none 'score)
-      (show! 'none 'highscore)
-      (show! lives-sequence 'lives)
-
-      (draw! level-object 'wall))
 
     (define (initialize! level-object)
       (base-layer 'empty)
@@ -335,12 +327,6 @@
       (show! 'none 'score)
       (show! 'none 'highscore)
       (show! lives-sequence 'lives)
-
-      #|(set! wall-tiles '())
-      (set! egg-tiles '())
-      (set! key-tiles '())
-      (set! door-tiles '())
-      (set! scorpion-tiles '())|#
       
       ((base-layer 'add-drawable) score-text-tile)
       ((base-layer 'add-drawable) highscore-text-tile)
@@ -348,37 +334,37 @@
 
       ((game-objects-layer 'add-drawable) ant-sequence)
 
-      (draw! level-object 'wall))
-    
+      (draw! level-object 'wall)
+      (draw! level-object 'egg)
+      (draw! level-object 'key)
+      (draw! level-object 'door)
+      (draw-score! (game 'score))
+      (draw-highscore! (game 'highscore)))
+
     (define (update! game)
       (let ((level-object (game 'level)))
         
         (draw-ant! level-object)
 
-        (draw! level-object 'egg)
-        (draw! level-object 'key)
-        (draw! level-object 'door)
         (draw! level-object 'scorpion)
+        ;(draw! level-object 'random-scorpion)
 
         (check-for-egg-remove level-object)
         (check-for-key-remove level-object)
         (check-for-door-remove level-object)
-
-        (draw-highscore! game)
         
-        (draw-score! game)
-        
-        (draw-lives! game)
-        ))
+        (draw-lives! game)))
 
     (define (dispatch message . parameters)
       (cond
-        ((eq? message 'start!) (apply start! parameters))
+        ((eq? message 'start!) (apply initialize! parameters))
         ((eq? message 'update!) (apply update! parameters))
         ((eq? message 'game-over!) (apply game-over! parameters))
         ((eq? message 'show-splash!) (apply show-splash! parameters))
         ((eq? message 'press-space) (apply press-space parameters))
         ((eq? message 'initialize!) (apply initialize! parameters))
+        ((eq? message 'update-score!) (apply draw-score! parameters))
+        ((eq? message 'update-highscore!) (apply draw-highscore! parameters))
         (else (error "[ERROR in VisualADT DISPATCH] Wrong message: ") (display message))))
 
     dispatch))

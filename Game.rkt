@@ -1,4 +1,4 @@
-(#%require (only racket error))
+(#%require (only racket error random))
 (#%require "Graphics.rkt")
 (load "PositionADT.rkt")
 (load "MovingObjectADT.rkt")

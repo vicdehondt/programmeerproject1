@@ -4,18 +4,28 @@
     (define (position! new-position-object)
       (set! position new-position-object))
 
-    (define (set-opposite-orientation! orientation)
+    (define (set-opposite-orientation!)
         (cond
           ((eq? orientation 'right) (orientation! 'left))
           ((eq? orientation 'left) (orientation! 'right))
           ((eq? orientation 'up) (orientation! 'down))
           ((eq? orientation 'down) (orientation! 'up))))
 
+    (define (set-random-orientation!)
+      (let ((orientations (vector 'left 'right 'up 'down)))
+        (orientation! (vector-ref orientations (random 0 4)))))
+
     (define (orientation! new-orientation)
       (set! orientation new-orientation))
 
     (define (previous-orientation! given-orientation)
       (set! previous-orientation given-orientation))
+
+    (define (new-orientation!)
+      (cond
+        ((eq? kind 'normal-scorpion) (set-opposite-orientation!))
+        ((eq? kind 'random-scorpion) (set-random-orientation!))
+        (else (error "[ERROR in MovingObjectADT new-orientation!] Wrong kind: ") (display kind))))
     
     (define (move! distance)
       (cond
@@ -31,6 +41,7 @@
         ((eq? message 'orientation) orientation)
         ((eq? message 'orientation!) (apply orientation! parameters))
         ((eq? message 'set-opposite-orientation!) (apply set-opposite-orientation! parameters))
+        ((eq? message 'new-orientation!) (apply new-orientation! parameters))
         ((eq? message 'previous-orientation) previous-orientation)
         ((eq? message 'previous-orientation!) (apply previous-orientation! parameters))
         ((eq? message 'kind) kind)

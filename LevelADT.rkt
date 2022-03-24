@@ -1,7 +1,8 @@
 (define (make-level level-number initial-ant-pos top-border bottom-border end-point)
   (let ((walls '())
         (scorpion-time 0)
-        (scorpions '())
+        (normal-scorpions '())
+        (random-scorpions '())
         (keys '())
         (doors '())
         (power-ups '())
@@ -55,10 +56,13 @@
           (else (error "[ERROR in LevelADT add-multiple-walls] Cannot build walls diagonally!")))))
 
     (define (add-scorpions lst)
-      (for-each (lambda (scorpion-info) (add-scorpion (make-position (car scorpion-info) (cadr scorpion-info)) (caddr scorpion-info))) lst))
+      (for-each (lambda (scorpion-info) (add-scorpion (make-position (list-ref scorpion-info 0) (list-ref scorpion-info 1)) (list-ref scorpion-info 2) (list-ref scorpion-info 3))) lst))
 
-    (define (add-scorpion position-object orientation)
-      (set! scorpions (cons (make-movingobject position-object orientation 'scorpion) scorpions)))
+    (define (add-scorpion position-object orientation kind)
+      (cond
+        ((eq? kind 'normal) (set! normal-scorpions (cons (make-movingobject position-object orientation 'normal-scorpion) normal-scorpions)))
+        ((eq? kind 'random) (set! random-scorpions (cons (make-movingobject position-object orientation 'random-scorpion) random-scorpions)))
+        (else (error "[ERROR in LevelADT add-multiple-walls] Cannot build walls diagonally!"))))
 
     (define (add-eggs lst)
       (for-each (lambda (x-and-y) (add-egg (make-position (car x-and-y) (cadr x-and-y)))) lst))
@@ -81,63 +85,69 @@
     ;; COLLISION DETECTION
     ;;
 
-    ;; Can a given object move in the given direction without obstruction?
+    ;; Gives moving-object's next position based on the direction given
+    (define (next-position moving-object direction)
+      (let ((current-x ((moving-object 'position) 'x))
+            (current-y ((moving-object 'position) 'y)))
+        (cond
+          ((eq? direction 'right) (make-position (+ current-x 1) current-y))
+          ((eq? direction 'left) (make-position (- current-x 1) current-y))
+          ((eq? direction 'up) (make-position current-x (- current-y 1)))
+          ((eq? direction 'down) (make-position current-x (+ current-y 1))))))
+
+    ;; Checks if there is going to be a collision when moving to given direction
+    (define (upcomming-collision? moving-object position direction)
+      (position 'equal? (next-position moving-object direction)))
+
+    (define (collision? moving-object object)
+      ((object 'position) 'equal? (moving-object 'position)))
+
+    (define (within-border? moving-object)
+      (or (not (<= ((moving-object 'position) 'y) top-border))
+          (not (>= ((moving-object 'position) 'y) bottom-border))))
+
+
+    ;; Gives list back with #t (collision) and #f (no obstruction)
+    (define (egg-collision-list moving-object)
+      (map (lambda (egg-object) (collision? moving-object egg-object)) eggs))
+
+    (define (wall-collision-list moving-object direction)
+      (map (lambda (wall-object) (upcomming-collision? moving-object (wall-object 'position) direction)) walls))
+
+    (define (door-collision-list moving-object direction)
+      (map (lambda (door-object) (upcomming-collision? moving-object (door-object 'position) direction)) doors))
+
+    (define (key-collision-list moving-object)
+      (map (lambda (key-object) (collision? moving-object key-object)) keys))
+
+
+    ;; Can a given object move in the given direction without obstruction? (main collision-detection procedure)
     (define (can-move? moving-object direction kind)
 
-      ;; Returns list with every wall it collides with
-      (define (wall-collision-list direction)
-        (map (lambda (wall-object) (upcomming-collision? wall-object direction)) walls))
-
-      (define (door-collision-list direction)
-        (map (lambda (door-object) (upcomming-collision? door-object direction)) doors))
-
-      (define (key-collision-list direction)
-        (map (lambda (key-object) (collision? key-object)) keys))
-
-      ;; Returns list with every egg it collides with
-      (define (egg-collision-list direction)
-        (map (lambda (egg-object) (collision? egg-object)) eggs))
-
-      (define (next-position)
-        (let ((current-x ((moving-object 'position) 'x))
-              (current-y ((moving-object 'position) 'y)))
-          (cond
-            ((eq? direction 'right) (make-position (+ current-x 1) current-y))
-            ((eq? direction 'left) (make-position (- current-x 1) current-y))
-            ((eq? direction 'up) (make-position current-x (- current-y 1)))
-            ((eq? direction 'down) (make-position current-x (+ current-y 1))))))
-      
-      ;; Checks if there is going to be a collision when moving to given direction
-      (define (upcomming-collision? object direction)
-        ((object 'position) 'equal? (next-position)))
-
-      (define (collision? object)
-        ((object 'position) 'equal? (moving-object 'position)))
-
-      (define (check-for-opening)
+      (define (check-for-key)
         (cond
-          ((and (list? (member #t (door-collision-list direction))) (eq? (caar inventory) 'key)) (remove-door!)
-                                                                                                 #t)
-          ((and (list? (member #t (door-collision-list direction))) (eq? (caar inventory) 'empty)) #f)
+          ((and (list? (member #t (door-collision-list moving-object direction))) (eq? (caar inventory) 'key)) (remove-door! direction) #t)
+          ((and (list? (member #t (door-collision-list moving-object direction))) (eq? (caar inventory) 'empty)) #f)
           (else #t)))
 
-      (define (remove-door!)
-        (let ((current-doors (reverse doors)))
-          (define (look-for-remove current remaining result)
-            (set-car! inventory (cdar inventory))
-            (cond
-              ((null? current-doors) result)
-              ((and (null? remaining) ((current 'position) 'equal? (next-position))) (set! doors result))
-              (((current 'position) 'equal? (next-position)) (set! doors (append result remaining)))
-              (else (look-for-remove (car remaining) (cdr remaining) (cons current result)))))
-          (look-for-remove (car current-doors) (cdr current-doors) '())))
-
       (cond
-        ((eq? kind 'wall) (not (list? (member #t (wall-collision-list direction)))))
-        ((eq? kind 'door) (if (eq? (moving-object 'kind) 'ant) (check-for-opening)
-                              (not (list? (member #t (door-collision-list direction))))))
-        ((eq? kind 'egg) (not (list? (member #t (egg-collision-list direction)))))
-        ((eq? kind 'key) (not (list? (member #t (key-collision-list direction)))))))
+        ((eq? kind 'wall) (not (list? (member #t (wall-collision-list moving-object direction)))))
+        ((eq? kind 'door) (if (eq? (moving-object 'kind) 'ant) (check-for-key)
+                              (not (list? (member #t (door-collision-list moving-object direction))))))
+        ((eq? kind 'egg) (not (list? (member #t (egg-collision-list moving-object)))))
+        ((eq? kind 'key) (not (list? (member #t (key-collision-list moving-object)))))
+        ((eq? kind 'border) (upcomming-collision? moving-object initial-ant-pos direction))))
+
+    (define (remove-door! direction)
+      (let ((current-doors (reverse doors)))
+        (remove-from-inventory! 'key)
+        (define (look-for-remove current remaining result)
+          (cond
+            ((null? current-doors) result)
+            ((and (null? remaining) ((current 'position) 'equal? (next-position ant direction))) (set! doors result))
+            (((current 'position) 'equal? (next-position ant direction)) (set! doors (append result remaining)))
+            (else (look-for-remove (car remaining) (cdr remaining) (cons current result)))))
+        (look-for-remove (car current-doors) (cdr current-doors) '())))
 
     (define (remove-egg!)
       (let ((current-eggs (reverse eggs)))
@@ -152,7 +162,13 @@
     (define (add-to-inventory! object)
       (cond
         ((eq? (object 'kind) 'key) (set-car! inventory (cons 'key (car inventory))))
-        (else (display "[ERROR in LevelADT add-to-inventory!] Wrong kind given!") (display (object 'kind)))))
+        (else (error "[ERROR in LevelADT add-to-inventory!] Wrong kind given!") (display (object 'kind)))))
+
+    (define (remove-from-inventory! kind)
+      (let ((keys (car inventory)))
+        (cond
+          ((eq? kind 'key) (set-car! inventory (cdr keys)))
+          (else (error "[ERROR in LevelADT remove-from-inventory!] Wrong kind given!") (display (object 'kind))))))
 
     (define (remove-and-add-to-inv!)
       (let ((current-keys (reverse keys)))
@@ -181,7 +197,10 @@
 
     ;; Checks if any scorpion collides with the ant and moves the ant back to initial-ant-pos
     (define (check-for-ant-scorpion-collision)
-      (if (list? (member #t (map (lambda (scorpion-object) ((ant 'position) 'equal? (scorpion-object 'position))) scorpions)))
+      (define (ant-scorpion-collision? lst)
+        (list? (member #t (map (lambda (scorpion-object) ((ant 'position) 'equal? (scorpion-object 'position))) lst))))
+      (if (or (ant-scorpion-collision? normal-scorpions)
+              (ant-scorpion-collision? random-scorpions))
           (begin
             (remove-live! #t)
             (reset))))
@@ -218,30 +237,34 @@
 
     (define (move-scorpion! delta-time)
       (let ((interval (if speed-up? speed-interval normal-interval)))
+        (define (move-random! scorpion)
+          (scorpion 'new-orientation!)
+          (let ((orientation (scorpion 'orientation)))
+          (if (and (can-move? scorpion orientation 'wall) (can-move? scorpion orientation 'door) (not (< ((next-position scorpion orientation) 'y) top-border)))
+              (scorpion 'move! distance)
+              (move-random! scorpion))))
         (define (move! scorpion)
           (let ((orientation (scorpion 'orientation)))
-            (if (and (can-move? scorpion orientation 'wall) (can-move? scorpion orientation 'door))
+            (if (and (can-move? scorpion orientation 'wall) (can-move? scorpion orientation 'door) (not (< ((next-position scorpion orientation) 'y) top-border)))
                 (begin
                   (scorpion 'move! distance)
                   (set! scorpion-time 0))
-                (begin
-                  (scorpion 'set-opposite-orientation! orientation)
-                  (scorpion 'move! distance)
-                  (set! scorpion-time 0)))))
+                (cond
+                  ((eq? (scorpion 'kind) 'normal-scorpion) (scorpion 'new-orientation!) (scorpion 'move! distance) (set! scorpion-time 0))
+                  ((eq? (scorpion 'kind) 'random-scorpion) (move-random! scorpion))))))
         (set! scorpion-time (+ scorpion-time delta-time))
         (if (> scorpion-time interval)
-            (for-each move! scorpions))))
+            (begin
+              (for-each move! normal-scorpions)
+              (for-each move! random-scorpions)))))
 
-    (define (move-ant! key)
-      (if (or (and (eq? key 'right) (can-move? ant key 'wall) (can-move? ant key 'door))
-              (and (eq? key 'left) (can-move? ant key 'wall) (can-move? ant key 'door))
-              (and (eq? key 'up) (can-move? ant key 'wall) (can-move? ant key 'door) (not (<= ((ant 'position) 'y) top-border)))
-              (and (eq? key 'down) (can-move? ant key 'wall) (can-move? ant key 'door) (not (>= ((ant 'position) 'y) bottom-border))))
+    (define (move-ant! direction)
+      (if (and (can-move? ant direction 'wall) (can-move? ant direction 'door) (not (< ((next-position ant direction) 'y) top-border)))
           (begin
-            (ant 'orientation! key)
+            (ant 'orientation! direction)
             (ant 'move! distance)
-            (check-and-remove-eggs! key)
-            (check-for-key key))))
+            (check-and-remove-eggs! direction)
+            (check-for-key direction))))
 
     ;;
     ;; SCORE
@@ -261,21 +284,22 @@
         ((eq? object-list 'egg) (member element eggs))
         ((eq? object-list 'key) (member element keys))
         ((eq? object-list 'door) (member element doors))
-        (else (display "[ERROR in LevelADT member?] Wrong object-list") (display object-list))))
+        (else (error "[ERROR in LevelADT member?] Wrong object-list") (display object-list))))
 
     (define (length? object-list)
       (cond
         ((eq? object-list 'egg) (length eggs))
         ((eq? object-list 'key) (length keys))
         ((eq? object-list 'door) (length doors))
-        (else (display "[ERROR in LevelADT length?] Wrong object-list") (display object-list))))
+        (else (error "[ERROR in LevelADT length?] Wrong object-list") (display object-list))))
 
     (define (dispatch message . parameters)
       (cond
         ((eq? message 'add-walls) (apply add-walls parameters))
         ((eq? message 'walls) walls)
         ((eq? message 'add-scorpions) (apply add-scorpions parameters))
-        ((eq? message 'scorpions) scorpions)
+        ((eq? message 'normal-scorpions) normal-scorpions)
+        ((eq? message 'random-scorpions) random-scorpions)
         ((eq? message 'add-eggs) (apply add-eggs parameters))
         ((eq? message 'eggs) eggs)
         ((eq? message 'add-puzzleobjects) (apply add-puzzleobjects parameters))
