@@ -42,7 +42,8 @@
             (check-game-over)
             (next-level?)
             ((level) 'move-scorpion! delta-time)
-            ((level) 'check-for-ant-scorpion-collision))))
+            ((level) 'check-for-ant-scorpion-collision)
+            (if ((level) 'shield?) ((level) 'check-deactivate-shield! delta-time)))))
 
     ;; What to do when a key is pressed
     (define (key-callback status key)

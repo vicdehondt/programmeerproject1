@@ -14,6 +14,7 @@
                                                       (make-bitmap-tile "images/Numbers/8.png" "images/Numbers/8-mask.png")
                                                       (make-bitmap-tile "images/Numbers/9.png" "images/Numbers/9-mask.png"))))
         (score-text-tile (make-bitmap-tile "images/Score/Score.png" "images/Score/Score-mask.png"))
+        (sky-tile (make-bitmap-tile "images/Sky/Sky.png"))
         (highscore-text-tile (make-bitmap-tile "images/Highscore/Highscore.png" "images/Highscore/Highscore-mask.png"))
         (lives-text-tile (make-bitmap-tile "images/Lives/Lives.png" "images/Lives/Lives-mask.png"))
         (score (make-vector 8 0))
@@ -46,7 +47,7 @@
     (define game-objects-layer (window 'make-layer))
 
     ;;
-    ;; INFORMATION VISUALISATION
+    ;; STATIC TILE VISUALISATION
     ;;
 
     ((score-text-tile 'set-x!) 168)
@@ -60,6 +61,9 @@
 
     ((lives-sequence 'set-x!) 884)
     ((lives-sequence 'set-y!) 624)
+
+    ((sky-tile 'set-x!) 0)
+    ((sky-tile 'set-y!) 0)
 
     ;;
     ;; DRAW PROCEDURES
@@ -145,14 +149,14 @@
 
     (define (add-object-piece! object)
       (let* ((kind (object 'kind))
-             (new-normal-scorpion-sequence (make-tile-sequence (list (make-bitmap-tile "images/48px/Scorpion-Up.png" "images/48px/Scorpion-Up-mask.png")
-                                                              (make-bitmap-tile "images/48px/Scorpion-Right.png" "images/48px/Scorpion-Right-mask.png")
-                                                              (make-bitmap-tile "images/48px/Scorpion-Down.png" "images/48px/Scorpion-Down-mask.png")
-                                                              (make-bitmap-tile "images/48px/Scorpion-Left.png" "images/48px/Scorpion-Left-mask.png"))))
-             (new-random-scorpion-sequence (make-tile-sequence (list (make-bitmap-tile "images/48px/Scorpion-Up.png" "images/48px/Scorpion-Up-mask.png")
-                                                              (make-bitmap-tile "images/48px/Scorpion-Right.png" "images/48px/Scorpion-Right-mask.png")
-                                                              (make-bitmap-tile "images/48px/Scorpion-Down.png" "images/48px/Scorpion-Down-mask.png")
-                                                              (make-bitmap-tile "images/48px/Scorpion-Left.png" "images/48px/Scorpion-Left-mask.png"))))
+             (new-normal-scorpion-sequence (make-tile-sequence (list (make-bitmap-tile "images/48px/Normal-Scorpion-Up.png" "images/48px/Scorpion-Up-mask.png")
+                                                                     (make-bitmap-tile "images/48px/Normal-Scorpion-Right.png" "images/48px/Scorpion-Right-mask.png")
+                                                                     (make-bitmap-tile "images/48px/Normal-Scorpion-Down.png" "images/48px/Scorpion-Down-mask.png")
+                                                                     (make-bitmap-tile "images/48px/Normal-Scorpion-Left.png" "images/48px/Scorpion-Left-mask.png"))))
+             (new-random-scorpion-sequence (make-tile-sequence (list (make-bitmap-tile "images/48px/Random-Scorpion-Up.png" "images/48px/Scorpion-Up-mask.png")
+                                                                     (make-bitmap-tile "images/48px/Random-Scorpion-Right.png" "images/48px/Scorpion-Right-mask.png")
+                                                                     (make-bitmap-tile "images/48px/Random-Scorpion-Down.png" "images/48px/Scorpion-Down-mask.png")
+                                                                     (make-bitmap-tile "images/48px/Random-Scorpion-Left.png" "images/48px/Scorpion-Left-mask.png"))))
              (new-egg-tile (make-bitmap-tile "images/48px/Egg.png" "images/48px/Egg-mask.png"))
              (new-key-tile (make-bitmap-tile "images/48px/Key.png" "images/48px/Key-mask.png"))
              (new-door-tile (make-tile 48 48 "images/48px/Door.png"))
@@ -229,6 +233,7 @@
         ((eq? kind 'score) (show-score! 0 372 624 score 'score))
         ((eq? kind 'highscore) (show-score! 0 372 656 highscore 'highscore))
         ((eq? kind 'lives) ((game-objects-layer 'add-drawable) tile))
+        ((eq? kind 'sky) ((base-layer 'add-drawable) tile))
         (else (error "[ERROR in VisualADT/show!] Wrong kind: ") (display kind))))
 
     
@@ -321,25 +326,29 @@
     ;; PUBLIC PROCEDURES
     ;;
 
-    (define (initialize! level-object)
-      (base-layer 'empty)
-      (game-objects-layer 'empty)
-      (show! 'none 'score)
-      (show! 'none 'highscore)
-      (show! lives-sequence 'lives)
+    (define (initialize! game)
+      (let ((level-object (game 'level)))
+        (base-layer 'empty)
+        (game-objects-layer 'empty)
+        (show! 'none 'score)
+        (show! 'none 'highscore)
+        (show! lives-sequence 'lives)
       
-      ((base-layer 'add-drawable) score-text-tile)
-      ((base-layer 'add-drawable) highscore-text-tile)
-      ((base-layer 'add-drawable) lives-text-tile)
+        ((base-layer 'add-drawable) score-text-tile)
+        ((base-layer 'add-drawable) highscore-text-tile)
+        ((base-layer 'add-drawable) lives-text-tile)
 
-      ((game-objects-layer 'add-drawable) ant-sequence)
+        ((game-objects-layer 'add-drawable) ant-sequence)
 
-      (draw! level-object 'wall)
-      (draw! level-object 'egg)
-      (draw! level-object 'key)
-      (draw! level-object 'door)
-      (draw-score! (game 'score))
-      (draw-highscore! (game 'highscore)))
+        (if (= (game 'current) 1)
+            (show! sky-tile 'sky))
+
+        (draw! level-object 'wall)
+        (draw! level-object 'egg)
+        (draw! level-object 'key)
+        (draw! level-object 'door)
+        (draw-score! (game 'score))
+        (draw-highscore! (game 'highscore))))
 
     (define (update! game)
       (let ((level-object (game 'level)))
@@ -347,7 +356,6 @@
         (draw-ant! level-object)
 
         (draw! level-object 'scorpion)
-        ;(draw! level-object 'random-scorpion)
 
         (check-for-egg-remove level-object)
         (check-for-key-remove level-object)

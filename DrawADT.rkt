@@ -17,10 +17,10 @@
     (define (start! update-function game)
       ((window 'set-background!) "black")
       ((window 'set-update-callback!) update-function)
-      (visual 'start! (game 'level)))
+      (visual 'start! game))
 
     (define (initialize!)
-      (visual 'initialize! (game 'level)))
+      (visual 'initialize! game))
 
     (define (update-score! score)
       (visual 'update-score! score))

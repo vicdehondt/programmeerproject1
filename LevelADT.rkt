@@ -1,6 +1,7 @@
 (define (make-level level-number initial-ant-pos top-border bottom-border end-point)
   (let ((walls '())
         (scorpion-time 0)
+        (shield-time 0)
         (normal-scorpions '())
         (random-scorpions '())
         (keys '())
@@ -9,6 +10,7 @@
         (eggs '())
         (ant (make-movingobject initial-ant-pos 'right 'ant))
         (update-score? #f)
+        (shield? #f)
         (remove-live? #f)
         (inventory '((empty) (empty) (empty)))
         (speed-up? #f)
@@ -159,6 +161,16 @@
             (else (look-for-remove (car remaining) (cdr remaining) (cons current result)))))
         (look-for-remove (car current-eggs) (cdr current-eggs) '())))
 
+    (define (remove-mushroom!)
+      (let ((current-shrooms (reverse mushrooms)))
+        (define (look-for-remove current remaining result)
+          (cond
+            ((null? current-shoorms) result)
+            ((and (null? remaining) ((current 'position) 'equal? (ant 'position))) (set! mushrooms result))
+            (((current 'position) 'equal? (ant 'position)) (set! mushrooms (append result remaining)))
+            (else (look-for-remove (car remaining) (cdr remaining) (cons current result)))))
+        (look-for-remove (car current-shrooms) (cdr current-shrooms) '())))
+
     (define (add-to-inventory! object)
       (cond
         ((eq? (object 'kind) 'key) (set-car! inventory (cons 'key (car inventory))))
@@ -182,12 +194,11 @@
             (else (look-for-remove (car remaining) (cdr remaining) (cons current result)))))
         (look-for-remove (car current-keys) (cdr current-keys) '())))
 
-    ;; Checks if an egg needs to be removed
-    (define (check-and-remove-eggs! direction)
-      (if (not (can-move? ant direction 'egg))
-          (begin
-            (remove-egg!)
-            (update-score! #t))))
+    ;; Checks if something needs to be removed
+    (define (check-and-remove! direction)
+      (cond
+        ((not (can-move? ant direction 'egg)) (remove-egg!) (update-score! #t))
+        ((not (can-move? ant direction 'shield-shroom)) (remove-mushroom!) (set! shield? #t) (check-deactivate-shield!))))
 
     ;; Check if the ant collides with a key
     (define (check-for-key direction)
@@ -199,11 +210,18 @@
     (define (check-for-ant-scorpion-collision)
       (define (ant-scorpion-collision? lst)
         (list? (member #t (map (lambda (scorpion-object) ((ant 'position) 'equal? (scorpion-object 'position))) lst))))
-      (if (or (ant-scorpion-collision? normal-scorpions)
-              (ant-scorpion-collision? random-scorpions))
+      (if (and (not shield?) (or (ant-scorpion-collision? normal-scorpions)
+                                 (ant-scorpion-collision? random-scorpions)))
           (begin
             (remove-live! #t)
             (reset))))
+
+    (define (check-deactivate-shield! delta-time)
+      (set! shield-time (+ shield-time delta-time))
+      (if (> shield-time shield-interval)
+            (begin
+              (set! shield? #f)
+              (set! shield-time 0))))
 
     ;;
     ;; RESET
@@ -240,9 +258,9 @@
         (define (move-random! scorpion)
           (scorpion 'new-orientation!)
           (let ((orientation (scorpion 'orientation)))
-          (if (and (can-move? scorpion orientation 'wall) (can-move? scorpion orientation 'door) (not (< ((next-position scorpion orientation) 'y) top-border)))
-              (scorpion 'move! distance)
-              (move-random! scorpion))))
+            (if (and (can-move? scorpion orientation 'wall) (can-move? scorpion orientation 'door) (not (< ((next-position scorpion orientation) 'y) top-border)))
+                (scorpion 'move! distance)
+                (move-random! scorpion))))
         (define (move! scorpion)
           (let ((orientation (scorpion 'orientation)))
             (if (and (can-move? scorpion orientation 'wall) (can-move? scorpion orientation 'door) (not (< ((next-position scorpion orientation) 'y) top-border)))
@@ -263,7 +281,7 @@
           (begin
             (ant 'orientation! direction)
             (ant 'move! distance)
-            (check-and-remove-eggs! direction)
+            (check-and-remove! direction)
             (check-for-key direction))))
 
     ;;
@@ -314,6 +332,8 @@
         ((eq? message 'move-ant!) (apply move-ant! parameters))
         ((eq? message 'move-scorpion!) (apply move-scorpion! parameters))
         ((eq? message 'check-for-ant-scorpion-collision) (check-for-ant-scorpion-collision))
+        ((eq? message 'shield?) shield?)
+        ((eq? message 'check-deactivate-shield!) (apply check-deactivate-shield! parameters))
         ((eq? message 'update-score?) update-score?)
         ((eq? message 'update-score!) (apply update-score! parameters))
         ((eq? message 'remove-live?) remove-live?)

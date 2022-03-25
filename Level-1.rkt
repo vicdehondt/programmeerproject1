@@ -33,25 +33,15 @@
 
 (level-1 'add-eggs '((1 8)
                      (2 8)
-                     (3 8)
-                     (1 4)
-                     (2 4)
-                     (3 4)
-                     (4 4)
-                     (5 4)
-                     (6 4)
-                     (7 4)
-                     (8 4)
-                     (9 4)
-                     (10 4)))
+                     (3 8)))
 
 ;;
 ;; SCORPIONS
 ;;
 
 (level-1 'add-scorpions '((8 10 right normal)
-                          (4 6 down normal)
-                          (1 4 down random)))
+                          (4 8 left random)
+                          (17 4 up random)))
 
 ;;
 ;; PUZZLE OBJECTS

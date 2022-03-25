@@ -6,6 +6,8 @@
 (define normal-interval 600)
 (define speed-interval 300)
 
+(define shield-interval 15000)
+
 (define press-space-interval 500)
 
 (define score-interval 1000)
