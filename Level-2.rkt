@@ -49,3 +49,9 @@
                               (17 2 key)
                               (7 8 door)
                               (17 12 door)))
+
+;;
+;; POWER-UPS
+;;
+
+(level-2 'add-powerups '((10 7 shield)))

@@ -33,6 +33,7 @@
         (egg-tiles '())
         (key-tiles '())
         (door-tiles '())
+        (shield-shroom-tiles '())
         (normal-scorpion-tiles '())
         (random-scorpion-tiles '()))
     
@@ -96,7 +97,8 @@
           ((and (eq? current-orientation 'right) (eq? (object 'previous-orientation) 'left)) (object 'previous-orientation! current-orientation)
                                                                                              (sequence 'set-next!))
           ((and (eq? current-orientation 'left) (eq? (object 'previous-orientation) 'right)) (object 'previous-orientation! current-orientation)
-                                                                                             (sequence 'set-previous!)))))
+                                                                                             (sequence 'set-previous!))
+          (else (error "[ERROR in VisualADT set-sequence!]")))))
 
     (define (set-current-tile! orientation sequence)
       (cond
@@ -104,7 +106,7 @@
         ((eq? orientation 'right) ((sequence 'set-current!) 1))
         ((eq? orientation 'down) ((sequence 'set-current!) 2))
         ((eq? orientation 'left) ((sequence 'set-current!) 3))
-        (else (error "[ERROR in VisualADT/set-current-tile!] Wrong orientation: ") (display orientation))))
+        (else (error "[ERROR in VisualADT set-current-tile!] Wrong orientation!"))))
 
     (define (draw-ant! level-object)
       (let* ((ant (level-object 'ant)))
@@ -117,8 +119,10 @@
         ((eq? kind 'egg) (for-each-object (lambda (egg) (draw-stationary-piece! egg)) (level-object 'eggs)))
         ((eq? kind 'key) (for-each-object (lambda (key) (draw-stationary-piece! key)) (level-object 'keys)))
         ((eq? kind 'door) (for-each-object (lambda (door) (draw-stationary-piece! door)) (level-object 'doors)))
+        ((eq? kind 'shield-shroom) (for-each-object (lambda (shield) (draw-stationary-piece! shield)) (level-object 'shield-shrooms)))
         ((eq? kind 'scorpion) (for-each-object (lambda (scorpion) (draw-scorpion-piece! scorpion)) (level-object 'normal-scorpions))
-                              (for-each-object (lambda (scorpion) (draw-scorpion-piece! scorpion)) (level-object 'random-scorpions)))))
+                              (for-each-object (lambda (scorpion) (draw-scorpion-piece! scorpion)) (level-object 'random-scorpions)))
+        (else (error "[ERROR in VisualADT draw!] Wrong kind!"))))
 
     (define (draw-scorpion-piece! scorpion-object)
       (let ((sequence (get-object-piece scorpion-object))
@@ -136,8 +140,11 @@
         ((eq? kind 'egg) egg-tiles)
         ((eq? kind 'key) key-tiles)
         ((eq? kind 'door) door-tiles)
+        ((eq? kind 'shield-shroom) shield-shroom-tiles)
         ((eq? kind 'normal-scorpion) normal-scorpion-tiles)
-        ((eq? kind 'random-scorpion) random-scorpion-tiles)))
+        ((eq? kind 'random-scorpion) random-scorpion-tiles)
+        (else ;(error "[ERROR in VisualADT which-tiles-list] Wrong kind!")
+              (display kind))))
 
     ;; Looks for the right tile bound to the given object
     (define (get-object-piece object)
@@ -158,6 +165,7 @@
                                                                      (make-bitmap-tile "images/48px/Random-Scorpion-Down.png" "images/48px/Scorpion-Down-mask.png")
                                                                      (make-bitmap-tile "images/48px/Random-Scorpion-Left.png" "images/48px/Scorpion-Left-mask.png"))))
              (new-egg-tile (make-bitmap-tile "images/48px/Egg.png" "images/48px/Egg-mask.png"))
+             (new-shield-shroom-tile (make-bitmap-tile "images/48px/champignon.png" "images/48px/champignon-mask.png"))
              (new-key-tile (make-bitmap-tile "images/48px/Key.png" "images/48px/Key-mask.png"))
              (new-door-tile (make-tile 48 48 "images/48px/Door.png"))
              (new-wall-tile (make-tile 48 48 "images/48px/Wall.png")))
@@ -173,8 +181,9 @@
           ((eq? kind 'egg) (add-piece new-egg-tile))
           ((eq? kind 'key) (add-piece new-key-tile))
           ((eq? kind 'door) (add-piece new-door-tile))
+          ((eq? kind 'shield-shroom) (add-piece new-shield-shroom-tile))
           ((eq? kind 'wall) (add-piece new-wall-tile))
-          (else (error "[ERROR in VisualADT/add-object-piece!] Wrong kind: ") (display kind)))))
+          (else (error "[ERROR in VisualADT add-object-piece!] Wrong kind!")))))
 
     (define (draw-object! obj tile)
       (let* ((position (obj 'position))
@@ -192,8 +201,9 @@
           ((eq? kind 'egg) (set! egg-tiles (cons (cons object tile) egg-tiles)))
           ((eq? kind 'key) (set! key-tiles (cons (cons object tile) key-tiles)))
           ((eq? kind 'door) (set! door-tiles (cons (cons object tile) door-tiles)))
+          ((eq? kind 'shield-shroom) (set! shield-shroom-tiles (cons (cons object tile) shield-shroom-tiles)))
           ((eq? kind 'wall) (set! wall-tiles (cons (cons object tile) wall-tiles)))
-          (else (error "[ERROR in VisualADT/add-object-tile!] Wrong kind: ") (display kind)))))
+          (else (error "[ERROR in VisualADT add-object-tile!] Wrong kind!")))))
 
     (define (show! tile kind)
       (define (show-score! count x y vector kind)
@@ -229,44 +239,35 @@
         ((eq? kind 'egg) ((game-objects-layer 'add-drawable) tile))
         ((eq? kind 'key) ((game-objects-layer 'add-drawable) tile))
         ((eq? kind 'door) ((game-objects-layer 'add-drawable) tile))
+        ((eq? kind 'shield-shroom) ((game-objects-layer 'add-drawable) tile))
         ((eq? kind 'wall) ((game-objects-layer 'add-drawable) tile))
         ((eq? kind 'score) (show-score! 0 372 624 score 'score))
         ((eq? kind 'highscore) (show-score! 0 372 656 highscore 'highscore))
         ((eq? kind 'lives) ((game-objects-layer 'add-drawable) tile))
         ((eq? kind 'sky) ((base-layer 'add-drawable) tile))
-        (else (error "[ERROR in VisualADT/show!] Wrong kind: ") (display kind))))
+        (else (error "[ERROR in VisualADT show!] Wrong kind!"))))
 
     
     ;;
     ;; REMOVING
     ;;
 
-    (define (which-egg-to-remove level-object)
-      (let find ((current (car egg-tiles))
-                 (remaining (cdr egg-tiles)))
-        (if (not (level-object 'member? (car current) 'egg))
-            (begin
-              ((game-objects-layer 'remove-drawable) (cdr current))
-              current)
-            (find (car remaining) (cdr remaining)))))
+    (define (which-to-remove level-object kind)
 
-    (define (which-key-to-remove level-object)
-      (let find ((current (car key-tiles))
-                 (remaining (cdr key-tiles)))
-        (if (not (level-object 'member? (car current) 'key))
-            (begin
-              ((game-objects-layer 'remove-drawable) (cdr current))
-              current)
-            (find (car remaining) (cdr remaining)))))
-
-    (define (which-door-to-remove level-object)
-      (let find ((current (car door-tiles))
-                 (remaining (cdr door-tiles)))
-        (if (not (level-object 'member? (car current) 'door))
-            (begin
-              ((game-objects-layer 'remove-drawable) (cdr current))
-              current)
-            (find (car remaining) (cdr remaining)))))
+      (define (search tiles layer)
+        (let ((current (car tiles))
+              (remaining (cdr tiles)))
+          (if (not (level-object 'member? (car current) kind))
+              (begin
+                ((layer 'remove-drawable) (cdr current))
+                current)
+              (search remaining layer))))
+      
+      (cond
+        ((eq? kind 'egg) (search egg-tiles game-objects-layer))
+        ((eq? kind 'shield-shroom) (search shield-shroom-tiles game-objects-layer))
+        ((eq? kind 'key) (search key-tiles game-objects-layer))
+        ((eq? kind 'door) (search door-tiles game-objects-layer))))
     
     (define (remove-from-list element lst)
       (let ((search-list (reverse lst)))
@@ -282,15 +283,30 @@
     ;; Checks if an egg is removed
     (define (check-for-egg-remove level-object)
       (if (> (length egg-tiles) (level-object 'length? 'egg))
-          (set! egg-tiles (remove-from-list (which-egg-to-remove level-object) egg-tiles))))
+          (set! egg-tiles (remove-from-list (which-to-remove level-object 'egg) egg-tiles))))
+    
+    (define (check-for-shroom-remove level-object)
+      (if (> (length shield-shroom-tiles) (level-object 'length? 'shield-shroom))
+          (set! shield-shroom-tiles (remove-from-list (which-to-remove level-object 'shield-shroom) shield-shroom-tiles))))
 
     (define (check-for-key-remove level-object)
       (if (> (length key-tiles) (level-object 'length? 'key))
-          (set! key-tiles (remove-from-list (which-key-to-remove level-object) key-tiles))))
+          (set! key-tiles (remove-from-list (which-to-remove level-object 'key) key-tiles))))
 
     (define (check-for-door-remove level-object)
       (if (> (length door-tiles) (level-object 'length? 'door))
-          (set! door-tiles (remove-from-list (which-door-to-remove level-object) door-tiles))))
+          (set! door-tiles (remove-from-list (which-to-remove level-object 'door) door-tiles))))
+
+    (define (check-for-remove level-object kind)
+      (define (check tiles)
+        (if (> (length tiles) (level-object 'length? kind))
+            (remove-from-list (which-to-remove level-object kind) tiles)
+            tiles))
+      (cond
+        ((eq? kind 'egg) (set! egg-tiles (check egg-tiles)))
+        ((eq? kind 'shield-shroom) (set! shield-shroom-tiles (check shield-shroom-tiles)))
+        ((eq? kind 'key) (set! key-tiles (check key-tiles)))
+        ((eq? kind 'door) (set! door-tiles (check door-tiles)))))
 
     ;;
     ;; GAME OVER
@@ -347,6 +363,7 @@
         (draw! level-object 'egg)
         (draw! level-object 'key)
         (draw! level-object 'door)
+        (draw! level-object 'shield-shroom)
         (draw-score! (game 'score))
         (draw-highscore! (game 'highscore))))
 
@@ -357,9 +374,15 @@
 
         (draw! level-object 'scorpion)
 
-        (check-for-egg-remove level-object)
+        (check-for-remove level-object 'egg)
+        (check-for-remove level-object 'shield-shroom)
+        (check-for-remove level-object 'key)
+        (check-for-remove level-object 'door)
+
+        #|(check-for-egg-remove level-object)
+        (check-for-shroom-remove level-object)
         (check-for-key-remove level-object)
-        (check-for-door-remove level-object)
+        (check-for-door-remove level-object)|#
         
         (draw-lives! game)))
 
@@ -373,6 +396,6 @@
         ((eq? message 'initialize!) (apply initialize! parameters))
         ((eq? message 'update-score!) (apply draw-score! parameters))
         ((eq? message 'update-highscore!) (apply draw-highscore! parameters))
-        (else (error "[ERROR in VisualADT DISPATCH] Wrong message: ") (display message))))
+        (else (error "[ERROR in VisualADT DISPATCH] Wrong message!"))))
 
     dispatch))

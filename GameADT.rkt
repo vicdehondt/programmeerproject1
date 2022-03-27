@@ -112,6 +112,6 @@
         ((eq? message 'current) current-level)
         ((eq? message 'highscore) highscore-vect)
         ((eq? message 'lives) lives)
-        (else  (error "[ERROR in GameADT DISPATCH] Wrong message: ") (display message))))
+        (else  (error "[ERROR in GameADT DISPATCH] Wrong message!"))))
 
     dispatch))

@@ -44,6 +44,6 @@
             ((eq? message 'update-score!) (apply update-score! parameters))
             ((eq? message 'update-highscore!) (apply update-highscore! parameters))
             ((eq? message 'game-over!) (visual 'game-over!))
-            (else  (error "[ERROR in DrawADT DISPATCH] Wrong message: ") (display message))))
+            (else  (error "[ERROR in DrawADT DISPATCH] Wrong message!"))))
 
     dispatch))

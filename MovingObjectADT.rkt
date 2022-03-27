@@ -9,7 +9,8 @@
           ((eq? orientation 'right) (orientation! 'left))
           ((eq? orientation 'left) (orientation! 'right))
           ((eq? orientation 'up) (orientation! 'down))
-          ((eq? orientation 'down) (orientation! 'up))))
+          ((eq? orientation 'down) (orientation! 'up))
+          (else (error "[ERROR in MovingObjectADT set-opposite-orientation!] Wrong orientation!"))))
 
     (define (set-random-orientation!)
       (let ((orientations (vector 'left 'right 'up 'down)))
@@ -25,14 +26,15 @@
       (cond
         ((eq? kind 'normal-scorpion) (set-opposite-orientation!))
         ((eq? kind 'random-scorpion) (set-random-orientation!))
-        (else (error "[ERROR in MovingObjectADT new-orientation!] Wrong kind: ") (display kind))))
+        (else (error "[ERROR in MovingObjectADT new-orientation!] Wrong kind!"))))
     
     (define (move! distance)
       (cond
         ((eq? orientation 'right) (position! (make-position (+ (position 'x) distance) (position 'y))))
         ((eq? orientation 'left) (position! (make-position (- (position 'x) distance) (position 'y))))
         ((eq? orientation 'up) (position! (make-position (position 'x) (- (position 'y) distance))))
-        ((eq? orientation 'down) (position! (make-position (position 'x) (+ (position 'y) distance))))))
+        ((eq? orientation 'down) (position! (make-position (position 'x) (+ (position 'y) distance))))
+        (error "[ERROR in MovingObjectADT move!] Wrong orientation!")))
 
     (define (dispatch message . parameters)
       (cond
@@ -46,6 +48,6 @@
         ((eq? message 'previous-orientation!) (apply previous-orientation! parameters))
         ((eq? message 'kind) kind)
         ((eq? message 'move!) (apply move! parameters))
-        (else  (error "[ERROR in MovingObjectADT DISPATCH] Wrong message: ") (display message))))
+        (else  (error "[ERROR in MovingObjectADT DISPATCH] Wrong message!"))))
     
     dispatch))

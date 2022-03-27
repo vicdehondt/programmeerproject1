@@ -5,6 +5,6 @@
       (cond
         ((eq? message 'position) position)
         ((eq? message 'kind) kind)
-        (else  (error "[ERROR in PuzzleObjectADT DISPATCH] Wrong message: ") (display message))))
+        (else  (error "[ERROR in PuzzleObjectADT DISPATCH] Wrong message!"))))
     
     dispatch))
