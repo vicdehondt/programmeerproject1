@@ -143,8 +143,7 @@
         ((eq? kind 'shield-shroom) shield-shroom-tiles)
         ((eq? kind 'normal-scorpion) normal-scorpion-tiles)
         ((eq? kind 'random-scorpion) random-scorpion-tiles)
-        (else ;(error "[ERROR in VisualADT which-tiles-list] Wrong kind!")
-              (display kind))))
+        (else (error "[ERROR in VisualADT which-tiles-list] Wrong kind!"))))
 
     ;; Looks for the right tile bound to the given object
     (define (get-object-piece object)
@@ -378,11 +377,6 @@
         (check-for-remove level-object 'shield-shroom)
         (check-for-remove level-object 'key)
         (check-for-remove level-object 'door)
-
-        #|(check-for-egg-remove level-object)
-        (check-for-shroom-remove level-object)
-        (check-for-key-remove level-object)
-        (check-for-door-remove level-object)|#
         
         (draw-lives! game)))
 
