@@ -34,6 +34,7 @@
         (key-tiles '())
         (door-tiles '())
         (shield-shroom-tiles '())
+        (food-tiles '())
         (normal-scorpion-tiles '())
         (random-scorpion-tiles '()))
     
@@ -120,6 +121,7 @@
         ((eq? kind 'key) (for-each-object (lambda (key) (draw-stationary-piece! key)) (level-object 'keys)))
         ((eq? kind 'door) (for-each-object (lambda (door) (draw-stationary-piece! door)) (level-object 'doors)))
         ((eq? kind 'shield-shroom) (for-each-object (lambda (shield) (draw-stationary-piece! shield)) (level-object 'shield-shrooms)))
+        ((eq? kind 'food) (for-each-object (lambda (food) (draw-stationary-piece! food)) (level-object 'food)))
         ((eq? kind 'scorpion) (for-each-object (lambda (scorpion) (draw-scorpion-piece! scorpion)) (level-object 'normal-scorpions))
                               (for-each-object (lambda (scorpion) (draw-scorpion-piece! scorpion)) (level-object 'random-scorpions)))
         (else (error "[ERROR in VisualADT draw!] Wrong kind!"))))
@@ -141,6 +143,7 @@
         ((eq? kind 'key) key-tiles)
         ((eq? kind 'door) door-tiles)
         ((eq? kind 'shield-shroom) shield-shroom-tiles)
+        ((eq? kind 'food) food-tiles)
         ((eq? kind 'normal-scorpion) normal-scorpion-tiles)
         ((eq? kind 'random-scorpion) random-scorpion-tiles)
         (else (error "[ERROR in VisualADT which-tiles-list] Wrong kind!"))))
@@ -165,6 +168,7 @@
                                                                      (make-bitmap-tile "images/48px/Random-Scorpion-Left.png" "images/48px/Scorpion-Left-mask.png"))))
              (new-egg-tile (make-bitmap-tile "images/48px/Egg.png" "images/48px/Egg-mask.png"))
              (new-shield-shroom-tile (make-bitmap-tile "images/48px/champignon.png" "images/48px/champignon-mask.png"))
+             (new-food-tile (make-bitmap-tile "images/48px/Food.png" "images/48px/Food-mask.png"))
              (new-key-tile (make-bitmap-tile "images/48px/Key.png" "images/48px/Key-mask.png"))
              (new-door-tile (make-tile 48 48 "images/48px/Door.png"))
              (new-wall-tile (make-tile 48 48 "images/48px/Wall.png")))
@@ -181,6 +185,7 @@
           ((eq? kind 'key) (add-piece new-key-tile))
           ((eq? kind 'door) (add-piece new-door-tile))
           ((eq? kind 'shield-shroom) (add-piece new-shield-shroom-tile))
+          ((eq? kind 'food) (add-piece new-food-tile))
           ((eq? kind 'wall) (add-piece new-wall-tile))
           (else (error "[ERROR in VisualADT add-object-piece!] Wrong kind!")))))
 
@@ -201,6 +206,7 @@
           ((eq? kind 'key) (set! key-tiles (cons (cons object tile) key-tiles)))
           ((eq? kind 'door) (set! door-tiles (cons (cons object tile) door-tiles)))
           ((eq? kind 'shield-shroom) (set! shield-shroom-tiles (cons (cons object tile) shield-shroom-tiles)))
+          ((eq? kind 'food) (set! food-tiles (cons (cons object tile) food-tiles)))
           ((eq? kind 'wall) (set! wall-tiles (cons (cons object tile) wall-tiles)))
           (else (error "[ERROR in VisualADT add-object-tile!] Wrong kind!")))))
 
@@ -239,6 +245,7 @@
         ((eq? kind 'key) ((game-objects-layer 'add-drawable) tile))
         ((eq? kind 'door) ((game-objects-layer 'add-drawable) tile))
         ((eq? kind 'shield-shroom) ((game-objects-layer 'add-drawable) tile))
+        ((eq? kind 'food) ((game-objects-layer 'add-drawable) tile))
         ((eq? kind 'wall) ((game-objects-layer 'add-drawable) tile))
         ((eq? kind 'score) (show-score! 0 372 624 score 'score))
         ((eq? kind 'highscore) (show-score! 0 372 656 highscore 'highscore))
@@ -265,6 +272,7 @@
       (cond
         ((eq? kind 'egg) (search egg-tiles game-objects-layer))
         ((eq? kind 'shield-shroom) (search shield-shroom-tiles game-objects-layer))
+        ((eq? kind 'food) (search food-tiles game-objects-layer))
         ((eq? kind 'key) (search key-tiles game-objects-layer))
         ((eq? kind 'door) (search door-tiles game-objects-layer))))
     
@@ -288,6 +296,10 @@
       (if (> (length shield-shroom-tiles) (level-object 'length? 'shield-shroom))
           (set! shield-shroom-tiles (remove-from-list (which-to-remove level-object 'shield-shroom) shield-shroom-tiles))))
 
+    (define (check-for-food-remove level-object)
+      (if (> (length food-tiles) (level-object 'length? 'food))
+          (set! food-tiles (remove-from-list (which-to-remove level-object 'food) food-tiles))))
+
     (define (check-for-key-remove level-object)
       (if (> (length key-tiles) (level-object 'length? 'key))
           (set! key-tiles (remove-from-list (which-to-remove level-object 'key) key-tiles))))
@@ -304,6 +316,7 @@
       (cond
         ((eq? kind 'egg) (set! egg-tiles (check egg-tiles)))
         ((eq? kind 'shield-shroom) (set! shield-shroom-tiles (check shield-shroom-tiles)))
+        ((eq? kind 'food) (set! food-tiles (check food-tiles)))
         ((eq? kind 'key) (set! key-tiles (check key-tiles)))
         ((eq? kind 'door) (set! door-tiles (check door-tiles)))))
 
@@ -363,6 +376,7 @@
         (draw! level-object 'key)
         (draw! level-object 'door)
         (draw! level-object 'shield-shroom)
+        (draw! level-object 'food)
         (draw-score! (game 'score))
         (draw-highscore! (game 'highscore))))
 
@@ -375,6 +389,7 @@
 
         (check-for-remove level-object 'egg)
         (check-for-remove level-object 'shield-shroom)
+        (check-for-remove level-object 'food)
         (check-for-remove level-object 'key)
         (check-for-remove level-object 'door)
         

@@ -18,3 +18,5 @@
 (define height 720)
 
 (define score-size 8)
+
+(define lives-start-count 3)

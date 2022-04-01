@@ -4,7 +4,9 @@
         (ant (make-movingobject initial-ant-pos 'right 'ant))
         (inventory '((empty) (empty) (empty)))
         (update-score? #f)
+        (lives 0)
         (remove-live? #f)
+        (add-live? #f)
         (shield? #f)
         (speed-up? #f)
         (walls '())
@@ -14,6 +16,7 @@
         (keys '())
         (doors '())
         (shield-shrooms '())
+        (food '())
         (done? #f))
 
     (define (initial-ant-pos! position-object)
@@ -106,6 +109,7 @@
     (define (add-powerup position-object kind)
       (cond
         ((eq? kind 'shield) (set! shield-shrooms (cons (make-powerup position-object 'shield-shroom) shield-shrooms)))
+        ((eq? kind 'food) (set! food (cons (make-powerup position-object 'food) food)))
         (else (error "[ERROR in LevelADT add-powerup] Wrong kind!"))))
 
     ;;
@@ -128,6 +132,7 @@
         ((eq? kind 'egg) (not (list? (member #t (egg-collision-list moving-object)))))
         ((eq? kind 'key) (not (list? (member #t (key-collision-list moving-object)))))
         ((eq? kind 'shield-shroom) (not (list? (member #t (shield-shroom-collision-list moving-object)))))
+        ((eq? kind 'food) (not (list? (member #t (food-collision-list moving-object)))))
         (else (error "[ERROR in LevelADT can-move?] Wrong kind!"))))
 
 
@@ -138,6 +143,9 @@
 
     (define (shield-shroom-collision-list moving-object)
       (map (lambda (shield-object) (collision? moving-object shield-object)) shield-shrooms))
+    
+    (define (food-collision-list moving-object)
+      (map (lambda (food-object) (collision? moving-object food-object)) food))
 
     (define (wall-collision-list moving-object direction)
       (map (lambda (wall-object) (upcomming-collision? moving-object (wall-object 'position) direction)) walls))
@@ -184,6 +192,7 @@
         ((eq? kind 'door) (remove-from-inventory! 'key) (set! doors (search-and-remove! doors (next-position ant (car direction)))))
         ((eq? kind 'egg) (set! eggs (search-and-remove! eggs (ant 'position))))
         ((eq? kind 'shield-shroom) (set! shield-shrooms (search-and-remove! shield-shrooms (ant 'position))))
+        ((eq? kind 'food) (set! food (search-and-remove! food (ant 'position))))
         (else (error "[ERROR in LevelADT remove!] Wrong kind!"))))
 
     (define (remove-from-inventory! kind)
@@ -206,10 +215,12 @@
         ((eq? (object 'kind) 'key) (set-car! inventory (cons 'key (car inventory))))
         (else (error "[ERROR in LevelADT add-to-inventory!] Wrong kind!"))))
 
-    (define (remove-live! bool)
-      (if bool
-          (set! remove-live? #t)
-          (set! remove-live? #f)))
+    ;;
+    ;; LIVES
+    ;;
+
+    (define (lives! value)
+      (set! lives value))
 
     ;;
     ;; CHECKERS
@@ -220,7 +231,8 @@
       (cond
         ((not (can-move? ant direction 'egg)) (remove! 'egg) (update-score! #t))
         ((not (can-move? ant direction 'key)) (remove-and-add-to-inv!))
-        ((not (can-move? ant direction 'shield-shroom)) (remove! 'shield-shroom) (set! shield? #t))))
+        ((not (can-move? ant direction 'shield-shroom)) (remove! 'shield-shroom) (set! shield? #t))
+        ((not (can-move? ant direction 'food)) (remove! 'food) (lives! (+ lives 1)))))
 
     ;; Checks if any scorpion collides with the ant and moves the ant back to initial-ant-pos
     (define (check-for-ant-scorpion-collision)
@@ -229,7 +241,7 @@
       (if (and (not shield?) (or (ant-scorpion-collision? normal-scorpions)
                                  (ant-scorpion-collision? random-scorpions)))
           (begin
-            (remove-live! #t)
+            (lives! (- lives 1))
             (reset))))
 
     (define (check-deactivate-shield! delta-time)
@@ -300,6 +312,7 @@
         ((eq? object-list 'key) (member element keys))
         ((eq? object-list 'door) (member element doors))
         ((eq? object-list 'shield-shroom) (member element shield-shrooms))
+        ((eq? object-list 'food) (member element food))
         (else (error "[ERROR in LevelADT member?] Wrong object-list!"))))
 
     (define (length? object-list)
@@ -308,6 +321,7 @@
         ((eq? object-list 'key) (length keys))
         ((eq? object-list 'door) (length doors))
         ((eq? object-list 'shield-shroom) (length shield-shrooms))
+        ((eq? object-list 'food) (length food))
         (else (error "[ERROR in LevelADT length?] Wrong object-list!"))))
 
     (define (dispatch message . parameters)
@@ -326,6 +340,7 @@
         ((eq? message 'keys) keys)
         ((eq? message 'doors) doors)
         ((eq? message 'shield-shrooms) shield-shrooms)
+        ((eq? message 'food) food)
         ((eq? message 'done?) done?)
         ((eq? message 'initial-ant-pos!) (apply initial-ant-pos! parameters))
         ((eq? message 'add-walls) (apply add-walls parameters))
@@ -333,6 +348,8 @@
         ((eq? message 'add-eggs) (apply add-eggs parameters))
         ((eq? message 'add-puzzleobjects) (apply add-puzzleobjects parameters))
         ((eq? message 'add-powerups) (apply add-powerups parameters))
+        ((eq? message 'lives) lives)
+        ((eq? message 'lives!) (apply lives! parameters))
         ((eq? message 'remove-live!) (apply remove-live! parameters))
         ((eq? message 'check-for-ant-scorpion-collision) (check-for-ant-scorpion-collision))
         ((eq? message 'check-deactivate-shield!) (apply check-deactivate-shield! parameters))

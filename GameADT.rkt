@@ -30,7 +30,8 @@
                 (set! press-space-time 0)))))
 
     (define (start-game!)
-      (draw 'start! game-loop dispatch))
+      (draw 'start! game-loop dispatch)
+      ((level) 'lives! lives-start-count))
 
     ;; What happens every tick
     (define (game-loop delta-time)
@@ -38,7 +39,6 @@
           (begin
             (draw 'update! dispatch)
             (update-score!)
-            (update-lives!)
             (check-game-over)
             (next-level?)
             ((level) 'move-scorpion! delta-time)
@@ -77,15 +77,11 @@
                   (draw 'update-highscore! highscore-vect)
                   (write-file "highscore.txt" (list highscore-vect highscore)))))))
 
-    (define (update-lives!)
-      (if ((level) 'remove-live?)
-          (begin
-            ((level) 'remove-live! #f)
-            (set! lives (- lives 1)))))
-
     (define (next-level!)
-      (set! current-level (+ current-level 1))
-      (draw 'initialize!))
+      (let ((current-lives ((level) 'lives)))
+        (set! current-level (+ current-level 1))
+        ((level) 'lives! current-lives)
+        (draw 'initialize!)))
     
     (define (next-level?)
       (if ((((level) 'ant) 'position) 'equal? ((level) 'end-point))
@@ -99,7 +95,7 @@
                 (set! running #t)))))
 
     (define (check-game-over)
-      (if (<= lives 0)
+      (if (<= ((level) 'lives) 0)
           (begin
             (set! game-over? #t)
             (draw 'game-over!))))
@@ -111,7 +107,7 @@
         ((eq? message 'score) score-vect)
         ((eq? message 'current) current-level)
         ((eq? message 'highscore) highscore-vect)
-        ((eq? message 'lives) lives)
+        ((eq? message 'lives) ((level) 'lives))
         (else  (error "[ERROR in GameADT DISPATCH] Wrong message!"))))
 
     dispatch))
