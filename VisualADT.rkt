@@ -37,6 +37,17 @@
         (food-tiles '())
         (normal-scorpion-tiles '())
         (random-scorpion-tiles '()))
+
+
+    (define (clear-tiles!)
+      (set! wall-tiles '())
+      (set! egg-tiles '())
+      (set! key-tiles '())
+      (set! door-tiles '())
+      (set! shield-shroom-tiles '())
+      (set! food-tiles '())
+      (set! normal-scorpion-tiles '())
+      (set! random-scorpion-tiles '()))
     
 
     
@@ -136,6 +147,14 @@
       (let ((tile (get-object-piece object)))
         (draw-object! object tile)))
 
+        ;; Looks for the right tile bound to the given object
+    (define (get-object-piece object)
+      (let* ((tile-list (which-tiles-list (object 'kind)))
+             (result (assoc object tile-list)))
+        (if result
+            (cdr result)
+            (add-object-piece! object))))
+
     (define (which-tiles-list kind)
       (cond
         ((eq? kind 'wall) wall-tiles)
@@ -147,14 +166,6 @@
         ((eq? kind 'normal-scorpion) normal-scorpion-tiles)
         ((eq? kind 'random-scorpion) random-scorpion-tiles)
         (else (error "[ERROR in VisualADT which-tiles-list] Wrong kind!"))))
-
-    ;; Looks for the right tile bound to the given object
-    (define (get-object-piece object)
-      (let* ((tile-list (which-tiles-list (object 'kind)))
-             (result (assoc object tile-list)))
-        (if result
-            (cdr result)
-            (add-object-piece! object))))
 
     (define (add-object-piece! object)
       (let* ((kind (object 'kind))
@@ -168,7 +179,10 @@
                                                                      (make-bitmap-tile "images/48px/Random-Scorpion-Left.png" "images/48px/Scorpion-Left-mask.png"))))
              (new-egg-tile (make-bitmap-tile "images/48px/Egg.png" "images/48px/Egg-mask.png"))
              (new-shield-shroom-tile (make-bitmap-tile "images/48px/champignon.png" "images/48px/champignon-mask.png"))
-             (new-food-tile (make-bitmap-tile "images/48px/Food.png" "images/48px/Food-mask.png"))
+             (new-food-tile (vector-ref (vector (make-bitmap-tile "images/48px/druif.png" "images/48px/druif-mask.png")
+                                                (make-bitmap-tile "images/48px/banaan.png" "images/48px/banaan-mask.png")
+                                                (make-bitmap-tile "images/48px/Food.png" "images/48px/Food-mask.png"))
+                                        (- (random 1 4) 1)))
              (new-key-tile (make-bitmap-tile "images/48px/Key.png" "images/48px/Key-mask.png"))
              (new-door-tile (make-tile 48 48 "images/48px/Door.png"))
              (new-wall-tile (make-tile 48 48 "images/48px/Wall.png")))
@@ -287,7 +301,6 @@
             ((eq? current element) (append result remaining))
             (else (search-and-remove (car remaining) (cdr remaining) (cons current result)))))))
 
-    ;; Checks if an egg is removed
     (define (check-for-egg-remove level-object)
       (if (> (length egg-tiles) (level-object 'length? 'egg))
           (set! egg-tiles (remove-from-list (which-to-remove level-object 'egg) egg-tiles))))
@@ -356,6 +369,7 @@
 
     (define (initialize! game)
       (let ((level-object (game 'level)))
+        (clear-tiles!)
         (base-layer 'empty)
         (game-objects-layer 'empty)
         (show! 'none 'score)
@@ -404,6 +418,7 @@
         ((eq? message 'press-space) (apply press-space parameters))
         ((eq? message 'initialize!) (apply initialize! parameters))
         ((eq? message 'update-score!) (apply draw-score! parameters))
+        ((eq? message 'wall-tiles) egg-tiles)
         ((eq? message 'update-highscore!) (apply draw-highscore! parameters))
         (else (error "[ERROR in VisualADT DISPATCH] Wrong message!"))))
 

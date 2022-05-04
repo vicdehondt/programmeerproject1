@@ -55,3 +55,5 @@
                               (6 9 door)
                               (1 12 door)))
 
+(level-1 'add-powerups '((1 7 food)))
+

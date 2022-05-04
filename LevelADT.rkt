@@ -1,6 +1,7 @@
 (define (make-level level-number initial-ant-pos top-border bottom-border end-point)
   (let ((scorpion-time 0)
         (shield-time 0)
+        (speed-up-time 0)
         (ant (make-movingobject initial-ant-pos 'right 'ant))
         (inventory '((empty) (empty) (empty)))
         (update-score? #f)
@@ -17,10 +18,36 @@
         (doors '())
         (shield-shrooms '())
         (food '())
-        (done? #f))
+        (reset-level? #f)
+        (done? #f)
+        (back-up (make-vector 5 0)))
 
+
+    (define (duplicate!)
+      (let ((new-level (make-level level-number initial-ant-pos top-border bottom-border end-point)))
+        (new-level 'add-walls (vector-ref back-up wall-place))
+        (new-level 'add-eggs (vector-ref back-up egg-place))
+        (new-level 'add-scorpions (vector-ref back-up scorpion-place))
+        (new-level 'add-puzzleobjects (vector-ref back-up puzzle-object-place))
+        (new-level 'add-powerups (vector-ref back-up power-up-place))
+        new-level))
+
+    
     (define (initial-ant-pos! position-object)
       (set! initial-ant-pos position-object))
+
+    (define (check-deactivate-speed-up! delta-time)
+      (if (> speed-up-time speed-up-interval)
+          (begin
+            (set! speed-up? #f)
+            (set! speed-up-time 0))))
+
+    (define (speed-up delta-time)
+      (set! speed-up-time (+ speed-up-time delta-time))
+      (if (and (member (random 1 128) '(5 53 27 83 63 101)) (> speed-up-time 15000))
+          (begin
+            (set! speed-up? #t)
+            (set! speed-up-time 0))))
 
     ;;
     ;; ADD PROCEDURES
@@ -29,6 +56,7 @@
     ;; Walls
 
     (define (add-walls lst)
+      (vector-set! back-up wall-place lst)
       (for-each (lambda (positions) (add-multiple-walls (make-position (caar positions) (cadar positions))  (make-position (caadr positions) (cadadr positions)))) lst))
 
     ;; The main procedure that makes a long wall, it checks if you want to build a vertical or a horzizontal wall
@@ -68,6 +96,7 @@
     ;; Scorpions
 
     (define (add-scorpions lst)
+      (vector-set! back-up scorpion-place lst)
       (for-each (lambda (scorpion-info) (add-scorpion (make-position (list-ref scorpion-info 0)
                                                                      (list-ref scorpion-info 1))
                                                       (list-ref scorpion-info 2)
@@ -83,6 +112,7 @@
     ;; Eggs
 
     (define (add-eggs lst)
+      (vector-set! back-up egg-place lst)
       (for-each (lambda (x-and-y) (add-egg (make-position (car x-and-y) (cadr x-and-y)))) lst))
     
     (define (add-egg position-object)
@@ -92,6 +122,7 @@
     ;; Puzzle-objects
 
     (define (add-puzzleobjects lst)
+      (vector-set! back-up puzzle-object-place lst)
       (for-each (lambda (x-y-kind) (add-puzzleobject (make-position (car x-y-kind) (cadr x-y-kind)) (caddr x-y-kind))) lst))
 
     (define (add-puzzleobject position-object kind)
@@ -104,6 +135,7 @@
     ;; Power-ups
 
     (define (add-powerups lst)
+      (vector-set! back-up power-up-place lst)
       (for-each (lambda (x-y-kind) (add-powerup (make-position (car x-y-kind) (cadr x-y-kind)) (caddr x-y-kind))) lst))
 
     (define (add-powerup position-object kind)
@@ -201,14 +233,15 @@
           ((eq? kind 'key) (set-car! inventory (cdr keys)))
           (else (error "[ERROR in LevelADT remove-from-inventory!]")))))
 
-    (define (remove-and-add-to-inv!)
+    (define (remove-and-add-to-inv! kind)
       (define (look-for-remove lst)
         (cond
           ((null? lst) '())
           ((and (null? (cdr lst)) (((car lst) 'position) 'equal? (ant 'position))) (add-to-inventory! (car lst)) '())
           ((((car lst) 'position) 'equal? (ant 'position)) (add-to-inventory! (car lst)) (cdr lst))
           (else (cons (car lst) (look-for-remove (cdr lst))))))
-      (set! keys (look-for-remove keys)))
+      (cond
+        ((eq? kind 'key) (set! keys (look-for-remove keys)))))
 
     (define (add-to-inventory! object)
       (cond
@@ -229,10 +262,10 @@
     ;; Checks if something needs to be removed
     (define (check-and-remove! direction)
       (cond
-        ((not (can-move? ant direction 'egg)) (remove! 'egg) (update-score! #t))
-        ((not (can-move? ant direction 'key)) (remove-and-add-to-inv!))
+        ((not (can-move? ant direction 'egg)) (remove! 'egg) (update-score! (cons 500 (vector 0 0 0 0 0 5 0 0))))
+        ((not (can-move? ant direction 'key)) (remove-and-add-to-inv! 'key))
         ((not (can-move? ant direction 'shield-shroom)) (remove! 'shield-shroom) (set! shield? #t))
-        ((not (can-move? ant direction 'food)) (remove! 'food) (lives! (+ lives 1)))))
+        ((not (can-move? ant direction 'food)) (remove! 'food) (lives! (+ lives 1)) (update-score! (cons 200 (vector 0 0 0 0 0 2 0 0))))))
 
     ;; Checks if any scorpion collides with the ant and moves the ant back to initial-ant-pos
     (define (check-for-ant-scorpion-collision)
@@ -242,7 +275,7 @@
                                  (ant-scorpion-collision? random-scorpions)))
           (begin
             (lives! (- lives 1))
-            (reset))))
+            (if (> lives 1) (set! reset-level? #t)))))
 
     (define (check-deactivate-shield! delta-time)
       (set! shield-time (+ shield-time delta-time))
@@ -255,8 +288,18 @@
     ;; RESET
     ;;
 
-    (define (reset)
-      (ant 'position! initial-ant-pos))
+    (define (place-back! lst)
+      (define (search-and-place! object)
+        (cond
+          ((eq? (object 'kind) 'eggs) (set! eggs (cons object eggs)))
+          ((eq? (object 'kind) 'keys) (set! keys (cons object keyss)))
+          ((eq? (object 'kind) 'doors) (set! doors (cons object doors)))
+          ((eq? (object 'kind) 'shield-shrooms) (set! shield-shrooms (cons object shield-shrooms)))
+          ((eq? (object 'kind) 'food) (set! food (cons object food)))))
+      (for-each search-and-place! lst))
+
+    (define (reset-level! value)
+      (set! reset-level? value))
     
     ;;
     ;; MOVING
@@ -297,10 +340,8 @@
     ;; SCORE
     ;;
 
-    (define (update-score! bool)
-      (if bool
-          (set! update-score? #t)
-          (set! update-score? #f)))
+    (define (update-score! value)
+      (set! update-score? value))
     
     ;;
     ;; DATA ABSTRACTION PROCEDURES
@@ -326,12 +367,14 @@
 
     (define (dispatch message . parameters)
       (cond
+        ((eq? message 'duplicate) (apply duplicate! parameters))
         ((eq? message 'initial-ant-pos) initial-ant-pos)
         ((eq? message 'end-point) end-point)
         ((eq? message 'ant) ant)
         ((eq? message 'inventory) inventory)
         ((eq? message 'update-score?) update-score?)
         ((eq? message 'remove-live?) remove-live?)
+        ((eq? message 'speed-up?) speed-up?)
         ((eq? message 'shield?) shield?)
         ((eq? message 'walls) walls)
         ((eq? message 'normal-scorpions) normal-scorpions)
@@ -351,11 +394,15 @@
         ((eq? message 'lives) lives)
         ((eq? message 'lives!) (apply lives! parameters))
         ((eq? message 'remove-live!) (apply remove-live! parameters))
+        ((eq? message 'speed-up) (apply speed-up parameters))
+        ((eq? message 'check-deactivate-speed-up!) (apply check-deactivate-speed-up! parameters))
         ((eq? message 'check-for-ant-scorpion-collision) (check-for-ant-scorpion-collision))
         ((eq? message 'check-deactivate-shield!) (apply check-deactivate-shield! parameters))
         ((eq? message 'move-ant!) (apply move-ant! parameters))
         ((eq? message 'move-scorpion!) (apply move-scorpion! parameters))
         ((eq? message 'update-score!) (apply update-score! parameters))
+        ((eq? message 'reset-level?) reset-level?)
+        ((eq? message 'reset-level!) (apply reset-level! parameters))
         ((eq? message 'member?) (apply member? parameters))
         ((eq? message 'length?) (apply length? parameters))
         (else  (error "[ERROR in LevelADT DISPATCH] Wrong message!"))))

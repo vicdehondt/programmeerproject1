@@ -1,6 +1,8 @@
 (define (make-game . levels)
   (let* ((draw (make-draw))
+         (levels-vector (list-to-vector levels))
          (current-level 1)
+         (back-up '())
          (press-space-time 0)
          (shown? #t)
          (score 0)
@@ -11,7 +13,7 @@
          (game-over? #f)
          (running #f))
 
-    (define (level) (get-from-list current-level levels))
+    (define (level) (vector-ref levels-vector (- current-level 1)))
 
     (define (start-up!)
       (draw 'show-splash! key-callback press-space!))
@@ -40,10 +42,13 @@
             (draw 'update! dispatch)
             (update-score!)
             (check-game-over)
+            ((level) 'speed-up delta-time)
             (next-level?)
+            (reset-level?)
             ((level) 'move-scorpion! delta-time)
             ((level) 'check-for-ant-scorpion-collision)
-            (if ((level) 'shield?) ((level) 'check-deactivate-shield! delta-time)))))
+            (if ((level) 'shield?) ((level) 'check-deactivate-shield! delta-time))
+            (if ((level) 'speed-up?) ((level) 'check-deactivate-speed-up! delta-time)))))
 
     ;; What to do when a key is pressed
     (define (key-callback status key)
@@ -52,40 +57,52 @@
             (if (or (eq? key 'up) (eq? key 'down) (eq? key 'left) (eq? key 'right)) ((level) 'move-ant! key))
             (start-game? key))))
 
-    (define (add vect)
+    (define (add vect1 vect2)
       (define byte (make-vector 8))
       (define carry 0)
       (do ((pos 7 (- pos 1))) ((< pos 0) byte)
-        (let ((cnt (+ (vector-ref (vector 0 0 0 0 0 5 0 0) pos)
-                      (vector-ref vect pos)
+        (let ((cnt (+ (vector-ref vect2 pos)
+                      (vector-ref vect1 pos)
                       carry)))
-          (vector-set! vect pos (if (>= cnt 10) (- cnt 10) cnt))
+          (vector-set! vect1 pos (if (>= cnt 10) (- cnt 10) cnt))
           (set! carry (if (>= cnt 10) 1 0)))))
 
 
     (define (update-score!)
-      (if ((level) 'update-score?)
-          (begin
-            ((level) 'update-score! #f)
-            (set! score (+ score 500))
-            (add score-vect)
-            (draw 'update-score! score-vect)
-            (if (> score highscore)
-                (begin
-                  (add highscore-vect)
-                  (set! highscore (+ highscore 500))
-                  (draw 'update-highscore! highscore-vect)
-                  (write-file "highscore.txt" (list highscore-vect highscore)))))))
+      (let ((update? ((level) 'update-score?)))
+        (if update?
+            (begin
+              ((level) 'update-score! #f)
+              (set! score (+ score (car update?)))
+              (add score-vect (cdr update?))
+              (draw 'update-score! score-vect)
+              (if (> score highscore)
+                  (begin
+                    (add highscore-vect (cdr update?))
+                    (set! highscore (+ highscore (car update?)))
+                    (draw 'update-highscore! highscore-vect)
+                    (write-file "highscore.txt" (list highscore-vect highscore))))))))
 
     (define (next-level!)
       (let ((current-lives ((level) 'lives)))
         (set! current-level (+ current-level 1))
         ((level) 'lives! current-lives)
-        (draw 'initialize!)))
+        (draw 'initialize! dispatch)))
     
     (define (next-level?)
       (if ((((level) 'ant) 'position) 'equal? ((level) 'end-point))
           (next-level!)))
+
+    (define (reset-level?)
+      (if ((level) 'reset-level?)
+          (let ((back-up ((level) 'duplicate)))
+            ((level) 'reset-level! #f)
+            (display (draw 'wall-tiles))
+            (newline)
+            (back-up 'lives! lives)
+            (vector-set! levels-vector current-level back-up)
+            (display (draw 'wall-tiles))
+            (draw 'initialize! dispatch))))
 
     (define (start-game? key)
       (if (not running)

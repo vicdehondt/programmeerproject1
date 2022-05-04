@@ -1,5 +1,5 @@
 (define (make-draw)
-  (let* ((window (make-window width height "Fire Ant"))
+  (let* ((window (make-window width height "Fire Ant" 200))
          (visual (make-visual window)))
     
     ;;
@@ -19,7 +19,7 @@
       ((window 'set-update-callback!) update-function)
       (visual 'start! game))
 
-    (define (initialize!)
+    (define (initialize! game)
       (visual 'initialize! game))
 
     (define (update-score! score)
@@ -44,6 +44,7 @@
             ((eq? message 'update-score!) (apply update-score! parameters))
             ((eq? message 'update-highscore!) (apply update-highscore! parameters))
             ((eq? message 'game-over!) (visual 'game-over!))
+            ((eq? message 'wall-tiles) (visual 'wall-tiles))
             (else  (error "[ERROR in DrawADT DISPATCH] Wrong message!"))))
 
     dispatch))

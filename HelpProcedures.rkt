@@ -23,3 +23,12 @@
       ((null? lst) (display "Error in get-from-list"))
       ((= count place) (car lst))
       (else (find (+ count 1) (cdr lst))))))
+
+(define (list-to-vector lst)
+  (let loop ((vect (make-vector (length lst) 'empty))
+             (count 0)
+             (current lst))
+    (cond
+      ((null? current) vect)
+      (else (vector-set! vect count (car current))
+            (loop vect (+ count 1) (cdr current))))))
