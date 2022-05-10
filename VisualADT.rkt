@@ -127,14 +127,14 @@
 
     (define (draw! level-object kind)
       (cond
-        ((eq? kind 'wall) (for-each-object (lambda (wall) (draw-stationary-piece! wall)) (level-object 'walls)))
-        ((eq? kind 'egg) (for-each-object (lambda (egg) (draw-stationary-piece! egg)) (level-object 'eggs)))
-        ((eq? kind 'key) (for-each-object (lambda (key) (draw-stationary-piece! key)) (level-object 'keys)))
-        ((eq? kind 'door) (for-each-object (lambda (door) (draw-stationary-piece! door)) (level-object 'doors)))
-        ((eq? kind 'shield-shroom) (for-each-object (lambda (shield) (draw-stationary-piece! shield)) (level-object 'shield-shrooms)))
-        ((eq? kind 'food) (for-each-object (lambda (food) (draw-stationary-piece! food)) (level-object 'food)))
-        ((eq? kind 'scorpion) (for-each-object (lambda (scorpion) (draw-scorpion-piece! scorpion)) (level-object 'normal-scorpions))
-                              (for-each-object (lambda (scorpion) (draw-scorpion-piece! scorpion)) (level-object 'random-scorpions)))
+        ((eq? kind 'wall) (for-each-object (lambda (wall) (draw-stationary-piece! wall)) (level-object 'give-list 'walls)))
+        ((eq? kind 'egg) (for-each-object (lambda (egg) (draw-stationary-piece! egg)) (level-object 'give-list 'eggs)))
+        ((eq? kind 'key) (for-each-object (lambda (key) (draw-stationary-piece! key)) (level-object 'give-list 'keys)))
+        ((eq? kind 'door) (for-each-object (lambda (door) (draw-stationary-piece! door)) (level-object 'give-list 'doors)))
+        ((eq? kind 'shield-shroom) (for-each-object (lambda (shield) (draw-stationary-piece! shield)) (level-object 'give-list 'shield-shrooms)))
+        ((eq? kind 'food) (for-each-object (lambda (food) (draw-stationary-piece! food)) (level-object 'give-list 'food)))
+        ((eq? kind 'scorpion) (for-each-object (lambda (scorpion) (draw-scorpion-piece! scorpion)) (level-object 'give-list 'normal-scorpions))
+                              (for-each-object (lambda (scorpion) (draw-scorpion-piece! scorpion)) (level-object 'give-list 'random-scorpions)))
         (else (error "[ERROR in VisualADT draw!] Wrong kind!"))))
 
     (define (draw-scorpion-piece! scorpion-object)
