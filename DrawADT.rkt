@@ -28,6 +28,10 @@
     (define (update-highscore! highscore)
       (visual 'update-highscore! highscore))
 
+    (define (game-over! update-function)
+      (visual 'game-over!)
+      ((window 'set-update-callback!) update-function))
+
     ;;
     ;; UPDATE PROCEDURE
     ;;
@@ -43,7 +47,7 @@
             ((eq? message 'initialize!) (apply initialize! parameters))
             ((eq? message 'update-score!) (apply update-score! parameters))
             ((eq? message 'update-highscore!) (apply update-highscore! parameters))
-            ((eq? message 'game-over!) (visual 'game-over!))
+            ((eq? message 'game-over!) (apply game-over! parameters))
             ((eq? message 'wall-tiles) (visual 'wall-tiles))
             (else  (error "[ERROR in DrawADT DISPATCH] Wrong message!"))))
 

@@ -91,17 +91,24 @@
     
     (define (next-level?)
       (if ((((level) 'ant) 'position) 'equal? ((level) 'end-point))
-          (next-level!)))
+          (begin
+            (set-back-up-level-active!)
+            (next-level!))))
+
+    (define (set-back-up-level-active!)
+      (let ((back-up ((level) 'duplicate))
+            (current-lives ((level) 'lives)))
+        (set! lives current-lives)
+        (back-up 'lives! lives)
+        (vector-set! levels-vector (- current-level 1) back-up)))
 
     (define (reset-level?)
       (if ((level) 'reset-level?)
-          (let ((back-up ((level) 'duplicate))
-                (current-lives ((level) 'lives)))
+          (begin
+            (set-back-up-level-active!)
             ((level) 'reset-level! #f)
-            (set! lives current-lives)
-            (back-up 'lives! lives)
-            (vector-set! levels-vector (- current-level 1) back-up)
             (draw 'initialize! dispatch)
+            ;(display back-up)
             (display ((level) 'inventory)))))
 
     (define (start-game? key)
@@ -109,13 +116,20 @@
           (if (eq? key #\space)
               (begin
                 (start-game!)
+                (set! score 0)
+                (set! score-vect (make-vector 8 0))
+                (draw 'update-score! score-vect)
+                (set! game-over? #f)
                 (set! running #t)))))
 
     (define (check-game-over)
       (if (<= ((level) 'lives) 0)
           (begin
+            (set-back-up-level-active!)
+            (set! current-level 1)
             (set! game-over? #t)
-            (draw 'game-over!))))
+            (set! running #f)
+            (draw 'game-over! press-space!))))
 
     (define (dispatch message . parameters)
       (cond

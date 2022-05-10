@@ -288,16 +288,6 @@
     ;; RESET
     ;;
 
-    (define (place-back! lst)
-      (define (search-and-place! object)
-        (cond
-          ((eq? (object 'kind) 'eggs) (set! eggs (cons object eggs)))
-          ((eq? (object 'kind) 'keys) (set! keys (cons object keyss)))
-          ((eq? (object 'kind) 'doors) (set! doors (cons object doors)))
-          ((eq? (object 'kind) 'shield-shrooms) (set! shield-shrooms (cons object shield-shrooms)))
-          ((eq? (object 'kind) 'food) (set! food (cons object food)))))
-      (for-each search-and-place! lst))
-
     (define (reset-level! value)
       (set! reset-level? value))
     

@@ -147,7 +147,7 @@
       (let ((tile (get-object-piece object)))
         (draw-object! object tile)))
 
-        ;; Looks for the right tile bound to the given object
+    ;; Looks for the right tile bound to the given object
     (define (get-object-piece object)
       (let* ((tile-list (which-tiles-list (object 'kind)))
              (result (assoc object tile-list)))
@@ -340,12 +340,16 @@
     (define game-over-tile (make-bitmap-tile "images/GameOver.png"))
     
     (define (game-over!)
-      
       (base-layer 'empty)
-      
       (game-objects-layer 'empty)
-      
-      ((base-layer 'add-drawable) game-over-tile))
+      ((base-layer 'add-drawable) game-over-tile)
+      (show! 'none 'score)
+      (show! 'none 'highscore)
+      ((base-layer 'add-drawable) score-text-tile)
+      ((base-layer 'add-drawable) highscore-text-tile)
+      ((press-space-tile 'set-y!) 550)
+      (draw-score! (game 'score))
+      (draw-highscore! (game 'highscore)))
 
     ;;
     ;; STARTUP
@@ -353,10 +357,10 @@
 
     (define splash-screen-tile (make-bitmap-tile "images/SplashScreen.png"))
     (define press-space-tile (make-bitmap-tile "images/Press-space.png"))
-    ((press-space-tile 'set-y!) 600)
 
     (define (show-splash!)
-      ((base-layer 'add-drawable) splash-screen-tile))
+      ((base-layer 'add-drawable) splash-screen-tile)
+      ((press-space-tile 'set-y!) 600))
 
     (define (press-space show?)
       (if show?
