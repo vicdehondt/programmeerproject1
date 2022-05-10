@@ -44,7 +44,7 @@
 
     (define (speed-up delta-time)
       (set! speed-up-time (+ speed-up-time delta-time))
-      (if (and (member (random 1 128) '(5 53 27 83 63 101)) (> speed-up-time 15000))
+      (if (and (member (random 1 128) '(5 53 27 83 63 101)) (> speed-up-time speed-up-interval))
           (begin
             (set! speed-up? #t)
             (set! speed-up-time 0))))
@@ -274,8 +274,8 @@
       (if (and (not shield?) (or (ant-scorpion-collision? normal-scorpions)
                                  (ant-scorpion-collision? random-scorpions)))
           (begin
-            (lives! (- lives 1))
-            (if (> lives 1) (set! reset-level? #t)))))
+            (if (> lives 1) (set! reset-level? #t))
+            (lives! (- lives 1)))))
 
     (define (check-deactivate-shield! delta-time)
       (set! shield-time (+ shield-time delta-time))
@@ -342,6 +342,18 @@
 
     (define (update-score! value)
       (set! update-score? value))
+
+    (define (give-list name)
+      (cond
+        ((eq? name 'walls) walls)
+        ((eq? name 'normal-scorpions) normal-scorpions)
+        ((eq? name 'random-scorpions) random-scorpions)
+        ((eq? name 'eggs) eggs)
+        ((eq? name 'keys) keys)
+        ((eq? name 'doors) doors)
+        ((eq? name 'shield-shrooms) shield-shrooms)
+        ((eq? name 'food) food)
+        (else (error "[ERROR in LevelADT give-list] Wrong name!"))))
     
     ;;
     ;; DATA ABSTRACTION PROCEDURES
@@ -376,14 +388,7 @@
         ((eq? message 'remove-live?) remove-live?)
         ((eq? message 'speed-up?) speed-up?)
         ((eq? message 'shield?) shield?)
-        ((eq? message 'walls) walls)
-        ((eq? message 'normal-scorpions) normal-scorpions)
-        ((eq? message 'random-scorpions) random-scorpions)
-        ((eq? message 'eggs) eggs)
-        ((eq? message 'keys) keys)
-        ((eq? message 'doors) doors)
-        ((eq? message 'shield-shrooms) shield-shrooms)
-        ((eq? message 'food) food)
+        ((eq? message 'give-list) (apply give-list parameters))
         ((eq? message 'done?) done?)
         ((eq? message 'initial-ant-pos!) (apply initial-ant-pos! parameters))
         ((eq? message 'add-walls) (apply add-walls parameters))
