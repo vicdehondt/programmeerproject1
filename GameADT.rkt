@@ -4,6 +4,9 @@
          (current-level 1)
          (back-up '())
          (press-space-time 0)
+         (bomb-animation-time 0)
+         (speed-up-time 0)
+         (rumble-time 0)
          (shown? #t)
          (score 0)
          (score-vect (make-vector 8 0))
@@ -31,6 +34,21 @@
                 (draw 'press-space shown?)
                 (set! press-space-time 0)))))
 
+    (define (check-speed-up delta-time)
+      (set! speed-up-time (+ speed-up-time delta-time))
+      (if (and (member (random 1 128) '(5 53 27 83 63 101)) (> speed-up-time speed-up-interval))
+          (begin
+            ((level) 'speed-up #t)
+            (draw 'speed-up #t)
+            (set! speed-up-time 0))))
+
+    (define (check-deactivate-speed-up! delta-time)
+      (if (> speed-up-time speed-up-interval)
+          (begin
+            ((level) 'speed-up #f)
+            (draw 'speed-up #f)
+            (set! speed-up-time 0))))
+
     (define (start-game!)
       (draw 'start! game-loop dispatch)
       ((level) 'lives! lives-start-count))
@@ -42,13 +60,13 @@
             (draw 'update! dispatch)
             (update-score!)
             (check-game-over)
-            ((level) 'speed-up delta-time)
             (next-level?)
             (reset-level?)
+            (check-bomb-animation delta-time)
             ((level) 'move-scorpion! delta-time)
             ((level) 'check-for-ant-scorpion-collision)
             (if ((level) 'shield?) ((level) 'check-deactivate-shield! delta-time))
-            (if ((level) 'speed-up?) ((level) 'check-deactivate-speed-up! delta-time)))))
+            (if ((level) 'speed-up) (check-deactivate-speed-up! delta-time) (check-speed-up delta-time)))))
 
     ;; What to do when a key is pressed
     (define (key-callback status key)
@@ -83,6 +101,33 @@
                     (draw 'update-highscore! highscore-vect)
                     (write-file "highscore.txt" (list highscore-vect highscore))))))))
 
+    (define (check-bomb-animation delta-time)
+      (if ((level) 'bomb-animation?)
+          (begin
+            (bomb-animation delta-time))))
+
+    (define (bomb-animation delta-time)
+      (draw 'bomb-animation! bomb-animation)
+      (set! bomb-animation-time (+ bomb-animation-time delta-time))
+      (if (> bomb-animation-time bomb-animation-interval)
+          (begin
+            ((level) 'bomb-animation? #f)
+            (draw 'continue! game-loop)
+            (set! bomb-animation-time 0))
+          (begin
+            (set! rumble-time (+ rumble-time delta-time))
+            (if (> rumble-time rumble-interval)
+                (begin
+                  (draw 'set-opposite-background!)
+                  (set! rumble-time 0))))))
+
+    (define (check-deactivate-shield! delta-time)
+      (set! bomb-animation-time (+ bomb-animation-time delta-time))
+      (if (> bomb-animation-time bomb-animation-interval)
+          (begin
+            (set! shield? #f)
+            (set! shield-time 0))))
+
     (define (next-level!)
       (let ((current-lives ((level) 'lives)))
         (set! current-level (+ current-level 1))
@@ -91,9 +136,16 @@
     
     (define (next-level?)
       (if ((((level) 'ant) 'position) 'equal? ((level) 'end-point))
-          (begin
-            (set-back-up-level-active!)
-            (next-level!))))
+          (let ((max-levels (vector-length levels-vector)))
+            (if (= current-level max-levels)
+                (begin
+                  (set-back-up-level-active!)
+                  (set! current-level 1)
+                  (set! running #f)
+                  (draw 'game-win! press-space!))
+                (begin
+                  (set-back-up-level-active!)
+                  (next-level!))))))
 
     (define (set-back-up-level-active!)
       (let ((back-up ((level) 'duplicate))
@@ -108,7 +160,6 @@
             (set-back-up-level-active!)
             ((level) 'reset-level! #f)
             (draw 'initialize! dispatch)
-            ;(display back-up)
             (display ((level) 'inventory)))))
 
     (define (start-game? key)

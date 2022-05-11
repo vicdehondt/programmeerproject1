@@ -5,11 +5,17 @@
 
 (define speed-up-interval 15000)
 
+(define speed-index 4)
+
 (define shield-interval 15000)
 
 (define press-space-interval 500)
 
 (define score-interval 1000)
+
+(define bomb-animation-interval 5000)
+
+(define rumble-interval 200)
 
 (define distance 1)
 
