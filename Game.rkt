@@ -12,9 +12,9 @@
 (load "VisualADT.rkt")
 (load "HelpProcedures.rkt")
 (load "Constants.rkt")
-(load "Level-1.rkt")
-(load "Level-2.rkt")
-(load "Level-3.rkt")
+(load "Levels/Level-1.rkt")
+(load "Levels/Level-2.rkt")
+(load "Levels/Level-3.rkt")
 
 ;;
 ;; STARTING GAME
