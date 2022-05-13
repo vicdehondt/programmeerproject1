@@ -5,7 +5,7 @@
          (back-up '())
          (press-space-time 0)
          (bomb-animation-time 0)
-         (speed-up-time 0)
+         ;(speed-up-time 0)
          (rumble-time 0)
          (shown? #t)
          (score 0)
@@ -34,21 +34,6 @@
                 (draw 'press-space shown?)
                 (set! press-space-time 0)))))
 
-    (define (check-speed-up delta-time)
-      (set! speed-up-time (+ speed-up-time delta-time))
-      (if (and (member (random 1 128) '(5 53 27 83 63 101)) (> speed-up-time speed-up-interval))
-          (begin
-            ((level) 'speed-up #t)
-            (draw 'speed-up #t)
-            (set! speed-up-time 0))))
-
-    (define (check-deactivate-speed-up! delta-time)
-      (if (> speed-up-time speed-up-interval)
-          (begin
-            ((level) 'speed-up #f)
-            (draw 'speed-up #f)
-            (set! speed-up-time 0))))
-
     (define (start-game!)
       (draw 'start! game-loop dispatch)
       ((level) 'lives! lives-start-count))
@@ -66,7 +51,7 @@
             ((level) 'move-scorpion! delta-time)
             ((level) 'check-for-ant-scorpion-collision)
             (if ((level) 'shield?) ((level) 'check-deactivate-shield! delta-time))
-            (if ((level) 'speed-up) (check-deactivate-speed-up! delta-time) (check-speed-up delta-time)))))
+            (check-speed-up delta-time))))
 
     ;; What to do when a key is pressed
     (define (key-callback status key)
@@ -84,6 +69,10 @@
                       carry)))
           (vector-set! vect1 pos (if (>= cnt 10) (- cnt 10) cnt))
           (set! carry (if (>= cnt 10) 1 0)))))
+
+    (define (check-speed-up delta-time)
+      ((level) 'check-speed-up delta-time)
+      (draw 'speed-up ((level) 'speed-up)))
 
 
     (define (update-score!)

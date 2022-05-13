@@ -159,7 +159,7 @@
       (define (check-for-bomb)
         (cond
           ((and (list? (member #t (weak-wall-collision-list moving-object direction))) (eq? (caadr inventory) 'bomb)) (set! weak-wall-direction direction)
-           (bomb-animation #t) #f)
+                                                                                                                      (bomb-animation #t) #f)
           ((and (list? (member #t (weak-wall-collision-list moving-object direction))) (eq? (caadr inventory) 'empty)) #f)
           (else #t)))
 
@@ -316,6 +316,18 @@
             (set! shield? #f)
             (set! shield-time 0))))
 
+    (define (check-speed-up delta-time)
+      (set! speed-up-time (+ speed-up-time delta-time))
+      (if (speed-up)
+          (if (> speed-up-time speed-up-interval)
+              (begin
+                (speed-up #f)
+                (set! speed-up-time 0)))
+          (if (and (member (random 1 128) '(5 53 27 83 63 101)) (> speed-up-time speed-up-interval))
+              (begin
+                (speed-up #t)
+                (set! speed-up-time 0)))))
+
     ;;
     ;; RESET
     ;;
@@ -428,6 +440,7 @@
         ((eq? message 'lives!) (apply lives! parameters))
         ((eq? message 'remove-live!) (apply remove-live! parameters))
         ((eq? message 'speed-up) (apply speed-up parameters))
+        ((eq? message 'check-speed-up) (apply check-speed-up parameters))
         ((eq? message 'check-for-ant-scorpion-collision) (check-for-ant-scorpion-collision))
         ((eq? message 'check-deactivate-shield!) (apply check-deactivate-shield! parameters))
         ((eq? message 'move-ant!) (apply move-ant! parameters))

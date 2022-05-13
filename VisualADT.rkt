@@ -372,7 +372,8 @@
         ((eq? kind 'weak-wall) (set! weak-wall-tiles (check weak-wall-tiles)))))
 
     (define (speed-up value)
-      (set! speed-up? value))
+      (if (not (eq? speed-up? value))
+          (set! speed-up? value)))
 
     ;;
     ;; GAME OVER
