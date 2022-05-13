@@ -5,8 +5,6 @@
 
 (define speed-up-interval 15000)
 
-(define speed-index 4)
-
 (define shield-interval 15000)
 
 (define press-space-interval 500)
@@ -33,3 +31,10 @@
 (define egg-place 2)
 (define puzzle-object-place 3)
 (define power-up-place 4)
+
+(define standard-index 0)
+(define speed-index 4)
+(define up-index 0)
+(define right-index 1)
+(define down-index 2)
+(define left-index 3)

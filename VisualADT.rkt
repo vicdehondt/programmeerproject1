@@ -119,12 +119,21 @@
           (else (error "[ERROR in VisualADT set-sequence!]")))))
 
     (define (set-current-tile! orientation sequence object)
-      (cond
-        ((eq? orientation 'up) ((sequence 'set-current!) (if (and (eq? (object 'kind) 'scorpion) speed-up?) (+ 0 speed-index) 0)))
-        ((eq? orientation 'right) ((sequence 'set-current!) (if (and (eq? (object 'kind) 'scorpion) speed-up?) (+ 1 speed-index) 1)))
-        ((eq? orientation 'down) ((sequence 'set-current!) (if (and (eq? (object 'kind) 'scorpion) speed-up?) (+ 2 speed-index) 2)))
-        ((eq? orientation 'left) ((sequence 'set-current!) (if (and (eq? (object 'kind) 'scorpion) speed-up?) (+ 3 speed-index) 3)))
-        (else (error "[ERROR in VisualADT set-current-tile!] Wrong orientation!"))))
+      (define (set-tile! index)
+        (cond
+          ((eq? orientation 'up) ((sequence 'set-current!) (+ up-index index)))
+          ((eq? orientation 'right) ((sequence 'set-current!) (+ right-index index)))
+          ((eq? orientation 'down) ((sequence 'set-current!) (+ down-index index)))
+          ((eq? orientation 'left) ((sequence 'set-current!) (+ left-index index)))
+          (else (error "[ERROR in VisualADT set-current-tile!] Wrong orientation!"))))
+      
+      (if (eq? (object 'kind) 'ant)
+          (begin
+            (display speed-up?)
+            (set-tile! standard-index))
+          (if speed-up?
+              (set-tile! speed-index)
+              (set-tile! standard-index))))
 
     (define (draw-ant! level-object)
       (let* ((ant (level-object 'ant)))
@@ -185,16 +194,16 @@
                                                                      (make-bitmap-tile "images/48px/Normal-Scorpion-Left.png" "images/48px/Scorpion-Left-mask.png")
                                                                      (make-bitmap-tile "images/48px/Speed-scorpion-up.png" "images/48px/Scorpion-Up-mask.png")
                                                                      (make-bitmap-tile "images/48px/Speed-scorpion-right.png" "images/48px/Scorpion-Right-mask.png")
-                                                                     (make-bitmap-tile "images/48px/Speed-scorpion-left.png" "images/48px/Scorpion-Left-mask.png")
-                                                                     (make-bitmap-tile "images/48px/Speed-scorpion-down.png" "images/48px/Scorpion-Down-mask.png"))))
+                                                                     (make-bitmap-tile "images/48px/Speed-scorpion-down.png" "images/48px/Scorpion-Down-mask.png")
+                                                                     (make-bitmap-tile "images/48px/Speed-scorpion-left.png" "images/48px/Scorpion-Left-mask.png"))))
              (new-random-scorpion-sequence (make-tile-sequence (list (make-bitmap-tile "images/48px/Random-Scorpion-Up.png" "images/48px/Scorpion-Up-mask.png")
                                                                      (make-bitmap-tile "images/48px/Random-Scorpion-Right.png" "images/48px/Scorpion-Right-mask.png")
                                                                      (make-bitmap-tile "images/48px/Random-Scorpion-Down.png" "images/48px/Scorpion-Down-mask.png")
                                                                      (make-bitmap-tile "images/48px/Random-Scorpion-Left.png" "images/48px/Scorpion-Left-mask.png")
                                                                      (make-bitmap-tile "images/48px/Speed-scorpion-up.png" "images/48px/Scorpion-Up-mask.png")
                                                                      (make-bitmap-tile "images/48px/Speed-scorpion-right.png" "images/48px/Scorpion-Right-mask.png")
-                                                                     (make-bitmap-tile "images/48px/Speed-scorpion-left.png" "images/48px/Scorpion-Left-mask.png")
-                                                                     (make-bitmap-tile "images/48px/Speed-scorpion-down.png" "images/48px/Scorpion-Down-mask.png"))))
+                                                                     (make-bitmap-tile "images/48px/Speed-scorpion-down.png" "images/48px/Scorpion-Down-mask.png")
+                                                                     (make-bitmap-tile "images/48px/Speed-scorpion-left.png" "images/48px/Scorpion-Left-mask.png"))))
              (new-egg-tile (make-bitmap-tile "images/48px/Egg.png" "images/48px/Egg-mask.png"))
              (new-shield-shroom-tile (make-bitmap-tile "images/48px/champignon.png" "images/48px/champignon-mask.png"))
              (new-food-tile (vector-ref (vector (make-bitmap-tile "images/48px/druif.png" "images/48px/druif-mask.png")
