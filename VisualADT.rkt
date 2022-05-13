@@ -128,9 +128,7 @@
           (else (error "[ERROR in VisualADT set-current-tile!] Wrong orientation!"))))
       
       (if (eq? (object 'kind) 'ant)
-          (begin
-            (display speed-up?)
-            (set-tile! standard-index))
+          (set-tile! standard-index)
           (if speed-up?
               (set-tile! speed-index)
               (set-tile! standard-index))))
