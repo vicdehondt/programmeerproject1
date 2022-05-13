@@ -112,6 +112,7 @@
       (if (> bomb-animation-time bomb-animation-interval)
           (begin
             ((level) 'bomb-animation? #f)
+            (draw 'set-black!)
             (draw 'continue! game-loop)
             (set! bomb-animation-time 0))
           (begin
