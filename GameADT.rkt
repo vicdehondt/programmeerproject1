@@ -5,7 +5,6 @@
          (back-up '())
          (press-space-time 0)
          (bomb-animation-time 0)
-         ;(speed-up-time 0)
          (rumble-time 0)
          (shown? #t)
          (score 0)
@@ -50,7 +49,8 @@
             (check-bomb-animation delta-time)
             ((level) 'move-scorpion! delta-time)
             ((level) 'check-for-ant-scorpion-collision)
-            (if ((level) 'shield?) ((level) 'check-deactivate-shield! delta-time))
+            (check-shield delta-time)
+            ;(if ((level) 'shield?) ((level) 'check-deactivate-shield! delta-time))
             (check-speed-up delta-time))))
 
     ;; What to do when a key is pressed
@@ -69,6 +69,13 @@
                       carry)))
           (vector-set! vect1 pos (if (>= cnt 10) (- cnt 10) cnt))
           (set! carry (if (>= cnt 10) 1 0)))))
+
+    (define (check-shield delta-time)
+      (let ((bool ((level) 'shield?)))
+        (if bool
+            (begin
+              (draw 'shield bool)
+              ((level) 'check-deactivate-shield! delta-time)))))
 
     (define (check-speed-up delta-time)
       ((level) 'check-speed-up delta-time)

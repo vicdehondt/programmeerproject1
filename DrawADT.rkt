@@ -49,6 +49,12 @@
           (set-white!)
           (set-black!)))
 
+    (define (speed-up value)
+      (visual 'speed-up value))
+
+    (define (shield value)
+      (visual 'shield value))
+
     (define (set-black!)
       ((window 'set-background!) "black")
       (set! black? #t))
@@ -75,7 +81,8 @@
             ((eq? message 'game-over!) (apply game-over! parameters))
             ((eq? message 'game-win!) (apply game-win! parameters))
             ((eq? message 'bomb-animation!) (apply bomb-animation! parameters))
-            ((eq? message 'speed-up) (visual 'speed-up parameters))
+            ((eq? message 'speed-up) (apply speed-up parameters))
+            ((eq? message 'shield) (apply shield parameters))
             ((eq? message 'continue!) (apply bomb-animation! parameters))
             ((eq? message 'set-black!) (apply set-black! parameters))
             ((eq? message 'set-opposite-background!) (apply set-opposite-background! parameters))

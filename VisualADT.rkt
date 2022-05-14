@@ -1,6 +1,7 @@
 (define (make-visual window)
   (let ((bomb-animation-time 0)
         (speed-up? #f)
+        (shield? #f)
         (ant-sequence (make-tile-sequence (list (make-bitmap-tile "images/48px/FireAnt-Up.png" "images/48px/FireAnt-Up-mask.png")
                                                 (make-bitmap-tile "images/48px/FireAnt-Right.png" "images/48px/FireAnt-Right-mask.png")
                                                 (make-bitmap-tile "images/48px/FireAnt-Down.png" "images/48px/FireAnt-Down-mask.png")
@@ -129,9 +130,10 @@
       
       (if (eq? (object 'kind) 'ant)
           (set-tile! standard-index)
-          (if speed-up?
-              (set-tile! speed-index)
-              (set-tile! standard-index))))
+          (cond
+            (shield? (set-tile! shield-index))
+            (speed-up? (set-tile! speed-index))
+            (else (set-tile! standard-index)))))
 
     (define (draw-ant! level-object)
       (let* ((ant (level-object 'ant)))
@@ -193,7 +195,11 @@
                                                                      (make-bitmap-tile "images/48px/Speed-scorpion-up.png" "images/48px/Scorpion-Up-mask.png")
                                                                      (make-bitmap-tile "images/48px/Speed-scorpion-right.png" "images/48px/Scorpion-Right-mask.png")
                                                                      (make-bitmap-tile "images/48px/Speed-scorpion-down.png" "images/48px/Scorpion-Down-mask.png")
-                                                                     (make-bitmap-tile "images/48px/Speed-scorpion-left.png" "images/48px/Scorpion-Left-mask.png"))))
+                                                                     (make-bitmap-tile "images/48px/Speed-scorpion-left.png" "images/48px/Scorpion-Left-mask.png")
+                                                                     (make-bitmap-tile "images/48px/Shield-scorpion-up.png" "images/48px/Scorpion-Up-mask.png")
+                                                                     (make-bitmap-tile "images/48px/Shield-scorpion-right.png" "images/48px/Scorpion-Right-mask.png")
+                                                                     (make-bitmap-tile "images/48px/Shield-scorpion-down.png" "images/48px/Scorpion-Down-mask.png")
+                                                                     (make-bitmap-tile "images/48px/Shield-scorpion-left.png" "images/48px/Scorpion-Left-mask.png"))))
              (new-random-scorpion-sequence (make-tile-sequence (list (make-bitmap-tile "images/48px/Random-Scorpion-Up.png" "images/48px/Scorpion-Up-mask.png")
                                                                      (make-bitmap-tile "images/48px/Random-Scorpion-Right.png" "images/48px/Scorpion-Right-mask.png")
                                                                      (make-bitmap-tile "images/48px/Random-Scorpion-Down.png" "images/48px/Scorpion-Down-mask.png")
@@ -201,7 +207,11 @@
                                                                      (make-bitmap-tile "images/48px/Speed-scorpion-up.png" "images/48px/Scorpion-Up-mask.png")
                                                                      (make-bitmap-tile "images/48px/Speed-scorpion-right.png" "images/48px/Scorpion-Right-mask.png")
                                                                      (make-bitmap-tile "images/48px/Speed-scorpion-down.png" "images/48px/Scorpion-Down-mask.png")
-                                                                     (make-bitmap-tile "images/48px/Speed-scorpion-left.png" "images/48px/Scorpion-Left-mask.png"))))
+                                                                     (make-bitmap-tile "images/48px/Speed-scorpion-left.png" "images/48px/Scorpion-Left-mask.png")
+                                                                     (make-bitmap-tile "images/48px/Shield-scorpion-up.png" "images/48px/Scorpion-Up-mask.png")
+                                                                     (make-bitmap-tile "images/48px/Shield-scorpion-right.png" "images/48px/Scorpion-Right-mask.png")
+                                                                     (make-bitmap-tile "images/48px/Shield-scorpion-down.png" "images/48px/Scorpion-Down-mask.png")
+                                                                     (make-bitmap-tile "images/48px/Shield-scorpion-left.png" "images/48px/Scorpion-Left-mask.png"))))
              (new-egg-tile (make-bitmap-tile "images/48px/Egg.png" "images/48px/Egg-mask.png"))
              (new-shield-shroom-tile (make-bitmap-tile "images/48px/champignon.png" "images/48px/champignon-mask.png"))
              (new-food-tile (vector-ref (vector (make-bitmap-tile "images/48px/druif.png" "images/48px/druif-mask.png")
@@ -380,7 +390,13 @@
 
     (define (speed-up value)
       (if (not (eq? speed-up? value))
-          (set! speed-up? value)))
+          (begin
+            (set! speed-up? value))))
+
+    (define (shield value)
+      (if (not (eq? shield? value))
+          (begin
+            (set! shield? value))))
 
     ;;
     ;; GAME OVER
@@ -496,6 +512,7 @@
         ((eq? message 'update-score!) (apply draw-score! parameters))
         ((eq? message 'update-highscore!) (apply draw-highscore! parameters))
         ((eq? message 'speed-up) (apply speed-up parameters))
+        ((eq? message 'shield) (apply shield parameters))
         (else (error "[ERROR in VisualADT DISPATCH] Wrong message!"))))
 
     dispatch))

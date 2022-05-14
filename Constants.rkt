@@ -34,6 +34,7 @@
 
 (define standard-index 0)
 (define speed-index 4)
+(define shield-index 8)
 (define up-index 0)
 (define right-index 1)
 (define down-index 2)
