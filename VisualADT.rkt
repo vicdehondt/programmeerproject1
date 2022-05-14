@@ -20,8 +20,8 @@
         (sky-tile (make-bitmap-tile "images/Sky/Sky.png"))
         (highscore-text-tile (make-bitmap-tile "images/Highscore/Highscore.png" "images/Highscore/Highscore-mask.png"))
         (lives-text-tile (make-bitmap-tile "images/Lives/Lives.png" "images/Lives/Lives-mask.png"))
-        (score (make-vector 8 0))
-        (highscore (make-vector 8 0))
+        (score (make-vector score-size))
+        (highscore (make-vector score-size))
         (lives-sequence (make-tile-sequence (list (make-bitmap-tile "images/Lives/0.png" "images/Numbers/0-mask.png")
                                                   (make-bitmap-tile "images/Lives/1.png" "images/Numbers/1-mask.png")
                                                   (make-bitmap-tile "images/Lives/2.png" "images/Numbers/2-mask.png")
@@ -43,7 +43,6 @@
         (normal-scorpion-tiles '())
         (random-scorpion-tiles '()))
 
-
     (define (clear-tiles!)
       (set! wall-tiles '())
       (set! egg-tiles '())
@@ -56,9 +55,6 @@
       (set! normal-scorpion-tiles '())
       (set! random-scorpion-tiles '()))
     
-
-    
-    
     ;;
     ;; LAYER INITIALIZATION
     ;;
@@ -70,20 +66,20 @@
     ;; STATIC TILE VISUALISATION
     ;;
 
-    ((score-text-tile 'set-x!) 168)
-    ((score-text-tile 'set-y!) 624)
+    ((score-text-tile 'set-x!) score-text-x)
+    ((score-text-tile 'set-y!) score-text-y)
 
-    ((highscore-text-tile 'set-x!) 0)
-    ((highscore-text-tile 'set-y!) 656)
+    ((highscore-text-tile 'set-x!) highscore-text-x)
+    ((highscore-text-tile 'set-y!) highscore-text-y)
 
-    ((lives-text-tile 'set-x!) 648)
-    ((lives-text-tile 'set-y!) 624)
+    ((lives-text-tile 'set-x!) lives-text-x)
+    ((lives-text-tile 'set-y!) lives-text-y)
 
-    ((lives-sequence 'set-x!) 884)
-    ((lives-sequence 'set-y!) 624)
+    ((lives-sequence 'set-x!) lives-sequence-x)
+    ((lives-sequence 'set-y!) lives-sequence-y)
 
-    ((sky-tile 'set-x!) 0)
-    ((sky-tile 'set-y!) 0)
+    ((sky-tile 'set-x!) sky-x)
+    ((sky-tile 'set-y!) sky-y)
 
     ;;
     ;; DRAW PROCEDURES
@@ -110,15 +106,6 @@
         ((lives-sequence 'set-current!) lives)))
 
     ;; Lets the tile look to the direction it's going
-    (define (set-sequence! object sequence)
-      (let ((current-orientation (object 'orientation)))
-        (cond
-          ((and (eq? current-orientation 'right) (eq? (object 'previous-orientation) 'left)) (object 'previous-orientation! current-orientation)
-                                                                                             (sequence 'set-next!))
-          ((and (eq? current-orientation 'left) (eq? (object 'previous-orientation) 'right)) (object 'previous-orientation! current-orientation)
-                                                                                             (sequence 'set-previous!))
-          (else (error "[ERROR in VisualADT set-sequence!]")))))
-
     (define (set-current-tile! orientation sequence object)
       (define (set-tile! index)
         (cond
@@ -136,23 +123,22 @@
             (else (set-tile! standard-index)))))
 
     (define (draw-ant! level-object)
-      (let* ((ant (level-object 'ant)))
+      (let ((ant (level-object 'ant)))
         (set-current-tile! (ant 'orientation) ant-sequence ant)
         (draw-object! ant ant-sequence)))
 
     (define (draw! level-object kind)
+
+      (define (draw-every-stationary-piece kind)
+        (for-each-object (lambda (object) (draw-stationary-piece! object)) (level-object 'give-list kind)))
+
+      (define (draw-every-scorpion)
+        (for-each-object (lambda (scorpion) (draw-scorpion-piece! scorpion)) (level-object 'give-list 'normal-scorpion))
+        (for-each-object (lambda (scorpion) (draw-scorpion-piece! scorpion)) (level-object 'give-list 'random-scorpion)))
+      
       (cond
-        ((eq? kind 'wall) (for-each-object (lambda (wall) (draw-stationary-piece! wall)) (level-object 'give-list 'walls)))
-        ((eq? kind 'egg) (for-each-object (lambda (egg) (draw-stationary-piece! egg)) (level-object 'give-list 'eggs)))
-        ((eq? kind 'key) (for-each-object (lambda (key) (draw-stationary-piece! key)) (level-object 'give-list 'keys)))
-        ((eq? kind 'bomb) (for-each-object (lambda (bomb) (draw-stationary-piece! bomb)) (level-object 'give-list 'bombs)))
-        ((eq? kind 'door) (for-each-object (lambda (door) (draw-stationary-piece! door)) (level-object 'give-list 'doors)))
-        ((eq? kind 'weak-wall) (for-each-object (lambda (weak-wall) (draw-stationary-piece! weak-wall)) (level-object 'give-list 'weak-walls)))
-        ((eq? kind 'shield-shroom) (for-each-object (lambda (shield) (draw-stationary-piece! shield)) (level-object 'give-list 'shield-shrooms)))
-        ((eq? kind 'food) (for-each-object (lambda (food) (draw-stationary-piece! food)) (level-object 'give-list 'food)))
-        ((eq? kind 'scorpion) (for-each-object (lambda (scorpion) (draw-scorpion-piece! scorpion)) (level-object 'give-list 'normal-scorpions))
-                              (for-each-object (lambda (scorpion) (draw-scorpion-piece! scorpion)) (level-object 'give-list 'random-scorpions)))
-        (else (error "[ERROR in VisualADT draw!] Wrong kind!"))))
+        ((eq? kind 'scorpion) (draw-every-scorpion))
+        (else (draw-every-stationary-piece kind))))
 
     (define (draw-scorpion-piece! scorpion-object)
       (let ((sequence (get-object-piece scorpion-object))
@@ -220,9 +206,9 @@
                                         (- (random 1 4) 1)))
              (new-key-tile (make-bitmap-tile "images/48px/Key.png" "images/48px/Key-mask.png"))
              (new-bomb-tile (make-bitmap-tile "images/48px/Bomb.png" "images/48px/Bomb-mask.png"))
-             (new-door-tile (make-tile 48 48 "images/48px/Door.png"))
+             (new-door-tile (make-tile grid-cell grid-cell "images/48px/Door.png"))
              (new-weak-wall-tile (make-bitmap-tile "images/48px/Weak-wall.png" "images/48px/Weak-wall-mask.png"))
-             (new-wall-tile (make-tile 48 48 "images/48px/Wall.png")))
+             (new-wall-tile (make-tile grid-cell grid-cell "images/48px/Wall.png")))
         
         (define (add-piece new-tile)
           (add-object-tile! object new-tile)
@@ -292,7 +278,7 @@
               ((sequence 'set-x!) x)
               ((sequence 'set-y!) y)
               (vector-set! vector count sequence)
-              (show-score! (+ count 1) (+ x 31) y vector kind))))
+              (show-score! (+ count 1) (+ x score-x-spacing) y vector kind))))
       (cond
         ((or (eq? kind 'normal-scorpion)
              (eq? kind 'random-scorpion)) ((game-objects-layer 'add-drawable) tile))
@@ -304,12 +290,11 @@
         ((eq? kind 'shield-shroom) ((game-objects-layer 'add-drawable) tile))
         ((eq? kind 'food) ((game-objects-layer 'add-drawable) tile))
         ((eq? kind 'wall) ((game-objects-layer 'add-drawable) tile))
-        ((eq? kind 'score) (show-score! 0 372 624 score 'score))
-        ((eq? kind 'highscore) (show-score! 0 372 656 highscore 'highscore))
+        ((eq? kind 'score) (show-score! 0 score-number-x-start score-number-y-start score 'score))
+        ((eq? kind 'highscore) (show-score! 0 highscore-number-x-start highscore-number-y-start highscore 'highscore))
         ((eq? kind 'lives) ((game-objects-layer 'add-drawable) tile))
         ((eq? kind 'sky) ((base-layer 'add-drawable) tile))
         (else (error "[ERROR in VisualADT show!] Wrong kind!"))))
-
     
     ;;
     ;; REMOVING
@@ -345,34 +330,6 @@
             ((null? remaining) (cons current result))
             ((eq? current element) (append result remaining))
             (else (search-and-remove (car remaining) (cdr remaining) (cons current result)))))))
-
-    (define (check-for-egg-remove level-object)
-      (if (> (length egg-tiles) (level-object 'length? 'egg))
-          (set! egg-tiles (remove-from-list (which-to-remove level-object 'egg) egg-tiles))))
-    
-    (define (check-for-shroom-remove level-object)
-      (if (> (length shield-shroom-tiles) (level-object 'length? 'shield-shroom))
-          (set! shield-shroom-tiles (remove-from-list (which-to-remove level-object 'shield-shroom) shield-shroom-tiles))))
-
-    (define (check-for-food-remove level-object)
-      (if (> (length food-tiles) (level-object 'length? 'food))
-          (set! food-tiles (remove-from-list (which-to-remove level-object 'food) food-tiles))))
-
-    (define (check-for-key-remove level-object)
-      (if (> (length key-tiles) (level-object 'length? 'key))
-          (set! key-tiles (remove-from-list (which-to-remove level-object 'key) key-tiles))))
-
-    (define (check-for-bomb-remove level-object)
-      (if (> (length bomb-tiles) (level-object 'length? 'bomb))
-          (set! bomb-tiles (remove-from-list (which-to-remove level-object 'bomb) bomb-tiles))))
-
-    (define (check-for-door-remove level-object)
-      (if (> (length door-tiles) (level-object 'length? 'door))
-          (set! door-tiles (remove-from-list (which-to-remove level-object 'door) door-tiles))))
-
-    (define (check-for-weak-wall-remove level-object)
-      (if (> (length weak-wall-tiles) (level-object 'length? 'weak-wall))
-          (set! weak-wall-tiles (remove-from-list (which-to-remove level-object 'weak-wall) weak-wall-tiles))))
 
     (define (check-for-remove level-object kind)
       (define (check tiles)
@@ -412,7 +369,7 @@
       (show! 'none 'highscore)
       ((base-layer 'add-drawable) score-text-tile)
       ((base-layer 'add-drawable) highscore-text-tile)
-      ((press-space-tile 'set-y!) 550)
+      ((press-space-tile 'set-y!) press-space-y)
       (draw-score! (game 'score))
       (draw-highscore! (game 'highscore)))
 
@@ -430,7 +387,7 @@
       (show! 'none 'highscore)
       ((base-layer 'add-drawable) score-text-tile)
       ((base-layer 'add-drawable) highscore-text-tile)
-      ((press-space-tile 'set-y!) 550)
+      ((press-space-tile 'set-y!) press-space-y)
       (draw-score! (game 'score))
       (draw-highscore! (game 'highscore)))
 
@@ -443,7 +400,7 @@
 
     (define (show-splash!)
       ((base-layer 'add-drawable) splash-screen-tile)
-      ((press-space-tile 'set-y!) 600))
+      ((press-space-tile 'set-y!) press-space-splash-y))
 
     (define (press-space show?)
       (if show?
@@ -469,7 +426,7 @@
 
         ((game-objects-layer 'add-drawable) ant-sequence)
 
-        (if (= (game 'current) 1)
+        (if (= (game 'current) first-level)
             (show! sky-tile 'sky))
 
         (draw! level-object 'wall)
@@ -487,7 +444,6 @@
       (let ((level-object (game 'level)))
         
         (draw-ant! level-object)
-
         (draw! level-object 'scorpion)
 
         (check-for-remove level-object 'egg)

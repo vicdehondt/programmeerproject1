@@ -94,8 +94,7 @@
 
     (define (add-scorpions lst)
       (vector-set! back-up scorpion-place lst)
-      (for-each (lambda (scorpion-info) (add-scorpion (make-position (list-ref scorpion-info 0)
-                                                                     (list-ref scorpion-info 1))
+      (for-each (lambda (scorpion-info) (add-scorpion (make-position (list-ref scorpion-info 0) (list-ref scorpion-info 1))
                                                       (list-ref scorpion-info 2)
                                                       (list-ref scorpion-info 3))) lst))
 
@@ -151,29 +150,34 @@
     (define (can-move? moving-object direction kind)
 
       (define (check-for-key)
-        (cond
-          ((and (list? (member #t (door-collision-list moving-object direction))) (eq? (caar inventory) 'key)) (remove! 'door direction) #t)
-          ((and (list? (member #t (door-collision-list moving-object direction))) (eq? (caar inventory) 'empty)) #f)
-          (else #t)))
+        (let ((door-collision? (list? (member #t (collision-list moving-object doors direction))))
+              (keys-in-inventory (car inventory)))
+          (cond
+            ((and door-collision? (eq? (car keys-in-inventory) 'key)) (remove! 'door direction) #t)
+            ((and door-collision? (eq? (car keys-in-inventory) 'empty)) #f)
+            (else #t))))
 
       (define (check-for-bomb)
-        (cond
-          ((and (list? (member #t (weak-wall-collision-list moving-object direction))) (eq? (caadr inventory) 'bomb)) (set! weak-wall-direction direction)
-                                                                                                                      (bomb-animation #t) #f)
-          ((and (list? (member #t (weak-wall-collision-list moving-object direction))) (eq? (caadr inventory) 'empty)) #f)
-          (else #t)))
+        (let ((weak-wall-collision? (list? (member #t (collision-list moving-object weak-walls direction))))
+              (bombs-in-inventory (cadr inventory)))
+          (cond
+            ((and weak-wall-collision? (eq? (car bombs-in-inventory) 'bomb)) (set! weak-wall-direction direction) (bomb-animation #t) #f)
+            ((and weak-wall-collision? (eq? (car bombs-in-inventory) 'empty)) #f)
+            (else #t))))
 
       (cond
-        ((eq? kind 'wall) (not (list? (member #t (wall-collision-list moving-object direction)))))
-        ((eq? kind 'door) (if (eq? (moving-object 'kind) 'ant) (check-for-key)
-                              (not (list? (member #t (door-collision-list moving-object direction))))))
-        ((eq? kind 'weak-wall) (if (eq? (moving-object 'kind) 'ant) (check-for-bomb)
-                                   (not (list? (member #t (weak-wall-collision-list moving-object direction))))))
-        ((eq? kind 'bomb) (not (list? (member #t (bomb-collision-list moving-object)))))
-        ((eq? kind 'egg) (not (list? (member #t (egg-collision-list moving-object)))))
-        ((eq? kind 'key) (not (list? (member #t (key-collision-list moving-object)))))
-        ((eq? kind 'shield-shroom) (not (list? (member #t (shield-shroom-collision-list moving-object)))))
-        ((eq? kind 'food) (not (list? (member #t (food-collision-list moving-object)))))
+        ((eq? kind 'wall) (not (true-in-list? (collision-list moving-object walls direction))))
+        ((eq? kind 'door) (if (eq? (moving-object 'kind) 'ant)
+                              (check-for-key)
+                              (not (true-in-list? (collision-list moving-object doors direction)))))
+        ((eq? kind 'weak-wall) (if (eq? (moving-object 'kind) 'ant)
+                                   (check-for-bomb)
+                                   (not (true-in-list? (collision-list moving-object weak-walls direction)))))
+        ((eq? kind 'bomb) (not (true-in-list? (collision-list moving-object bombs))))
+        ((eq? kind 'egg) (not (true-in-list? (collision-list moving-object eggs))))
+        ((eq? kind 'key) (not (true-in-list? (collision-list moving-object keys))))
+        ((eq? kind 'shield-shroom) (not (true-in-list? (collision-list moving-object shield-shrooms))))
+        ((eq? kind 'food) (not (true-in-list? (collision-list moving-object food))))
         (else (error "[ERROR in LevelADT can-move?] Wrong kind!"))))
 
     (define (bomb-animation . values)
@@ -187,33 +191,10 @@
 
     ;; Collision-lists: gives list back with #t (collision) and #f (no obstruction)
 
-    (define (collision-list moving-object lst)
-      (map (lambda (object) (collision? moving-object object)) lst))
-    
-    (define (egg-collision-list moving-object)
-      (map (lambda (egg-object) (collision? moving-object egg-object)) eggs))
-
-    (define (shield-shroom-collision-list moving-object)
-      (map (lambda (shield-object) (collision? moving-object shield-object)) shield-shrooms))
-    
-    (define (food-collision-list moving-object)
-      (map (lambda (food-object) (collision? moving-object food-object)) food))
-
-    (define (wall-collision-list moving-object direction)
-      (map (lambda (wall-object) (upcomming-collision? moving-object (wall-object 'position) direction)) walls))
-
-    (define (door-collision-list moving-object direction)
-      (map (lambda (door-object) (upcomming-collision? moving-object (door-object 'position) direction)) doors))
-
-    (define (key-collision-list moving-object)
-      (map (lambda (key-object) (collision? moving-object key-object)) keys))
-
-    (define (weak-wall-collision-list moving-object direction)
-      (map (lambda (weak-wall-object) (upcomming-collision? moving-object (weak-wall-object 'position) direction)) weak-walls))
-
-    (define (bomb-collision-list moving-object)
-      (map (lambda (bomb-object) (collision? moving-object bomb-object)) bombs))
-
+    (define (collision-list moving-object lst . direction)
+      (if (null? direction)
+          (map (lambda (object) (collision? moving-object object)) lst)
+          (map (lambda (object) (upcomming-collision? moving-object (object 'position) (car direction))) lst)))
 
     ;; Collision checkers
     
@@ -379,15 +360,15 @@
 
     (define (give-list name)
       (cond
-        ((eq? name 'walls) walls)
-        ((eq? name 'normal-scorpions) normal-scorpions)
-        ((eq? name 'random-scorpions) random-scorpions)
-        ((eq? name 'eggs) eggs)
-        ((eq? name 'keys) keys)
-        ((eq? name 'bombs) bombs)
-        ((eq? name 'doors) doors)
-        ((eq? name 'weak-walls) weak-walls)
-        ((eq? name 'shield-shrooms) shield-shrooms)
+        ((eq? name 'wall) walls)
+        ((eq? name 'normal-scorpion) normal-scorpions)
+        ((eq? name 'random-scorpion) random-scorpions)
+        ((eq? name 'egg) eggs)
+        ((eq? name 'key) keys)
+        ((eq? name 'bomb) bombs)
+        ((eq? name 'door) doors)
+        ((eq? name 'weak-wall) weak-walls)
+        ((eq? name 'shield-shroom) shield-shrooms)
         ((eq? name 'food) food)
         (else (error "[ERROR in LevelADT give-list] Wrong name!"))))
     

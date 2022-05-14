@@ -32,3 +32,16 @@
       ((null? current) vect)
       (else (vector-set! vect count (car current))
             (loop vect (+ count 1) (cdr current))))))
+
+(define (add-up-vectors vect1 vect2)
+      (define new-vect (make-vector (vector-length vect1)))
+      (define carry 0)
+      (do ((pos (- (vector-length vect1) 1) (- pos 1))) ((< pos 0) new-vect)
+        (let ((cnt (+ (vector-ref vect2 pos)
+                      (vector-ref vect1 pos)
+                      carry)))
+          (vector-set! vect1 pos (if (>= cnt 10) (- cnt 10) cnt))
+          (set! carry (if (>= cnt 10) 1 0)))))
+
+(define (true-in-list? lst)
+      (list? (member #t lst)))

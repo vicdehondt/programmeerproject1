@@ -24,7 +24,6 @@
       (visual 'initialize! game))
 
     (define (continue! update-function)
-      ;(set-black!)
       ((window 'set-update-callback!) update-function))
 
     (define (update-score! score)

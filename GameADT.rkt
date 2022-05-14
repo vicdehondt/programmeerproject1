@@ -50,7 +50,6 @@
             ((level) 'move-scorpion! delta-time)
             ((level) 'check-for-ant-scorpion-collision)
             (check-shield delta-time)
-            ;(if ((level) 'shield?) ((level) 'check-deactivate-shield! delta-time))
             (check-speed-up delta-time))))
 
     ;; What to do when a key is pressed
@@ -59,16 +58,6 @@
           (begin
             (if (or (eq? key 'up) (eq? key 'down) (eq? key 'left) (eq? key 'right)) ((level) 'move-ant! key))
             (start-game? key))))
-
-    (define (add vect1 vect2)
-      (define byte (make-vector 8))
-      (define carry 0)
-      (do ((pos 7 (- pos 1))) ((< pos 0) byte)
-        (let ((cnt (+ (vector-ref vect2 pos)
-                      (vector-ref vect1 pos)
-                      carry)))
-          (vector-set! vect1 pos (if (>= cnt 10) (- cnt 10) cnt))
-          (set! carry (if (>= cnt 10) 1 0)))))
 
     (define (check-shield delta-time)
       (let ((bool ((level) 'shield?)))
@@ -81,18 +70,17 @@
       ((level) 'check-speed-up delta-time)
       (draw 'speed-up ((level) 'speed-up)))
 
-
     (define (update-score!)
       (let ((update? ((level) 'update-score?)))
         (if update?
             (begin
               ((level) 'update-score! #f)
               (set! score (+ score (car update?)))
-              (add score-vect (cdr update?))
+              (add-up-vectors score-vect (cdr update?))
               (draw 'update-score! score-vect)
               (if (> score highscore)
                   (begin
-                    (add highscore-vect (cdr update?))
+                    (add-up-vectors highscore-vect (cdr update?))
                     (set! highscore (+ highscore (car update?)))
                     (draw 'update-highscore! highscore-vect)
                     (write-file "highscore.txt" (list highscore-vect highscore))))))))
