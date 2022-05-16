@@ -87,7 +87,7 @@
               (build-wall (+ count 1) y)))))
     
     (define (add-wall position-object)
-      (set! walls (cons (make-wall (make-position (position-object 'x) (position-object 'y))) walls)))
+      (set! walls (cons (make-stationary-object (make-position (position-object 'x) (position-object 'y)) 'wall) walls)))
 
     
     ;; Scorpions
@@ -112,7 +112,7 @@
       (for-each (lambda (x-and-y) (add-egg (make-position (car x-and-y) (cadr x-and-y)))) lst))
     
     (define (add-egg position-object)
-      (set! eggs (cons (make-egg position-object) eggs)))
+      (set! eggs (cons (make-stationary-object position-object 'egg) eggs)))
 
 
     ;; Puzzle-objects
@@ -123,10 +123,10 @@
 
     (define (add-puzzleobject position-object kind)
       (cond
-        ((eq? kind 'key) (set! keys (cons (make-puzzleobject position-object kind) keys)))
-        ((eq? kind 'door) (set! doors (cons (make-puzzleobject position-object kind) doors)))
-        ((eq? kind 'weak-wall) (set! weak-walls (cons (make-puzzleobject position-object kind) weak-walls)))
-        ((eq? kind 'bomb) (set! bombs (cons (make-puzzleobject position-object kind) bombs)))
+        ((eq? kind 'key) (set! keys (cons (make-stationary-object position-object kind) keys)))
+        ((eq? kind 'door) (set! doors (cons (make-stationary-object position-object kind) doors)))
+        ((eq? kind 'weak-wall) (set! weak-walls (cons (make-stationary-object position-object kind) weak-walls)))
+        ((eq? kind 'bomb) (set! bombs (cons (make-stationary-object position-object kind) bombs)))
         (else (error "[ERROR in LevelADT add-puzzleobject] Wrong kind!"))))
 
 
@@ -138,8 +138,8 @@
 
     (define (add-powerup position-object kind)
       (cond
-        ((eq? kind 'shield) (set! shield-shrooms (cons (make-powerup position-object 'shield-shroom) shield-shrooms)))
-        ((eq? kind 'food) (set! food (cons (make-powerup position-object 'food) food)))
+        ((eq? kind 'shield) (set! shield-shrooms (cons (make-stationary-object position-object 'shield-shroom) shield-shrooms)))
+        ((eq? kind 'food) (set! food (cons (make-stationary-object position-object 'food) food)))
         (else (error "[ERROR in LevelADT add-powerup] Wrong kind!"))))
 
     ;;
