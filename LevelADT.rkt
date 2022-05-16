@@ -3,7 +3,7 @@
         (shield-time 0)
         (speed-up-time 0)
         (ant (make-movingobject initial-ant-pos 'right 'ant))
-        (inventory '((empty) (empty) (empty)))
+        (inventory (list (list 'empty) (list 'empty)))
         (update-score? #f)
         (bomb-animation? #f)
         (weak-wall-direction 0)
