@@ -35,7 +35,7 @@
 
     (define (start-game!)
       (draw 'start! game-loop dispatch)
-      ((level) 'lives! lives-start-count))
+      ((level) 'lives lives-start-count))
 
     ;; What happens every tick
     (define (game-loop delta-time)
@@ -116,7 +116,7 @@
     (define (next-level!)
       (let ((current-lives ((level) 'lives)))
         (set! current-level (+ current-level 1))
-        ((level) 'lives! current-lives)
+        ((level) 'lives current-lives)
         (draw 'initialize! dispatch)))
     
     (define (next-level?)
@@ -136,7 +136,7 @@
       (let ((back-up ((level) 'duplicate))
             (current-lives ((level) 'lives)))
         (set! lives current-lives)
-        (back-up 'lives! lives)
+        (back-up 'lives lives)
         (vector-set! levels-vector (- current-level 1) back-up)))
 
     (define (reset-level?)
@@ -171,8 +171,8 @@
       (cond
         ((eq? message 'start!) (start-up!))
         ((eq? message 'level) (level))
-        ((eq? message 'score) score-vect)
         ((eq? message 'current) current-level)
+        ((eq? message 'score) score-vect)
         ((eq? message 'highscore) highscore-vect)
         ((eq? message 'lives) ((level) 'lives))
         (else  (error "[ERROR in GameADT DISPATCH] Wrong message!"))))

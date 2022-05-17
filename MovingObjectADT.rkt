@@ -1,14 +1,8 @@
-(define (make-movingobject initial-position initial-orientation kind)
-  (let* ((position initial-position)
-         (orientation initial-orientation)
-         (previous-orientation orientation))
+(define (make-movingobject position orientation kind)
+  (let ((previous-orientation orientation))
 
     (define (position! new-position-object)
       (set! position new-position-object))
-
-    (define (initialize!)
-      (position! initial-position)
-      (orientation! initial-orientation))
 
     (define (set-opposite-orientation!)
         (cond
@@ -45,7 +39,6 @@
     (define (dispatch message . parameters)
       (cond
         ((eq? message 'position) position)
-        ((eq? message 'init) (apply initialize! parameters))
         ((eq? message 'position!) (apply position! parameters))
         ((eq? message 'orientation) orientation)
         ((eq? message 'orientation!) (apply orientation! parameters))

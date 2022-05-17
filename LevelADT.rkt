@@ -7,7 +7,7 @@
         (update-score? #f)
         (bomb-animation? #f)
         (weak-wall-direction 0)
-        (lives 0)
+        (lives? 0)
         (remove-live? #f)
         (add-live? #f)
         (shield? #f)
@@ -264,8 +264,10 @@
     ;; LIVES
     ;;
 
-    (define (lives! value)
-      (set! lives value))
+    (define (lives . value)
+      (if (null? value)
+          lives?
+          (set! lives? (car value))))
 
     ;;
     ;; CHECKERS
@@ -278,7 +280,7 @@
         ((not (can-move? ant direction 'key)) (remove-and-add-to-inv! 'key))
         ((not (can-move? ant direction 'bomb)) (remove-and-add-to-inv! 'bomb))
         ((not (can-move? ant direction 'shield-shroom)) (remove! 'shield-shroom) (set! shield? #t))
-        ((not (can-move? ant direction 'food)) (remove! 'food) (lives! (+ lives 1)) (update-score! (cons 200 (vector 0 0 0 0 0 2 0 0))))))
+        ((not (can-move? ant direction 'food)) (remove! 'food) (lives (+ lives? 1)) (update-score! (cons 200 (vector 0 0 0 0 0 2 0 0))))))
 
     ;; Checks if any scorpion collides with the ant and moves the ant back to initial-ant-pos
     (define (check-for-ant-scorpion-collision)
@@ -287,8 +289,8 @@
       (if (and (not shield?) (or (ant-scorpion-collision? normal-scorpions)
                                  (ant-scorpion-collision? random-scorpions)))
           (begin
-            (if (> lives 1) (set! reset-level? #t))
-            (lives! (- lives 1)))))
+            (if (> lives? 1) (set! reset-level? #t))
+            (lives (- lives? 1)))))
 
     (define (check-deactivate-shield! delta-time)
       (set! shield-time (+ shield-time delta-time))
@@ -417,8 +419,7 @@
         ((eq? message 'add-puzzleobjects) (apply add-puzzleobjects parameters))
         ((eq? message 'add-powerups) (apply add-powerups parameters))
         ((eq? message 'bomb-animation?) (apply bomb-animation parameters))
-        ((eq? message 'lives) lives)
-        ((eq? message 'lives!) (apply lives! parameters))
+        ((eq? message 'lives) (apply lives parameters))
         ((eq? message 'remove-live!) (apply remove-live! parameters))
         ((eq? message 'speed-up) (apply speed-up parameters))
         ((eq? message 'check-speed-up) (apply check-speed-up parameters))
