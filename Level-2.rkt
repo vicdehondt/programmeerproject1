@@ -45,7 +45,7 @@
 ;; PUZZLE OBJECTS
 ;;
 
-(level-2 'add-puzzleobjects '((15 11 key)
+(level-2 'add-puzzle-objects '((15 11 key)
                               (17 2 key)
                               (7 8 door)
                               (17 12 door)))

@@ -2,7 +2,7 @@
   (let ((scorpion-time 0)
         (shield-time 0)
         (speed-up-time 0)
-        (ant (make-movingobject initial-ant-pos 'right 'ant))
+        (ant (make-moving-object initial-ant-pos 'right 'ant))
         (inventory (list (list 'empty) (list 'empty)))
         (update-score? #f)
         (bomb-animation? #f)
@@ -32,7 +32,7 @@
         (if (not (null? (vector-ref back-up wall-place))) (new-level 'add-walls (vector-ref back-up wall-place)))
         (if (not (null? (vector-ref back-up egg-place))) (new-level 'add-eggs (vector-ref back-up egg-place)))
         (if (not (null? (vector-ref back-up scorpion-place))) (new-level 'add-scorpions (vector-ref back-up scorpion-place)))
-        (if (not (null? (vector-ref back-up puzzle-object-place))) (new-level 'add-puzzleobjects (vector-ref back-up puzzle-object-place)))
+        (if (not (null? (vector-ref back-up puzzle-object-place))) (new-level 'add-puzzle-objects (vector-ref back-up puzzle-object-place)))
         (if (not (null? (vector-ref back-up power-up-place))) (new-level 'add-powerups (vector-ref back-up power-up-place)))
         new-level))
 
@@ -56,8 +56,8 @@
       (vector-set! back-up wall-place lst)
       (for-each (lambda (positions) (add-multiple-walls (make-position (caar positions) (cadar positions))  (make-position (caadr positions) (cadadr positions)))) lst))
 
-    ;; The main procedure that makes a long wall, it checks if you want to build a vertical or a horzizontal wall
-    ;; and then calls for seperate procedures to build those walls
+    ;; The main procedure that makes a long wall, it checks if you want to build a vertical or a horizontal wall
+    ;; and then calls for separate procedures to build those walls
     (define (add-multiple-walls position1 position2)
       (let ((x1 (position1 'x))
             (x2 (position2 'x))
@@ -100,8 +100,8 @@
 
     (define (add-scorpion position-object orientation kind)
       (cond
-        ((eq? kind 'normal) (set! normal-scorpions (cons (make-movingobject position-object orientation 'normal-scorpion) normal-scorpions)))
-        ((eq? kind 'random) (set! random-scorpions (cons (make-movingobject position-object orientation 'random-scorpion) random-scorpions)))
+        ((eq? kind 'normal) (set! normal-scorpions (cons (make-moving-object position-object orientation 'normal-scorpion) normal-scorpions)))
+        ((eq? kind 'random) (set! random-scorpions (cons (make-moving-object position-object orientation 'random-scorpion) random-scorpions)))
         (else (error "[ERROR in LevelADT add-scorpion] Wrong kind!"))))
 
 
@@ -117,17 +117,17 @@
 
     ;; Puzzle-objects
 
-    (define (add-puzzleobjects lst)
+    (define (add-puzzle-objects lst)
       (vector-set! back-up puzzle-object-place lst)
-      (for-each (lambda (x-y-kind) (add-puzzleobject (make-position (car x-y-kind) (cadr x-y-kind)) (caddr x-y-kind))) lst))
+      (for-each (lambda (x-y-kind) (add-puzzle-object (make-position (car x-y-kind) (cadr x-y-kind)) (caddr x-y-kind))) lst))
 
-    (define (add-puzzleobject position-object kind)
+    (define (add-puzzle-object position-object kind)
       (cond
         ((eq? kind 'key) (set! keys (cons (make-stationary-object position-object kind) keys)))
         ((eq? kind 'door) (set! doors (cons (make-stationary-object position-object kind) doors)))
         ((eq? kind 'weak-wall) (set! weak-walls (cons (make-stationary-object position-object kind) weak-walls)))
         ((eq? kind 'bomb) (set! bombs (cons (make-stationary-object position-object kind) bombs)))
-        (else (error "[ERROR in LevelADT add-puzzleobject] Wrong kind!"))))
+        (else (error "[ERROR in LevelADT add-puzzle-object] Wrong kind!"))))
 
 
     ;; Power-ups
@@ -243,7 +243,7 @@
           ((eq? kind 'bomb) (set-car! (cdr inventory) (cdr bombs-in-inventory)))
           (else (error "[ERROR in LevelADT remove-from-inventory!]")))))
 
-    (define (remove-and-add-to-inv! kind)
+    (define (remove-and-add-to-inventory! kind)
       (define (look-for-remove lst)
         (cond
           ((null? lst) '())
@@ -277,8 +277,8 @@
     (define (check-and-remove! direction)
       (cond
         ((not (can-move? ant direction 'egg)) (remove! 'egg) (update-score! (cons 500 (vector 0 0 0 0 0 5 0 0))))
-        ((not (can-move? ant direction 'key)) (remove-and-add-to-inv! 'key))
-        ((not (can-move? ant direction 'bomb)) (remove-and-add-to-inv! 'bomb))
+        ((not (can-move? ant direction 'key)) (remove-and-add-to-inventory! 'key))
+        ((not (can-move? ant direction 'bomb)) (remove-and-add-to-inventory! 'bomb))
         ((not (can-move? ant direction 'shield-shroom)) (remove! 'shield-shroom) (set! shield? #t))
         ((not (can-move? ant direction 'food)) (remove! 'food) (lives (+ lives? 1)) (update-score! (cons 200 (vector 0 0 0 0 0 2 0 0))))))
 
@@ -416,7 +416,7 @@
         ((eq? message 'add-walls) (apply add-walls parameters))
         ((eq? message 'add-scorpions) (apply add-scorpions parameters))
         ((eq? message 'add-eggs) (apply add-eggs parameters))
-        ((eq? message 'add-puzzleobjects) (apply add-puzzleobjects parameters))
+        ((eq? message 'add-puzzle-objects) (apply add-puzzle-objects parameters))
         ((eq? message 'add-powerups) (apply add-powerups parameters))
         ((eq? message 'bomb-animation?) (apply bomb-animation parameters))
         ((eq? message 'lives) (apply lives parameters))

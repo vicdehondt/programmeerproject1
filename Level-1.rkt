@@ -48,7 +48,7 @@
 ;;
 
 
-(level-1 'add-puzzleobjects '((13 8 key)
+(level-1 'add-puzzle-objects '((13 8 key)
                               (4 8 key)
                               (17 10 bomb)
                               (10 6 door)

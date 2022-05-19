@@ -1,4 +1,4 @@
-(define (make-movingobject position orientation kind)
+(define (make-moving-object position orientation kind)
   (let ((previous-orientation orientation))
 
     (define (position! new-position-object)

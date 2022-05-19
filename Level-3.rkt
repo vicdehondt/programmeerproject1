@@ -53,5 +53,5 @@
 ;; PUZZLE OBJECTS
 ;;
 
-(level-3 'add-puzzleobjects '((16 7 door)
+(level-3 'add-puzzle-objects '((16 7 door)
                               (6 6 key)))

@@ -144,8 +144,7 @@
           (begin
             (set-back-up-level-active!)
             ((level) 'reset-level! #f)
-            (draw 'initialize! dispatch)
-            (display ((level) 'inventory)))))
+            (draw 'initialize! dispatch))))
 
     (define (start-game? key)
       (if (not running)
