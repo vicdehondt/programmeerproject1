@@ -64,7 +64,8 @@
         (if bool
             (begin
               (draw 'shield bool)
-              ((level) 'check-deactivate-shield! delta-time)))))
+              ((level) 'check-deactivate-shield! delta-time))
+            (draw 'shield bool))))
 
     (define (check-speed-up delta-time)
       ((level) 'check-speed-up delta-time)
