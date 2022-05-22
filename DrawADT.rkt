@@ -23,9 +23,6 @@
     (define (initialize! game)
       (visual 'initialize! game))
 
-    (define (continue! update-function)
-      ((window 'set-update-callback!) update-function))
-
     (define (update-score! score)
       (visual 'update-score! score))
 
@@ -38,9 +35,6 @@
     
     (define (game-win! update-function)
       (visual 'game-win!)
-      ((window 'set-update-callback!) update-function))
-
-    (define (bomb-animation! update-function)
       ((window 'set-update-callback!) update-function))
 
     (define (set-opposite-background!)
@@ -79,10 +73,10 @@
             ((eq? message 'update-highscore!) (apply update-highscore! parameters))
             ((eq? message 'game-over!) (apply game-over! parameters))
             ((eq? message 'game-win!) (apply game-win! parameters))
-            ((eq? message 'bomb-animation!) (apply bomb-animation! parameters))
+            ;((eq? message 'bomb-animation!) (apply bomb-animation! parameters))
             ((eq? message 'speed-up) (apply speed-up parameters))
             ((eq? message 'shield) (apply shield parameters))
-            ((eq? message 'continue!) (apply bomb-animation! parameters))
+            ;((eq? message 'continue!) (apply bomb-animation! parameters))
             ((eq? message 'set-black!) (apply set-black! parameters))
             ((eq? message 'set-opposite-background!) (apply set-opposite-background! parameters))
             (else  (error "[ERROR in DrawADT DISPATCH] Wrong message!"))))

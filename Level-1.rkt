@@ -49,11 +49,11 @@
 
 
 (level-1 'add-puzzle-objects '((13 8 key)
-                              (4 8 key)
-                              (17 10 bomb)
-                              (10 6 door)
-                              (6 9 door)
-                              (1 12 weak-wall)))
+                               (4 8 key)
+                               (17 10 bomb)
+                               (10 6 door)
+                               (6 9 door)
+                               (1 12 weak-wall)))
 
 (level-1 'add-powerups '((1 7 food)))
 

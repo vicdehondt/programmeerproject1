@@ -87,18 +87,16 @@
                     (write-file "highscore.txt" (list highscore-vect highscore))))))))
 
     (define (check-bomb-animation delta-time)
-      (if ((level) 'bomb-animation?)
+      (if ((level) 'bomb-animation)
           (begin
             (bomb-animation delta-time))))
 
     (define (bomb-animation delta-time)
-      (draw 'bomb-animation! bomb-animation)
       (set! bomb-animation-time (+ bomb-animation-time delta-time))
       (if (> bomb-animation-time bomb-animation-interval)
           (begin
-            ((level) 'bomb-animation? #f)
+            ((level) 'bomb-animation #f)
             (draw 'set-black!)
-            (draw 'continue! game-loop)
             (set! bomb-animation-time 0))
           (begin
             (set! rumble-time (+ rumble-time delta-time))

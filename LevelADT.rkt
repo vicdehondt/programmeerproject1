@@ -6,7 +6,7 @@
         (inventory (list (list 'empty) (list 'empty)))
         (update-score? #f)
         (bomb-animation? #f)
-        (weak-wall-direction 0)
+        (to-be-deleted 'empty)
         (lives? 0)
         (remove-live? #f)
         (add-live? #f)
@@ -161,7 +161,9 @@
         (let ((weak-wall-collision? (list? (member #t (collision-list moving-object weak-walls direction))))
               (bombs-in-inventory (cadr inventory)))
           (cond
-            ((and weak-wall-collision? (eq? (car bombs-in-inventory) 'bomb)) (set! weak-wall-direction direction) (bomb-animation #t) #f)
+            ((and weak-wall-collision? (eq? (car bombs-in-inventory) 'bomb)) (remove-from-inventory! 'bomb)
+                                                                             (set! to-be-deleted (cons (next-position (moving-object 'position) direction) direction))
+                                                                             (bomb-animation #t) #f)
             ((and weak-wall-collision? (eq? (car bombs-in-inventory) 'empty)) #f)
             (else #t))))
 
@@ -180,13 +182,36 @@
         ((eq? kind 'food) (not (true-in-list? (collision-list moving-object food))))
         (else (error "[ERROR in LevelADT can-move?] Wrong kind!"))))
 
+    (define (get-position direction position)
+      (let ((x (position 'x))
+            (y (position 'y)))
+        (cond
+          ((eq? direction 'up) (make-position x (+ y 1)))
+          ((eq? direction 'down) (make-position x (- y 1)))
+          ((eq? direction 'left) (make-position (- x 1) y))
+          ((eq? direction 'right) (make-position (+ x 1) y)))))
+
     (define (bomb-animation . values)
       (if (null? values)
           bomb-animation?
           (begin
             (set! bomb-animation? (car values))
             (if (not (car values))
-                (remove! 'weak-wall weak-wall-direction)))))
+                (begin
+                  (check-in-range)
+                  (remove! 'weak-wall (cdr to-be-deleted)))))))
+
+    (define (check-in-range)
+      (let* ((wall-position (car to-be-deleted))
+             (ant-position (ant 'position))
+             (x (wall-position 'x))
+             (y (wall-position 'y))
+             (up (make-position x (+ y 1)))
+             (down (make-position x (- y 1)))
+             (right (make-position (+ x 1) y))
+             (left (make-position (- x 1) y)))
+        (if (or (ant-position 'equal? up) (ant-position 'equal? down) (ant-position 'equal? right) (ant-position 'equal? left))
+            (lives (- (lives) 1)))))
 
 
     ;; Collision-lists: gives list back with #t (collision) and #f (no obstruction)
@@ -202,12 +227,12 @@
       ((object 'position) 'equal? (moving-object 'position)))
 
     (define (upcomming-collision? moving-object position direction)
-      (position 'equal? (next-position moving-object direction)))
+      (position 'equal? (next-position (moving-object 'position) direction)))
 
     ;; Gives moving-object's next position based on the direction given
-    (define (next-position moving-object direction)
-      (let ((current-x ((moving-object 'position) 'x))
-            (current-y ((moving-object 'position) 'y)))
+    (define (next-position position direction)
+      (let ((current-x (position 'x))
+            (current-y (position 'y)))
         (cond
           ((eq? direction 'right) (make-position (+ current-x 1) current-y))
           ((eq? direction 'left) (make-position (- current-x 1) current-y))
@@ -220,16 +245,16 @@
     ;;
 
     (define (remove! kind . direction)
-      (define (search-and-remove! lst compare-func)
+      (define (search-and-remove! lst compare)
         (cond
           ((null? lst) '())
-          ((and (null? (cdr lst)) (((car lst) 'position) 'equal? compare-func)) '())
-          ((((car lst) 'position) 'equal? compare-func) (cdr lst))
-          (else (cons (car lst) (search-and-remove! (cdr lst) compare-func)))))
+          ((and (null? (cdr lst)) (((car lst) 'position) 'equal? compare)) '())
+          ((((car lst) 'position) 'equal? compare) (cdr lst))
+          (else (cons (car lst) (search-and-remove! (cdr lst) compare)))))
 
       (cond
-        ((eq? kind 'door) (remove-from-inventory! 'key) (set! doors (search-and-remove! doors (next-position ant (car direction)))))
-        ((eq? kind 'weak-wall) (remove-from-inventory! 'bomb) (set! weak-walls (search-and-remove! weak-walls (next-position ant (car direction)))))
+        ((eq? kind 'door) (remove-from-inventory! 'key) (set! doors (search-and-remove! doors (next-position (ant 'position) (car direction)))))
+        ((eq? kind 'weak-wall) (set! weak-walls (search-and-remove! weak-walls (car to-be-deleted))) (set! to-be-deleted 'empty))
         ((eq? kind 'egg) (set! eggs (search-and-remove! eggs (ant 'position))))
         ((eq? kind 'shield-shroom) (set! shield-shrooms (search-and-remove! shield-shrooms (ant 'position))))
         ((eq? kind 'food) (set! food (search-and-remove! food (ant 'position))))
@@ -327,12 +352,12 @@
         (define (move-random! scorpion)
           (scorpion 'new-orientation!)
           (let ((orientation (scorpion 'orientation)))
-            (if (and (can-move? scorpion orientation 'wall) (can-move? scorpion orientation 'door) (can-move? scorpion orientation 'weak-wall) (not (< ((next-position scorpion orientation) 'y) top-border)))
+            (if (and (can-move? scorpion orientation 'wall) (can-move? scorpion orientation 'door) (can-move? scorpion orientation 'weak-wall) (not (< ((next-position (scorpion 'position) orientation) 'y) top-border)))
                 (scorpion 'move! distance)
                 (move-random! scorpion))))
         (define (move! scorpion)
           (let ((orientation (scorpion 'orientation)))
-            (if (and (can-move? scorpion orientation 'wall) (can-move? scorpion orientation 'door) (can-move? scorpion orientation 'weak-wall) (not (< ((next-position scorpion orientation) 'y) top-border)))
+            (if (and (can-move? scorpion orientation 'wall) (can-move? scorpion orientation 'door) (can-move? scorpion orientation 'weak-wall) (not (< ((next-position (scorpion 'position) orientation) 'y) top-border)))
                 (begin
                   (scorpion 'move! distance)
                   (set! scorpion-time 0))
@@ -347,7 +372,7 @@
               (for-each move! random-scorpions)))))
 
     (define (move-ant! direction)
-      (if (and (can-move? ant direction 'wall) (can-move? ant direction 'door) (can-move? ant direction 'weak-wall) (not (< ((next-position ant direction) 'y) top-border)))
+      (if (and (can-move? ant direction 'wall) (can-move? ant direction 'door) (can-move? ant direction 'weak-wall) (not (< ((next-position (ant 'position) direction) 'y) top-border)))
           (begin
             (ant 'orientation! direction)
             (ant 'move! distance)
@@ -418,7 +443,7 @@
         ((eq? message 'add-eggs) (apply add-eggs parameters))
         ((eq? message 'add-puzzle-objects) (apply add-puzzle-objects parameters))
         ((eq? message 'add-powerups) (apply add-powerups parameters))
-        ((eq? message 'bomb-animation?) (apply bomb-animation parameters))
+        ((eq? message 'bomb-animation) (apply bomb-animation parameters))
         ((eq? message 'lives) (apply lives parameters))
         ((eq? message 'remove-live!) (apply remove-live! parameters))
         ((eq? message 'speed-up) (apply speed-up parameters))
