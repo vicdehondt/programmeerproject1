@@ -1,5 +1,5 @@
 (define (make-draw)
-  (let* ((window (make-window width height "Fire Ant" 200))
+  (let* ((window (make-window width height "Fire Ant" fps-cap))
          (visual (make-visual window))
          (black? #t))
     
@@ -18,7 +18,7 @@
     (define (start! update-function game)
       (set-black!)
       ((window 'set-update-callback!) update-function)
-      (visual 'start! game))
+      (visual 'initialize! game))
 
     (define (initialize! game)
       (visual 'initialize! game))
@@ -37,11 +37,6 @@
       (visual 'game-win!)
       ((window 'set-update-callback!) update-function))
 
-    (define (set-opposite-background!)
-      (if black?
-          (set-white!)
-          (set-black!)))
-
     (define (speed-up value)
       (visual 'speed-up value))
 
@@ -56,6 +51,11 @@
       ((window 'set-background!) "white")
       (set! black? #f))
 
+    (define (set-opposite-background!)
+      (if black?
+          (set-white!)
+          (set-black!)))
+
     ;;
     ;; UPDATE PROCEDURE
     ;;
@@ -64,19 +64,17 @@
        (visual 'update! game))
 
     (define (dispatch message . parameters)
-      (cond ((eq? message 'start!) (apply start! parameters))
-            ((eq? message 'update!) (apply update! parameters))
-            ((eq? message 'show-splash!) (apply show-splash! parameters))
+      (cond ((eq? message 'show-splash!) (apply show-splash! parameters))
             ((eq? message 'press-space) (apply press-space parameters))
+            ((eq? message 'start!) (apply start! parameters))
+            ((eq? message 'update!) (apply update! parameters))
             ((eq? message 'initialize!) (apply initialize! parameters))
             ((eq? message 'update-score!) (apply update-score! parameters))
             ((eq? message 'update-highscore!) (apply update-highscore! parameters))
             ((eq? message 'game-over!) (apply game-over! parameters))
             ((eq? message 'game-win!) (apply game-win! parameters))
-            ;((eq? message 'bomb-animation!) (apply bomb-animation! parameters))
             ((eq? message 'speed-up) (apply speed-up parameters))
             ((eq? message 'shield) (apply shield parameters))
-            ;((eq? message 'continue!) (apply bomb-animation! parameters))
             ((eq? message 'set-black!) (apply set-black! parameters))
             ((eq? message 'set-opposite-background!) (apply set-opposite-background! parameters))
             (else  (error "[ERROR in DrawADT DISPATCH] Wrong message!"))))

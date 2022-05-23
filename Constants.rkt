@@ -7,6 +7,8 @@
 
 (define grid-cell 48)
 
+(define fps-cap 200)
+
 ;;
 ;; TIME
 ;;
@@ -63,6 +65,10 @@
 ;; SCORES
 ;;
 
+(define egg-score-combined (cons 500 (vector 0 0 0 0 0 5 0 0)))
+
+(define food-score-combined (cons 200 (vector 0 0 0 0 0 2 0 0)))
+
 (define egg-score 500)
 
 (define food-score 200)
@@ -89,6 +95,8 @@
 ;;
 ;; LEVEL
 ;;
+
+(define starting-level 1)
 
 (define lives-start-count 3)
 

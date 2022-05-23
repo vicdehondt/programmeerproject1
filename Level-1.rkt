@@ -1,4 +1,4 @@
-(define level-1 (make-level 1 (make-position 10 3) 3 13 (make-position 1 12)))
+(define level-1 (make-level (make-position 10 3) 3 13 (make-position 1 12)))
 
 ;;
 ;; WALLS

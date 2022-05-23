@@ -1,7 +1,7 @@
 (define (make-game . levels)
   (let* ((draw (make-draw))
          (levels-vector (list-to-vector levels))
-         (current-level 1)
+         (current-level starting-level)
          (back-up '())
          (press-space-time 0)
          (bomb-animation-time 0)
@@ -72,10 +72,10 @@
       (draw 'speed-up ((level) 'speed-up)))
 
     (define (update-score!)
-      (let ((update? ((level) 'update-score?)))
+      (let ((update? ((level) 'update-score)))
         (if update?
             (begin
-              ((level) 'update-score! #f)
+              ((level) 'update-score #f)
               (set! score (+ score (car update?)))
               (add-up-vectors score-vect (cdr update?))
               (draw 'update-score! score-vect)
@@ -139,10 +139,10 @@
         (vector-set! levels-vector (- current-level 1) back-up)))
 
     (define (reset-level?)
-      (if ((level) 'reset-level?)
+      (if ((level) 'reset-level)
           (begin
             (set-back-up-level-active!)
-            ((level) 'reset-level! #f)
+            ((level) 'reset-level #f)
             (draw 'initialize! dispatch))))
 
     (define (start-game? key)

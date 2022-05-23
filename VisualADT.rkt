@@ -429,14 +429,14 @@
         (if (= (game 'current) first-level)
             (show! sky-tile 'sky))
 
-        (draw! level-object 'wall)
-        (draw! level-object 'egg)
-        (draw! level-object 'key)
-        (draw! level-object 'bomb)
-        (draw! level-object 'door)
-        (draw! level-object 'weak-wall)
-        (draw! level-object 'shield-shroom)
-        (draw! level-object 'food)
+        (map (lambda (kind) (draw! level-object kind)) '(wall
+                                                         egg
+                                                         key
+                                                         bomb
+                                                         door
+                                                         weak-wall
+                                                         shield-shroom
+                                                         food))
         (draw-score! (game 'score))
         (draw-highscore! (game 'highscore))))
 
@@ -446,25 +446,23 @@
         (draw-ant! level-object)
         (draw! level-object 'scorpion)
 
-        (check-for-remove level-object 'egg)
-        (check-for-remove level-object 'shield-shroom)
-        (check-for-remove level-object 'food)
-        (check-for-remove level-object 'key)
-        (check-for-remove level-object 'bomb)
-        (check-for-remove level-object 'door)
-        (check-for-remove level-object 'weak-wall)
-        
+        (map (lambda (kind) (check-for-remove level-object kind)) '(egg
+                                                                    shield-schroom
+                                                                    food
+                                                                    key
+                                                                    bomb
+                                                                    door
+                                                                    weak-wall))
         (draw-lives! game)))
 
     (define (dispatch message . parameters)
       (cond
-        ((eq? message 'start!) (apply initialize! parameters))
-        ((eq? message 'update!) (apply update! parameters))
-        ((eq? message 'game-over!) (apply game-over! parameters))
-        ((eq? message 'game-win!) (apply game-win! parameters))
         ((eq? message 'show-splash!) (apply show-splash! parameters))
         ((eq? message 'press-space) (apply press-space parameters))
         ((eq? message 'initialize!) (apply initialize! parameters))
+        ((eq? message 'update!) (apply update! parameters))
+        ((eq? message 'game-over!) (apply game-over! parameters))
+        ((eq? message 'game-win!) (apply game-win! parameters))
         ((eq? message 'update-score!) (apply draw-score! parameters))
         ((eq? message 'update-highscore!) (apply draw-highscore! parameters))
         ((eq? message 'speed-up) (apply speed-up parameters))
