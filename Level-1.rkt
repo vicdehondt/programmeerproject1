@@ -55,5 +55,5 @@
                                (6 9 door)
                                (1 12 weak-wall)))
 
-(level-1 'add-powerups '((1 7 food)))
+(level-1 'add-powerups '((15 7 food)))
 

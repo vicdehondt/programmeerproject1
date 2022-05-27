@@ -39,7 +39,9 @@
 ;; SCORPIONS
 ;;
 
-(level-2 'add-scorpions '((14 7 right normal)))
+(level-2 'add-scorpions '((14 7 right normal)
+                          (2 10 right random)
+                          (13 1 left random)))
 
 ;;
 ;; PUZZLE OBJECTS
@@ -47,11 +49,14 @@
 
 (level-2 'add-puzzle-objects '((15 11 key)
                               (17 2 key)
+                              (5 7 bomb)
                               (7 8 door)
+                              (13 8 weak-wall)
                               (17 12 door)))
 
 ;;
 ;; POWER-UPS
 ;;
 
-(level-2 'add-powerups '((10 7 shield)))
+(level-2 'add-powerups '((10 7 shield)
+                         (8 6 food)))

@@ -141,6 +141,7 @@
     (define (reset-level?)
       (if ((level) 'reset-level)
           (begin
+            (draw 'set-black!)
             (set-back-up-level-active!)
             ((level) 'reset-level #f)
             (draw 'initialize! dispatch))))

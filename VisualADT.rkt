@@ -447,7 +447,7 @@
         (draw! level-object 'scorpion)
 
         (map (lambda (kind) (check-for-remove level-object kind)) '(egg
-                                                                    shield-schroom
+                                                                    shield-shroom
                                                                     food
                                                                     key
                                                                     bomb
